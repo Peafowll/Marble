@@ -30,7 +30,7 @@ def update_leaderboard(player_name,player_id,leaderboard,difficulty,score):
             return False
 
     leaderboard[difficulty][player_id_str] = {
-        "player_name": player_name,
+        "player_name": player_name.capitalize(),
         "score": score,
         "date": str(date)
     }
@@ -122,7 +122,7 @@ class Games(commands.Cog):
 
         score = 0
         game_on = True
-        while game_on == True:
+        while game_on:
             current_champion = random.choice(champion_names)
 
             if difficulty == "Ults":
@@ -171,9 +171,69 @@ class Games(commands.Cog):
         
         if score > 0:
             updated_leaderboards = update_leaderboard(author_name, author_id, leaderboards, difficulty, score)
-            if updated_leaderboards:
+            if updated_leaderboards is not False:
                 save_leaderboard(updated_leaderboards)
                 await ctx.send("🏆 New personal best recorded!")
 
+    @commands.command(aliases=['loltrivialeaderboard'])
+    async def loltlb(self,ctx,difficulty: str = "all", count: int = 10):
+        leaderboards = get_leaderboards()
+        
+        # Map user input to proper difficulty names
+        difficulty_map = {
+            "ults": "Ults",
+            "ult": "Ults",
+            "abilities": "Abilities",
+            "ability": "Abilities",
+            "ag": "AG",
+            "anything": "AG",
+            "anythinggoes": "AG",
+            "all": "all"
+        }
+        
+        # Normalize the difficulty input
+        normalized_difficulty = difficulty_map.get(difficulty.lower())
+        
+        # If invalid difficulty, show error message
+        if normalized_difficulty is None:
+            await ctx.send(f"❌ Invalid difficulty! Please use: `Ults`, `Abilities`, `AG`, `all` or nothing.")
+            return
+        
+        if normalized_difficulty == "all":
+            embed = discord.Embed(
+                title="🏆 LoL Trivia Leaderboards",
+                color=discord.Color.gold()
+            )
+            for diff in ["Ults","Abilities","AG"]:
+                top_players = display_leaderboard(leaderboards,diff,count)
+                if top_players:
+                    medal_emojis = ["🥇", "🥈", "🥉"]
+                    leaderboard_text = "\n".join([
+                        f"{medal_emojis[i]} **{name}** - `{score} pts`" if i < 3 
+                        else f"`{i+1}.` **{name}** - `{score} pts`" 
+                        for i, (name, score) in enumerate(top_players)
+                    ])
+                    embed.add_field(name=f"**{diff}**", value=leaderboard_text, inline=False)
+                else:
+                    embed.add_field(name=f"**{diff}**", value="*No scores yet!*", inline=False)
+        else:
+            embed = discord.Embed(
+                title=f"🏆 LoL Trivia Leaderboard - {normalized_difficulty}",
+                color=discord.Color.gold()
+            )
+            top_players = display_leaderboard(leaderboards, normalized_difficulty, count)
+            if top_players:
+                medal_emojis = ["🥇", "🥈", "🥉"]
+                leaderboard_text = "\n".join([
+                    f"{medal_emojis[i]} **{name}** - `{score} pts`" if i < 3 
+                    else f"`{i+1}.` **{name}** - `{score} pts`" 
+                    for i, (name, score) in enumerate(top_players)
+                ])
+                embed.description = leaderboard_text
+            else:
+                embed.description = "*No scores yet!*"
+
+        await ctx.send(embed=embed)
+       
 async def setup(bot):
     await bot.add_cog(Games(bot))
