@@ -4,13 +4,24 @@
             "player_name": "Peafowl",
             "score": 7,
             "date": "2025-11-11"
+        },
+        "457123490080751626": {
+            "player_name": "Vladimus2005",
+            "score": 1,
+            "date": "2025-11-11"
         }
     },
-    "Abilities": {},
+    "Abilities": {
+        "246956083934003211": {
+            "player_name": "Painite01",
+            "score": 1,
+            "date": "2025-11-11"
+        }
+    },
     "AG": {
-        "264416824777637898": {
-            "player_name": "peafowl",
-            "score": 0,
+        "370638781998694410": {
+            "player_name": "Arrow_san",
+            "score": 3,
             "date": "2025-11-11"
         }
     }
