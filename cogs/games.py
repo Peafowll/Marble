@@ -216,13 +216,15 @@ class Games(commands.Cog):
                         color=embed_color
                     )           
                     embed.set_footer(text=f"Score: {score} | You have 30 seconds to answer")
-                    await ctx.send(embed=embed)
                     
                     def check(m):
                          return m.channel.id == channel.id and m.author.id == author_id
                     
+                    wait_task = asyncio.create_task(self.bot.wait_for("message", check=check, timeout=30.0))
+                    await ctx.send(embed=embed)
+                    
                     try:
-                        reply = await self.bot.wait_for("message", check=check, timeout=30.0)
+                        reply = await wait_task
                         reply_text = reply.content
                         answer = reply_text.lower()
                         
