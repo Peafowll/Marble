@@ -227,7 +227,7 @@ class Games(commands.Cog):
                         reply = await wait_task
                         reply_text = reply.content
                         answer = reply_text.lower()
-                        
+                        logger.info(f"{author_name} gussed {answer}.")
                         if answer in ["quit", "q", "ff"]:
                             await ctx.send(f"{author_mention}, you surrendered.")
                             game_on = False
@@ -268,7 +268,7 @@ class Games(commands.Cog):
             logger.error(f"Fatal error in loltrivia command: {e}", exc_info=True)
             await ctx.send(f"❌ A critical error occurred. Please try again later.")
 
-    @commands.command(aliases=['loltrivialeaderboard'])
+    @commands.command(aliases=['loltrivialeaderboard','ltlb','ltlbd'])
     async def loltlb(self,ctx,difficulty: str = "all", count: int = 10):
         """
         View the League of Legends trivia leaderboard.
