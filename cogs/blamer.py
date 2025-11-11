@@ -15,7 +15,7 @@ class Blamer(commands.Cog):
     async def blame(self,ctx,difficulty: str = "all", count: int = 10):
         """
         See who's fault it was you lost your previous games!
-        
+        (test commit)
         Usage: !loltlb [difficulty] [count]
         - difficulty: "ults", "abilities", "ag", or "all" (default: all)
         - count: Number of top players to display (default: 10, max: 50)
