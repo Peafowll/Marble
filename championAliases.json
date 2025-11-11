@@ -1,0 +1,515 @@
+{
+    "Aatrox": [
+        "aatrox"
+    ],
+    "Ahri": [
+        "ahri"
+    ],
+    "Akali": [
+        "akali","kali"
+    ],
+    "Akshan": [
+        "akshan"
+    ],
+    "Alistar": [
+        "alistar","ali"
+    ],
+    "Ambessa": [
+        "ambessa"
+    ],
+    "Amumu": [
+        "amumu"
+    ],
+    "Anivia": [
+        "anivia","bird"
+    ],
+    "Annie": [
+        "annie"
+    ],
+    "Aphelios": [
+        "aphelios"
+    ],
+    "Ashe": [
+        "ashe"
+    ],
+    "AurelionSol": [
+        "aurelionsol","asol","a sol","aurelion"
+    ],
+    "Aurora": [
+        "aurora"
+    ],
+    "Azir": [
+        "azir"
+    ],
+    "Bard": [
+        "bard"
+    ],
+    "Belveth": [
+        "belveth","bel veth","bel'veth"
+    ],
+    "Blitzcrank": [
+        "blitzcrank","blitz"
+    ],
+    "Brand": [
+        "brand"
+    ],
+    "Braum": [
+        "braum"
+    ],
+    "Briar": [
+        "briar"
+    ],
+    "Caitlyn": [
+        "caitlyn","cait"
+    ],
+    "Camille": [
+        "camille"
+    ],
+    "Cassiopeia": [
+        "cassiopeia","cass","cassi"
+    ],
+    "Chogath": [
+        "chogath","cho","cho gath","cho'gath"
+    ],
+    "Corki": [
+        "corki"
+    ],
+    "Darius": [
+        "darius"
+    ],
+    "Diana": [
+        "diana"
+    ],
+    "Draven": [
+        "draven"
+    ],
+    "DrMundo": [
+        "drmundo","mundo","dr.mundo","dr. mundo"
+    ],
+    "Ekko": [
+        "ekko"
+    ],
+    "Elise": [
+        "elise"
+    ],
+    "Evelynn": [
+        "evelynn","eve"
+    ],
+    "Ezreal": [
+        "ezreal","ez"
+    ],
+    "Fiddlesticks": [
+        "fiddlesticks","fiddle"
+    ],
+    "Fiora": [
+        "fiora"
+    ],
+    "Fizz": [
+        "fizz"
+    ],
+    "Galio": [
+        "galio"
+    ],
+    "Gangplank": [
+        "gangplank","gang plank","gp"
+    ],
+    "Garen": [
+        "garen"
+    ],
+    "Gnar": [
+        "gnar"
+    ],
+    "Gragas": [
+        "gragas"
+    ],
+    "Graves": [
+        "graves"
+    ],
+    "Gwen": [
+        "gwen"
+    ],
+    "Hecarim": [
+        "hecarim","heca"
+    ],
+    "Heimerdinger": [
+        "heimerdinger","heimer","donger"
+    ],
+    "Hwei": [
+        "hwei"
+    ],
+    "Illaoi": [
+        "illaoi"
+    ],
+    "Irelia": [
+        "irelia"
+    ],
+    "Ivern": [
+        "ivern"
+    ],
+    "Janna": [
+        "janna"
+    ],
+    "JarvanIV": [
+        "jarvaniv","jarvan","jarvan iv","j4"
+    ],
+    "Jax": [
+        "jax"
+    ],
+    "Jayce": [
+        "jayce"
+    ],
+    "Jhin": [
+        "jhin"
+    ],
+    "Jinx": [
+        "jinx"
+    ],
+    "Kaisa": [
+        "kaisa","kai sa","kai'sa"
+    ],
+    "Kalista": [
+        "kalista"
+    ],
+    "Karma": [
+        "karma"
+    ],
+    "Karthus": [
+        "karthus"
+    ],
+    "Kassadin": [
+        "kassadin","kass"
+    ],
+    "Katarina": [
+        "katarina","kata","kat"
+    ],
+    "Kayle": [
+        "kayle"
+    ],
+    "Kayn": [
+        "kayn"
+    ],
+    "Kennen": [
+        "kennen"
+    ],
+    "Khazix": [
+        "khazix","kha zix","kha","kha'zix"
+    ],
+    "Kindred": [
+        "kindred"
+    ],
+    "Kled": [
+        "kled"
+    ],
+    "KogMaw": [
+        "kogmaw","kog","kog'maw","kogmaw"
+    ],
+    "KSante": [
+        "ksante","k'sante","k sante"
+    ],
+    "Leblanc": [
+        "leblanc","lb"
+    ],
+    "LeeSin": [
+        "leesin","lee","lee sin"
+    ],
+    "Leona": [
+        "leona"
+    ],
+    "Lillia": [
+        "lillia","lilia"
+    ],
+    "Lissandra": [
+        "lissandra","liss"
+    ],
+    "Lucian": [
+        "lucian"
+    ],
+    "Lulu": [
+        "lulu"
+    ],
+    "Lux": [
+        "lux"
+    ],
+    "Malphite": [
+        "malphite","malph"
+    ],
+    "Malzahar": [
+        "malzahar","malz"
+    ],
+    "Maokai": [
+        "maokai"
+    ],
+    "MasterYi": [
+        "masteryi","master yi","yi"
+    ],
+    "Mel": [
+        "mel"
+    ],
+    "Milio": [
+        "milio"
+    ],
+    "MissFortune": [
+        "missfortune","mf","miss fortune","fortune"
+    ],
+    "MonkeyKing": [
+        "monkeyking","wukong","wu kong","monkey"
+    ],
+    "Mordekaiser": [
+        "mordekaiser","morde"
+    ],
+    "Morgana": [
+        "morgana","morg"
+    ],
+    "Naafiri": [
+        "naafiri","nafiri"
+    ],
+    "Nami": [
+        "nami"
+    ],
+    "Nasus": [
+        "nasus"
+    ],
+    "Nautilus": [
+        "nautilus","naut"
+    ],
+    "Neeko": [
+        "neeko"
+    ],
+    "Nidalee": [
+        "nidalee","nida"
+    ],
+    "Nilah": [
+        "nilah"
+    ],
+    "Nocturne": [
+        "nocturne","noc"
+    ],
+    "Nunu": [
+        "nunu","nunu and willump","nunu willump","nunuwillump","willump","nunu&willump","nunu & willump"
+    ],
+    "Olaf": [
+        "olaf"
+    ],
+    "Orianna": [
+        "orianna","ori"
+    ],
+    "Ornn": [
+        "ornn"
+    ],
+    "Pantheon": [
+        "pantheon","panth"
+    ],
+    "Poppy": [
+        "poppy"
+    ],
+    "Pyke": [
+        "pyke"
+    ],
+    "Qiyana": [
+        "qiyana","qiqi"
+    ],
+    "Quinn": [
+        "quinn"
+    ],
+    "Rakan": [
+        "rakan"
+    ],
+    "Rammus": [
+        "rammus"
+    ],
+    "RekSai": [
+        "reksai","rek'sai","rek sai"
+    ],
+    "Rell": [
+        "rell"
+    ],
+    "Renata": [
+        "renata","renata glasc","renataglasc"
+    ],
+    "Renekton": [
+        "renekton","rene"
+    ],
+    "Rengar": [
+        "rengar"
+    ],
+    "Riven": [
+        "riven"
+    ],
+    "Rumble": [
+        "rumble"
+    ],
+    "Ryze": [
+        "ryze"
+    ],
+    "Samira": [
+        "samira"
+    ],
+    "Sejuani": [
+        "sejuani","sej","seju"
+    ],
+    "Senna": [
+        "senna"
+    ],
+    "Seraphine": [
+        "seraphine","sera"
+    ],
+    "Sett": [
+        "sett"
+    ],
+    "Shaco": [
+        "shaco"
+    ],
+    "Shen": [
+        "shen"
+    ],
+    "Shyvana": [
+        "shyvana"
+    ],
+    "Singed": [
+        "singed"
+    ],
+    "Sion": [
+        "sion"
+    ],
+    "Sivir": [
+        "sivir"
+    ],
+    "Skarner": [
+        "skarner"
+    ],
+    "Smolder": [
+        "smolder"
+    ],
+    "Sona": [
+        "sona"
+    ],
+    "Soraka": [
+        "soraka"
+    ],
+    "Swain": [
+        "swain","balan"
+    ],
+    "Sylas": [
+        "sylas"
+    ],
+    "Syndra": [
+        "syndra"
+    ],
+    "TahmKench": [
+        "tahmkench","kench","tahm","tahm kench"
+    ],
+    "Taliyah": [
+        "taliyah"
+    ],
+    "Talon": [
+        "talon"
+    ],
+    "Taric": [
+        "taric"
+    ],
+    "Teemo": [
+        "teemo","teeto"
+    ],
+    "Thresh": [
+        "thresh"
+    ],
+    "Tristana": [
+        "tristana","trist"
+    ],
+    "Trundle": [
+        "trundle"
+    ],
+    "Tryndamere": [
+        "tryndamere","trynda"
+    ],
+    "TwistedFate": [
+        "twistedfate","tf","fate","twisted","twisted fate","tobias"
+    ],
+    "Twitch": [
+        "twitch"
+    ],
+    "Udyr": [
+        "udyr"
+    ],
+    "Urgot": [
+        "urgot"
+    ],
+    "Varus": [
+        "varus"
+    ],
+    "Vayne": [
+        "vayne"
+    ],
+    "Veigar": [
+        "veigar"
+    ],
+    "Velkoz": [
+        "velkoz","vel koz","vel'koz","zapzap"
+    ],
+    "Vex": [
+        "vex"
+    ],
+    "Vi": [
+        "vi"
+    ],
+    "Viego": [
+        "viego"
+    ],
+    "Viktor": [
+        "viktor","vik","victor"
+    ],
+    "Vladimir": [
+        "vladimir","vlad"
+    ],
+    "Volibear": [
+        "volibear","voli"
+    ],
+    "Warwick": [
+        "warwick","vander","ww"
+    ],
+    "Xayah": [
+        "xayah"
+    ],
+    "Xerath": [
+        "xerath"
+    ],
+    "XinZhao": [
+        "xinzhao","xin zhao","xin","zhao"
+    ],
+    "Yasuo": [
+        "yasuo","yas"
+    ],
+    "Yone": [
+        "yone"
+    ],
+    "Yorick": [
+        "yorick"
+    ],
+    "Yunara": [
+        "yunara"
+    ],
+    "Yuumi": [
+        "yuumi","yumi","yummi"
+    ],
+    "Zac": [
+        "zac"
+    ],
+    "Zed": [
+        "zed"
+    ],
+    "Zeri": [
+        "zeri"
+    ],
+    "Ziggs": [
+        "ziggs"
+    ],
+    "Zilean": [
+        "zilean","zil"
+    ],
+    "Zoe": [
+        "zoe"
+    ],
+    "Zyra": [
+        "zyra"
+    ]
+}
