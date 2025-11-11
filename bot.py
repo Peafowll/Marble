@@ -70,6 +70,17 @@ async def hi(ctx):
         logger.error(f"Error in hi command: {e}", exc_info=True)
         await ctx.send("❌ An error occurred.")
 
+@bot.command()
+@commands.is_owner()
+async def exportleaderboard(ctx):
+    """Export the current leaderboard JSON (owner only)"""
+    try:
+        with open("loltriviaLeaderboards.json", "r", encoding="utf8") as file:
+            await ctx.send(file=discord.File(file, "loltriviaLeaderboards.json"))
+    except FileNotFoundError:
+        await ctx.send("No leaderboard file found!")
+
+
 try:
     asyncio.run(load_cogs())
     bot.run(token=token)

@@ -179,3 +179,10 @@ cython_debug/
 #  refer to https://docs.cursor.com/context/ignore-files
 .cursorignore
 .cursorindexingignore
+
+# Discord Bot Data
+# Leaderboard data - should be different on local vs production
+loltriviaLeaderboards.json
+
+# Game debug logs
+game_debug_*.log
