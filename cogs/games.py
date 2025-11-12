@@ -94,9 +94,16 @@ def display_leaderboard(leaderboards, difficulty, count):
     
 
 class DifficultyView(View):
-    def __init__(self, timeout=60):
+    def __init__(self, author_id, timeout=60):
         super().__init__(timeout=timeout)
         self.game_difficulty = None
+        self.author_id = author_id
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user.id != self.author_id:
+            await interaction.response.send_message("❌ Only the command author can select the difficulty!", ephemeral=True)
+            return False
+        return True
 
     @discord.ui.button(label="Ults Only", style=discord.ButtonStyle.green, custom_id="ults_only")
     async def ults_button(self, interaction: discord.Interaction, button: Button):
@@ -133,7 +140,7 @@ class Games(commands.Cog):
     def __init__(self,bot):
         self.bot = bot
     
-    @commands.command(aliases=["lol_trivia"])
+    @commands.command(aliases=["lol_trivia","ltrivia","lt"])
     async def loltrivia(self,ctx):
         """Play a League of Legends trivia game! Guess champions by their abilities, ultimates, or titles. Choose your difficulty and see how high you can score!"""
         try:
@@ -154,7 +161,7 @@ class Games(commands.Cog):
                 description=f"{author_mention}\n### What difficulty would you like?\n\n**Ults** = Ultimates Only\n**Abilities** = Ultimates and Basic Abilities\n**Anything Goes** = Ults, Basic Abilities, Passives and Titles!\n\n*Type the champion name to answer, or type 'ff' to surrender.*",
                 color=discord.Color.gold()
             )
-            view = DifficultyView()
+            view = DifficultyView(author_id)
 
             await ctx.send(embed=embed, view=view)
             await view.wait()
@@ -229,7 +236,7 @@ class Games(commands.Cog):
                         answer = reply_text.lower()
                         logger.info(f"{author_name} gussed {answer}.")
                         if answer in ["quit", "q", "ff"]:
-                            await ctx.send(f"{author_mention}, you surrendered.")
+                            await ctx.send(f"{author_mention}, you surrendered. The answer was **{current_champion}**")
                             game_on = False
                             logger.info(f"{author_name} surrendered with score: {score}")
                         elif answer in champion_aliases.get(current_champion, []):
