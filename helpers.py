@@ -46,5 +46,10 @@ def resfresh_ult_json():
     except Exception as e:
         logger.error(f"Unexpected error in resfresh_ult_json: {e}", exc_info=True)
 
-
-find_lol_spells()
+def convert_queue_type_to_id(queue_type):
+    convert_dict = {
+        "Ranked Flex" : 440,
+        "Ranked Solo/Duo" : 420,
+        "ARAM" : 450,
+        
+    }

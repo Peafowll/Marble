@@ -37,7 +37,7 @@ async def load_cogs():
 @bot.event
 async def on_ready():
     logger.info(f"MARBLE is online! Logged in as {bot.user.name} (ID: {bot.user.id})")
-    print(f"MARBLE is online!")
+    print(f"MARBLE is online!") 
 
 @bot.event
 async def on_command_error(ctx, error):

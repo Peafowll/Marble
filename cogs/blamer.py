@@ -48,6 +48,43 @@ matches = {
     "EUN1_3847364291"
     ]
 }
+
+
+
+def get_matches_by_id(riot_id,queue = None):
+    response = requests.get(f"https://europe.api.riotgames.com/lol/match/v5/matches/by-puuid/{riot_id}/ids",params={"api_key": riot_token})
+    data = response.json()
+    return data
+
+def get_match_stats_by_id(match_id):
+    response = requests.get(f"https://europe.api.riotgames.com/lol/match/v5/matches/{match_id}", params={"api_key": riot_token})
+    data = response.json()
+    return data 
+
+def get_match_history(riot_id, queue = None):
+    match_ids = get_matches_by_id(riot_id=riot_id, queue=queue)
+    result_list =[]
+    for match in match_ids:
+        match_stats = get_match_stats_by_id(match_id=match)
+        result = ""
+        for participant in match_stats["info"]["participants"]:
+            if participant["puuid"] == riot_id:
+                champion_played = participant["championName"]
+                kills = participant["kills"]
+                deaths = participant["deaths"]
+                assists = participant["assists"]
+                score = f"{kills}/{deaths}/{assists}"
+                result = f"{champion_played} : {score}"
+                result_list.append(result)
+                break
+    return result_list
+    # with open("test_match.json","w",encoding="utf8") as file:
+    #     json.dump(match_stats,file,indent=4)
+    #     print("match imported!")
+
+
+
+
 class Blamer(commands.Cog):
     def __init__(self,bot):
         self.bot = bot
@@ -60,16 +97,31 @@ class Blamer(commands.Cog):
         - difficulty: "ults", "abilities", "ag", or "all" (default: all)
         - count: Number of top players to display (default: 10, max: 50)
         
-        Example: !loltlb abilities 5
+        Example: !
         """
-    
+        await ctx.send("Fetching match history...")
+        result_list = get_match_history("KD1yrq9-dAL_jZlnS5WWbPa3k8jj0Uveh4TJf0ACu8I_kP_cNGtmqRB-9h7Qpjw0-ip4V2BLYJH6jQ")
+        message = ""
+        for result in result_list:
+            print("getting results..")
+            message+=result
+            message+="\n"
+        await ctx.send(message)
+
+
     @commands.command(aliases=["riotsregister"])
     async def register(self,ctx,username = None):
+        """
+        Registerds your discord account to a Riot account.
+        Usage : !register [riot username]#[riot tag]
+
+        Example : !register HideOnBush#KR
+        """
         if not username:
             await ctx.send("❌ Please provide a username!")
             return
         if "#" not in username:
-            await ctx.send("❌ The username provided has no tag!")
+            await ctx.send("❌ The username provided doesn't have the correct structure. Try the structure `username#tag`!")
             return
         split_username = username.split("#")
         playername = split_username[0]
@@ -77,7 +129,6 @@ class Blamer(commands.Cog):
         response = requests.get(f"https://europe.api.riotgames.com/riot/account/v1/accounts/by-riot-id/{playername}/{tag}",
                                 params={"api_key": riot_token})
         data = response.json()
-        print(data)
         author_name = ctx.author.name
         player_dict = {}
         player_dict = {
@@ -89,14 +140,18 @@ class Blamer(commands.Cog):
         with open("players.json", "r", encoding="utf8") as file:
             players_dict = json.load(file)
 
-        if author_name not in players_dict.keys():
-            players_dict[author_name] = player_dict
+        if author_name in players_dict.keys():
+            await ctx.send(f"{ctx.author.mention}, you have already registered an account.")
+            return
+        for player_data in players_dict.items():
+            if player_data.get("riot_id") == player_dict["riot_id"]:
+                await ctx.send(f"{ctx.author.mention}, this Riot account is already registered to another user.")
+                return
 
-            with open("players.json","w",encoding="utf8") as file:
-                json.dump(players_dict,file,indent=4)
-            await ctx.send(f"{ctx.author.mention}, we have linked you to account **{playername}**#*{tag}*.")
-        else:
-            await ctx.send(f"{ctx.author.mention}, you or your account have already been registered.")
+        players_dict[author_name] = players_dict
+        with open("players.json","w",encoding="utf8") as file:
+            json.dump(players_dict,file,indent=4)
+        await ctx.send(f"{ctx.author.mention}, we have linked you to account **{playername}**#{tag}.")
 
 
 async def setup(bot):
