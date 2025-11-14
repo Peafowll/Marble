@@ -6,6 +6,8 @@ import asyncio
 import logging
 from datetime import datetime
 
+
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -43,7 +45,7 @@ async def on_ready():
 async def on_command_error(ctx, error):
     """Global error handler for commands."""
     if isinstance(error, commands.CommandNotFound):
-        return  # Ignore command not found errors
+        return
     elif isinstance(error, commands.MissingRequiredArgument):
         await ctx.send(f"❌ Missing required argument: `{error.param.name}`")
         logger.warning(f"Missing argument in {ctx.command}: {error}")

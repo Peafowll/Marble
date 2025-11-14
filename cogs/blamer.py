@@ -9,6 +9,7 @@ import logging
 from dotenv import load_dotenv
 import os
 import requests
+from match_score_calculator import calculate_match_scores
 
 load_dotenv()
 riot_token = os.getenv("RIOT_KEY")
@@ -24,7 +25,7 @@ puuids = {
 
 
 
-matches = {
+test_matches = {
     "Peafowl":[
     "EUN1_3857317403",
     "EUN1_3857293749",
@@ -51,7 +52,7 @@ matches = {
 
 
 
-def get_matches_by_id(riot_id,queue = None):
+def get_matches_by_player_id(riot_id,queue = None):
     response = requests.get(f"https://europe.api.riotgames.com/lol/match/v5/matches/by-puuid/{riot_id}/ids",params={"api_key": riot_token})
     data = response.json()
     return data
@@ -62,7 +63,7 @@ def get_match_stats_by_id(match_id):
     return data 
 
 def get_match_history(riot_id, queue = None):
-    match_ids = get_matches_by_id(riot_id=riot_id, queue=queue)
+    match_ids = get_matches_by_player_id(riot_id=riot_id, queue=queue)
     result_list =[]
     for match in match_ids:
         match_stats = get_match_stats_by_id(match_id=match)
@@ -99,15 +100,23 @@ class Blamer(commands.Cog):
         
         Example: !
         """
-        await ctx.send("Fetching match history...")
-        result_list = get_match_history("KD1yrq9-dAL_jZlnS5WWbPa3k8jj0Uveh4TJf0ACu8I_kP_cNGtmqRB-9h7Qpjw0-ip4V2BLYJH6jQ")
-        message = ""
-        for result in result_list:
-            print("getting results..")
-            message+=result
-            message+="\n"
-        await ctx.send(message)
 
+        #result_list = get_match_history("KD1yrq9-dAL_jZlnS5WWbPa3k8jj0Uveh4TJf0ACu8I_kP_cNGtmqRB-9h7Qpjw0-ip4V2BLYJH6jQ")
+        for i,match in enumerate(test_matches["Peafowl"]):
+            match_data = get_match_stats_by_id(match)
+            int_scores = calculate_match_scores(match_data,target_player="Peafowl")
+            if not int_scores:  # Empty dict evaluates to False
+                await ctx.send(f"Match #{i}: Target player won, skipping")
+                continue
+
+            target_participant = next((p for p in match_data["info"]["participants"] if p["riotIdGameName"] == "Peafowl"), None)
+            champion_name = target_participant["championName"] if target_participant else "Unknown"
+
+            await ctx.send(f"**In match #{i}** you played {champion_name}, with the following scores:")
+            await ctx.send(int_scores)
+            worst_player = max(int_scores, key=int_scores.get)
+            await ctx.send(f"You lost because of {worst_player}, with score {int_scores[worst_player]}")
+            await ctx.send("=========================")
 
     @commands.command(aliases=["riotsregister"])
     async def register(self,ctx,username = None):

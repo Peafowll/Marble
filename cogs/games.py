@@ -10,6 +10,9 @@ import logging
 
 logger = logging.getLogger('discord.games')
 
+
+# TODO : Show the ability upon losing the game
+
 # Create a separate logger for game debugging
 game_debug_logger = logging.getLogger('game_debug')
 game_debug_logger.setLevel(logging.DEBUG)
@@ -276,7 +279,7 @@ class Games(commands.Cog):
             await ctx.send(f"❌ A critical error occurred. Please try again later.")
 
     @commands.command(aliases=['loltrivialeaderboard','ltlb','ltlbd'])
-    async def loltlb(self,ctx,difficulty: str = "all", count: int = 10):
+    async def loltlb(self,ctx,difficulty: str = "all", count: int = 5):
         """
         View the League of Legends trivia leaderboard.
         
