@@ -9,7 +9,7 @@ riot_token = os.getenv("RIOT_KEY")
 
 #TODO : import gold diff at 15 and exp diff at 15
 
-def calculate_match_scores(match_json,match_log_json=None, target_player=None):
+def calculate_int_scores(match_json,match_log_json=None, target_player=None):
     #testers
     # match_id = "EUN1_3848320574"
     # match_json_response = requests.get(f"https://europe.api.riotgames.com/lol/match/v5/matches/{match_id}", params={"api_key": riot_token})
@@ -24,8 +24,8 @@ def calculate_match_scores(match_json,match_log_json=None, target_player=None):
     #print(f"The game lasted {game_duration_seconds} seconds")
     if target_player:
         target_lost = any(p["riotIdGameName"] == target_player and not p["win"] for p in participants)
-    if not target_lost:
-        return {}
+        if not target_lost:
+            return {}
     for participant in participants:
         int_score = 0
         if participant["win"] == False:
@@ -107,4 +107,4 @@ def calculate_match_scores(match_json,match_log_json=None, target_player=None):
 # support : kp and vision
 
 if __name__ == "__main__":
-    calculate_match_scores("o","i")
+    calculate_int_scores("o","i")
