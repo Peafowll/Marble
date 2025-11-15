@@ -10,54 +10,54 @@ from dotenv import load_dotenv
 import os
 import requests
 from match_score_calculator import calculate_int_scores
-
+from helpers import convert_queue_type_to_id, convert_queue_aliases_to_queue
 load_dotenv()
 riot_token = os.getenv("RIOT_KEY")
 
 # TODO : reformat the !mass_register command by hand and by using a register function called my both !register and !mass_register
-puuids = {
-    "Peafowl":{
-        "riot_name" : "Peafowl",
-        "riot_tag" : "EUNE",
-        "riot_id" : "KD1yrq9-dAL_jZlnS5WWbPa3k8jj0Uveh4TJf0ACu8I_kP_cNGtmqRB-9h7Qpjw0-ip4V2BLYJH6jQ"
-    }
-}
+
+# TODO : make the command work for soloqueue and randoms, or make a new one
+
+# TODO : polish polish polish
 
 
-test_matches = {
-    "Peafowl":[
-    "EUN1_3857317403",
-    "EUN1_3857293749",
-    "EUN1_3857261941",
-    "EUN1_3857196645",
-    "EUN1_3853948327",
-    "EUN1_3853429237",
-    "EUN1_3853403499",
-    "EUN1_3853376313",
-    "EUN1_3848403280",
-    "EUN1_3848369672",
-    "EUN1_3848349183",
-    "EUN1_3848320574",
-    "EUN1_3848010913",
-    "EUN1_3847985487",
-    "EUN1_3847950008",
-    "EUN1_3847914240",
-    "EUN1_3847460137",
-    "EUN1_3847432128",
-    "EUN1_3847393981",
-    "EUN1_3847364291"
-    ]
-}
-
-
-
-def get_matches_by_player_id(riot_id,queue_id = None):
+def get_matches_by_player_id(riot_id, queue_name=None, count=20):
     """
-    Returns a dict of match IDS based on a player's ID.
-        riot_id = player's ID
-        queue_id = the ID of a specific queue type. (optional)
+    Gets a list of match IDs based on a player's ID.
+    Args:
+        riot_id: player's PUUID
+        queue_name: the name of a specific queue type. (optional)
+        count: number of match IDs to return (default: 20, max: 100)
+    Returns:
+        data
     """
-    response = requests.get(f"https://europe.api.riotgames.com/lol/match/v5/matches/by-puuid/{riot_id}/ids",params={"api_key": riot_token})
+    #POSSIBLE QUEUE TYPES:
+        #"Ranked Solo/Duo"
+        #"Ranked Flex"
+        #"Normal Draft"
+        #"Normal Blind"
+        #"Normal (Quickplay)"
+        #"ARAM"
+        #"Clash"
+        #"ARAM Clash"
+        #"ARURF"
+        #"URF"
+        #"One for All"
+        #"Nexus Blitz"
+        #"Ultimate Spellbook"
+        #"Arena"
+        #"Co-op vs AI Intro"
+        #"Co-op vs AI Beginner"
+        #"Co-op vs AI Intermediate"
+        #"TFT Normal"
+        #"TFT Ranked"
+        #"Swarm"
+    params = {"api_key" : riot_token, "count" : count}
+    if queue_name:
+        queue_id = convert_queue_type_to_id(queue_name)
+        if queue_id:
+            params["queue"] = queue_id
+    response = requests.get(f"https://europe.api.riotgames.com/lol/match/v5/matches/by-puuid/{riot_id}/ids",params=params)
     data = response.json()
     return data
 
@@ -69,7 +69,7 @@ def get_match_stats_by_id(match_id):
     data = response.json()
     return data 
 
-def get_loses_data_list(riot_id, count = 5, queue_id = None):
+def get_loses_data_list(riot_id, count = 5, queue_name = None):
     """
     Returns a list of full match data dicts for a player's recent loses.
     
@@ -84,7 +84,7 @@ def get_loses_data_list(riot_id, count = 5, queue_id = None):
     loses = 0
     loses_list = []
     while loses < count:
-        matches_ids = get_matches_by_player_id(riot_id=riot_id,queue_id=queue_id)
+        matches_ids = get_matches_by_player_id(riot_id=riot_id,queue_name=queue_name,count=count)
         for match_id in matches_ids:
             if loses>=count:
                 break
@@ -140,7 +140,6 @@ def get_player_pool_names():
         List of names.
     """
     pool = get_player_pool()
-    print(pool)
     names = []
     for player in pool:
         names.append(pool[player]["riot_name"])
@@ -214,26 +213,34 @@ class Blamer(commands.Cog):
         self.bot = bot
 
     @commands.command(aliases=['whydidwelose'], hidden=True)
-    async def blame(self,ctx,match_count = 5 ,game ="lol"):
+    async def blame(self,ctx,match_count:int = 5 ,queue:str = "Flex"):
         """
         See who's fault it was you lost your previous games!
-        Usage: !loltlb [difficulty] [count]
-        - difficulty: "ults", "abilities", "ag", or "all" (default: all)
-        - count: Number of top players to display (default: 10, max: 50)
+        Usage: !blame [match_count] [queue]
+        - match_count : how many of your most recent losses you want to look at. (default = 5, max = 100)
+                        Be CAREFUL! Big requests will take ages, so limit yourself to around 10 games!
+        - queue : the queue type you want to look at (ex : flex, solo/duo etc.)
         
-        Example: !
+        - Example : !blame 5 Flex
         """
-        await ctx.send(f"Let's see who lost you your last {match_count} games...")
-        loss_data = get_loses_data_list(riot_id="KD1yrq9-dAL_jZlnS5WWbPa3k8jj0Uveh4TJf0ACu8I_kP_cNGtmqRB-9h7Qpjw0-ip4V2BLYJH6jQ",count=match_count)
+        queue_correct_name = convert_queue_aliases_to_queue(queue)
+        await ctx.send(f"Let's see who lost you your last {match_count} {queue_correct_name} games...")
+        registered_players = get_player_pool()
+        author_name = ctx.author.name
+        author_riot_id = registered_players[author_name]["riot_id"]
+        loss_data = get_loses_data_list(riot_id=author_riot_id,count=match_count,queue_name=queue_correct_name)
         player_pool = get_player_pool_names()
         list_of_int_scores = get_match_int_scores_list(loss_data, player_pool)
-        print(list_of_int_scores)
+
         frequent_inter, worst_average_inter = find_inters(list_of_int_scores)
         if frequent_inter != worst_average_inter:
-            await ctx.send (f"""Overall, the person who's lost you the most matches was {frequent_inter}, 
-                            while {worst_average_inter} played the worst on average during your losses.""")
+            await ctx.send(
+            f"Overall, the person who's lost you the most matches was **{frequent_inter}**, "
+            f"while **{worst_average_inter}** played the worst on average during your losses.")
         else:
             await ctx.send(f"Sheesh! **{worst_average_inter}** lost you your last {match_count} games.")
+    
+
     @commands.command(aliases=["riotsregister"])
     async def register(self,ctx,username = None):
         """
