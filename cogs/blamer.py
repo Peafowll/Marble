@@ -20,14 +20,19 @@ riot_token = os.getenv("RIOT_KEY")
 
 # TODO : polish polish polish
 
+# TODO : caching
 
-def get_matches_by_player_id(riot_id, queue_name=None, count=20):
+
+
+
+def get_matches_by_player_id(riot_id, queue_name=None, count=20, start=0):
     """
     Gets a list of match IDs based on a player's ID.
     Args:
         riot_id: player's PUUID
         queue_name: the name of a specific queue type. (optional)
         count: number of match IDs to return (default: 20, max: 100)
+        start: starting index for pagination (default: 0)
     Returns:
         data
     """
@@ -52,7 +57,7 @@ def get_matches_by_player_id(riot_id, queue_name=None, count=20):
         #"TFT Normal"
         #"TFT Ranked"
         #"Swarm"
-    params = {"api_key" : riot_token, "count" : count}
+    params = {"api_key" : riot_token, "count" : count, "start": start}
     if queue_name:
         queue_id = convert_queue_type_to_id(queue_name)
         if queue_id:
@@ -83,16 +88,40 @@ def get_loses_data_list(riot_id, count = 5, queue_name = None):
     """
     loses = 0
     loses_list = []
+    start_index = 0
+    
     while loses < count:
-        matches_ids = get_matches_by_player_id(riot_id=riot_id,queue_name=queue_name,count=count)
+        matches_ids = get_matches_by_player_id(
+            riot_id=riot_id,
+            queue_name=queue_name,
+            count=count,
+            start=start_index
+        )
+        
+        if not matches_ids:
+            break
+            
         for match_id in matches_ids:
-            if loses>=count:
+            if loses >= count:
                 break
             match_data = get_match_stats_by_id(match_id=match_id)
+
+            if not match_data or "info" not in match_data:
+                print(f"Skipping match {match_id} - invalid or missing data")
+                continue
+        
+
+            game_duration = match_data["info"]["gameDuration"]
+            if game_duration < 300:
+                continue
             player_data = next((p for p in match_data["info"]["participants"] if p["puuid"] == riot_id), None)
             if not player_data["win"]:
                 loses+=1
                 loses_list.append(match_data)
+        
+        # Move to the next batch of matches
+        start_index += len(matches_ids)
+
     return loses_list
             
 def get_match_int_scores_list(match_data_list, player_pool):
@@ -187,26 +216,83 @@ def find_inters(list_of_int_scores):
         
     return most_frequent_worst_player, highest_average_int_score_player
         
+def get_solo_duo_avg_blame_percent(match_data_list, playerOne, playerTwo = None):
+    match_count = 0
+    percentages = []
+    for match_data in match_data_list:
+        randoms_int = 0
+        personal_int = 0
+        match_count+=1
+        int_scores = calculate_int_scores(match_data)
+        print("==============")
+        print(int_scores)
+        print(f"looking for {playerOne}")
+        for player in int_scores:
+            if player == playerOne:
+                personal_int += int_scores[player]
+            else:
+                randoms_int += int_scores[player]
+        total_int = randoms_int + personal_int
+        percentage = (personal_int/total_int)*100
+        percentages.append(percentage)
 
-def get_match_history(riot_id, queue = None):
-    match_ids = get_matches_by_player_id(riot_id=riot_id, queue=queue)
-    result_list =[]
-    for match in match_ids:
-        match_stats = get_match_stats_by_id(match_id=match)
-        result = ""
-        for participant in match_stats["info"]["participants"]:
-            if participant["puuid"] == riot_id:
-                champion_played = participant["championName"]
-                kills = participant["kills"]
-                deaths = participant["deaths"]
-                assists = participant["assists"]
-                score = f"{kills}/{deaths}/{assists}"
-                result = f"{champion_played} : {score}"
-                result_list.append(result)
-                break
-    return result_list
+    average_percentages = sum(percentages)/match_count
+    return  average_percentages,percentages
 
+def get_solo_duo_avg_position(match_data_list,playerOne,playerTwo = None):
+    """
+    Calculate a player's average position ranking across multiple matches based on INT scores.
+    
+    For each match, ranks all 5 losing players by their INT score (1 = best performer/lowest INT,
+    5 = worst performer/highest INT) and tracks where the target player placed.
+    
+    Args:
+        match_data_list (list): List of match data dictionaries from get_loses_data_list()
+        playerOne (str): Riot ID of the target player to analyze
+        playerTwo (str, optional): Currently unused. Reserved for future duo analysis. Defaults to None.
+    
+    Returns:
+        tuple: (average_position, positions_list)
+            - average_position (float): Mean position across all matches (1.0 = always best, 5.0 = always worst)
+            - positions_list (list): Individual position for each match (1-5)
+    
+    Examples:
+        >>> # Player who consistently performed worst
+        >>> get_solo_duo_avg_position(matches, "BadPlayer")
+        (4.6, [5, 5, 4, 5, 4])
+        
+        >>> # Player who consistently performed best
+        >>> get_solo_duo_avg_position(matches, "GoodPlayer")
+        (1.4, [1, 2, 1, 1, 2])
+        
+        >>> # Average performer
+        >>> get_solo_duo_avg_position(matches, "OkayPlayer")
+        (3.0, [3, 2, 4, 3, 3])
+    
+    Note:
+        - Position 1 = lowest INT score = best performance in the loss
+        - Position 5 = highest INT score = worst performance in the loss
+        - Only analyzes the 5 players on the losing team
+    """
+    match_count = 0
+    positions = []
+    for match_data in match_data_list:
+        randoms_int = 0
+        personal_int = 0
+        match_count+=1
+        int_scores = calculate_int_scores(match_data)
+        print("==============")
+        print(int_scores)
+        print(f"looking for {playerOne}")
+        sorted_players = sorted(int_scores,key=int_scores.get)
+        for i, player in enumerate(sorted_players):
+            if player == playerOne:
+                place = i + 1
+        positions.append(place)
 
+    average_pos= sum(positions)/match_count
+
+    return  average_pos,positions
 
 class Blamer(commands.Cog):
     def __init__(self,bot):
@@ -223,31 +309,76 @@ class Blamer(commands.Cog):
         
         - Example : !blame 5 Flex
         """
-        queue_correct_name = convert_queue_aliases_to_queue(queue)
-        await ctx.send(f"Let's see who lost you your last {match_count} {queue_correct_name} games...")
-        registered_players = get_player_pool()
         author_name = ctx.author.name
-        author_riot_id = registered_players[author_name]["riot_id"]
-        loss_data = get_loses_data_list(riot_id=author_riot_id,count=match_count,queue_name=queue_correct_name)
-        player_pool = get_player_pool_names()
-        list_of_int_scores = get_match_int_scores_list(loss_data, player_pool)
+        registered_players = get_player_pool()
+        # ====== LINE FOR TESTING PURPOSES =====
+        author_name = "itz_wolfseer"
+        # ======================================
+        if author_name not in registered_players:
 
-        frequent_inter, worst_average_inter = find_inters(list_of_int_scores)
-        if frequent_inter != worst_average_inter:
-            await ctx.send(
-            f"Overall, the person who's lost you the most matches was **{frequent_inter}**, "
-            f"while **{worst_average_inter}** played the worst on average during your losses.")
+            await ctx.send(f"❌ {author_name} is not registered! Use `!register` first.")
+            return
+        author_riot_id = registered_players[author_name]["riot_id"]
+        author_riot_name = registered_players[author_name]["riot_name"]
+
+        queue_correct_name = convert_queue_aliases_to_queue(queue)
+        if not queue_correct_name == "Ranked Solo/Duo":
+            await ctx.send(f"Let's see who lost you your last **{match_count}** {queue_correct_name} games...")
+
+            loss_data = get_loses_data_list(riot_id=author_riot_id,count=match_count,queue_name=queue_correct_name)
+            player_pool = get_player_pool_names()
+            list_of_int_scores = get_match_int_scores_list(loss_data, player_pool)
+
+            frequent_inter, worst_average_inter = find_inters(list_of_int_scores)
+            if frequent_inter != worst_average_inter:
+                await ctx.send(
+                f"Overall, the person who's lost you the most matches was **{frequent_inter}**, "
+                f"while **{worst_average_inter}** played the worst on average during your losses.")
+            else:
+                await ctx.send(f"Sheesh! **{worst_average_inter}** lost you your last {match_count} games.")
         else:
-            await ctx.send(f"Sheesh! **{worst_average_inter}** lost you your last {match_count} games.")
+            await ctx.send(f"Let's see if you or your team are to blame fo your last {match_count} soloQ losses...")
+
+            loss_data = get_loses_data_list(riot_id=author_riot_id,count=match_count,queue_name=queue_correct_name)
+
+            avg_percentage, percentages = get_solo_duo_avg_blame_percent(loss_data,author_riot_name)
+
+            #await ctx.send(f"avg_perc = {avg_percentage}, percentages = {percentages}")
+            avg_pos , poses = get_solo_duo_avg_position(loss_data,author_riot_name)
+
+            #await ctx.send(f"avg_pos = {avg_pos}, poses = {poses}")
+
+            percentage_score = ((avg_percentage - 15) / 10) * 40
+            position_score = (avg_pos / 4) * 60
+
+            blame_score = percentage_score + position_score
+            #await ctx.send(f"Blame score = {blame_score}")
+
+            blame_thresholds = [
+            (75, "💀", "Yeah, it was definitely your fault.", "You were the main problem in these losses."),
+            (60, "💧", "Mostly your fault.", "You contributed significantly to these losses."),
+            (45, "😐", "About equal blame.", "You and your teammates share the responsibility."),
+            (30, "😅", "Your team lost you your games.", "Your team held you back more than you held them back."),
+            (0, "🙏", "Team gap.", "These losses were NOT on you.")
+            ]
+            message = ""
+            for threshold, emoji, verdict, advice in blame_thresholds:
+                if blame_score >= threshold:
+                    message = f"{emoji} **{verdict}** *{advice}*"
+                    break
+            await ctx.send(message)
+
+
     
 
     @commands.command(aliases=["riotsregister"])
-    async def register(self,ctx,username = None):
+    async def register(self, ctx, *, username = None):
         """
         Registers your discord account to a Riot account.
         Usage : !register [riot username]#[riot tag]
 
         Example : !register HideOnBush#KR
+        Example : !register clover chance#77777
         """
         if not username:
             await ctx.send("❌ Please provide a username!")
@@ -274,12 +405,12 @@ class Blamer(commands.Cog):
         if author_name in players_dict.keys():
             await ctx.send(f"{ctx.author.mention}, you have already registered an account.")
             return
-        for player_data in players_dict.items():
-            if player_data.get("riot_id") == player_dict["riot_id"]:
+        for discord_name, existing_player in players_dict.items():
+            if existing_player.get("riot_id") == player_dict["riot_id"]:
                 await ctx.send(f"{ctx.author.mention}, this Riot account is already registered to another user.")
                 return
 
-        players_dict[author_name] = players_dict
+        players_dict[author_name] = player_dict
         with open("players.json","w",encoding="utf8") as file:
             json.dump(players_dict,file,indent=4)
         await ctx.send(f"{ctx.author.mention}, we have linked you to account **{playername}**#{tag}.")

@@ -5,19 +5,60 @@ import os
 load_dotenv()
 riot_token = os.getenv("RIOT_KEY")
 
-#correct match : EUN1_3848320574
-
-#TODO : import gold diff at 15 and exp diff at 15
-
 def calculate_int_scores(match_json,match_log_json=None, target_player=None):
-    #testers
-    # match_id = "EUN1_3848320574"
-    # match_json_response = requests.get(f"https://europe.api.riotgames.com/lol/match/v5/matches/{match_id}", params={"api_key": riot_token})
-    # match_json = match_json_response.json()
-
-    # match_log_json_response = requests.get(f"https://europe.api.riotgames.com/lol/match/v5/matches/{match_id}/timeline", params={"api_key": riot_token})
-    # match_log_json = match_log_json_response.json()
-
+    """
+    Calculate "INT scores" for players in a League of Legends match to identify underperformers.
+    
+    The INT score is a composite metric (0-1000) that increases with poor performance. It combines:
+    - KDA ratio (kills, deaths, assists)
+    - Vision score per minute
+    - Gold earned per minute  
+    - Damage dealt per minute
+    
+    Position-specific baselines and harshness values are used.
+    Higher INT scores indicate worse performance relative to expectations.
+    
+    Args:
+        match_json (dict): Full match data from Riot API (v5/matches/{matchId})
+        match_log_json (dict, optional): Match timeline data (currently unused). Defaults to None.
+        target_player (str, optional): Only calculate scores if this player lost. 
+                                      If provided and player won, returns empty dict. Defaults to None.
+    
+    Returns:
+        dict: Player names mapped to their INT scores (float). Only includes players who lost.
+        
+    Examples:
+        >>> # Match where 5 players lost
+        >>> calculate_int_scores(match_data)
+        {
+            'Peafowl': 456.78,
+            'yoyo15': 892.34,
+            'vladimus2005': 234.56,
+            'Dani': 678.90,
+            'PlayerFive': 345.12
+        }
+        
+        >>> # Target player filter - player won, so return empty
+        >>> calculate_int_scores(match_data, target_player='Peafowl')
+        {}
+        
+        >>> # Target player filter - player lost, calculate all losing team scores
+        >>> calculate_int_scores(match_data, target_player='yoyo15')
+        {
+            'Peafowl': 456.78,
+            'yoyo15': 892.34,  # Highest score = worst performer
+            'vladimus2005': 234.56,
+            'Dani': 678.90,
+            'PlayerFive': 345.12
+        }
+    
+    Note:
+        - Only calculates scores for losing players (win == False)
+        - Supports get different baselines for vision/gold/damage metrics
+        - Scores range from 0 (perfect performance) to 1000 (terrible performance)
+        - Score of ~500 represents average/baseline performance
+    """
+    
     participants = match_json["info"]["participants"]
     int_scores = {}
     game_duration_seconds = match_json["info"]["gameDuration"]
@@ -33,7 +74,6 @@ def calculate_int_scores(match_json,match_log_json=None, target_player=None):
             kills = participant["kills"]
             deaths = participant["deaths"]
             assists = participant["assists"]
-            indiviual_position = participant["individualPosition"]
             team_position = participant["teamPosition"]
 
             if deaths == 0:
@@ -85,17 +125,14 @@ def calculate_int_scores(match_json,match_log_json=None, target_player=None):
 
             damage_int_score = int(1000/(1+(damage_per_minute/damage_per_minute_baseline)**damage_per_minute_harshness))
 
-            #print(f"""Player has kda_int={kda_int_score} 
-            #      vision_int={vision_int_score} 
-            #      gold_int = {gold_int_score} 
-            #      damage int = {damage_int_score}""")
-            
- 
             int_score = (kda_int_score + vision_int_score + gold_int_score + damage_int_score)/4
+            
+            # Debug print for score breakdown
+            #print(f"{name} ({team_position}): INT={int_score:.1f} | KDA={kda_int_score} Vision={vision_int_score} Gold={gold_int_score} Damage={damage_int_score}")
+            
             int_scores[name] = int_score
 
-    #print(f"INT SCORES : ")
-    #print(int_scores)
+  
     return int_scores
 
 
