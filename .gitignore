@@ -186,3 +186,4 @@ loltriviaLeaderboards.json
 
 # Game debug logs
 game_debug_*.log
+players.json

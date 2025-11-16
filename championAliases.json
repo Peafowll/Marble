@@ -1,6 +1,6 @@
 {
     "Aatrox": [
-        "aatrox"
+        "aatrox","atrox"
     ],
     "Ahri": [
         "ahri"
@@ -9,7 +9,7 @@
         "akali","kali"
     ],
     "Akshan": [
-        "akshan"
+        "akshan","ahkshan","ahksan","aksan"
     ],
     "Alistar": [
         "alistar","ali"
@@ -18,7 +18,7 @@
         "ambessa"
     ],
     "Amumu": [
-        "amumu"
+        "amumu","ammumu","amummu"
     ],
     "Anivia": [
         "anivia","bird"
@@ -174,7 +174,7 @@
         "karma"
     ],
     "Karthus": [
-        "karthus"
+        "karthus","kartus","khartus","kharthus"
     ],
     "Kassadin": [
         "kassadin","kass"
@@ -324,7 +324,7 @@
         "rell"
     ],
     "Renata": [
-        "renata","renata glasc","renataglasc"
+        "renata","renata glasc","renataglasc","glasc"
     ],
     "Renekton": [
         "renekton","rene"
@@ -444,7 +444,7 @@
         "veigar"
     ],
     "Velkoz": [
-        "velkoz","vel koz","vel'koz","zapzap"
+        "velkoz","vel koz","vel'koz","zapzap","velkox"
     ],
     "Vex": [
         "vex"
