@@ -355,7 +355,7 @@ class Games(commands.Cog):
             logger.error(f"Error in loltlb command: {e}", exc_info=True)
             await ctx.send(f"❌ An error occurred while fetching the leaderboard.")
 
-    @commands.command(aliases=['importlb'])
+    @commands.command(aliases=['importlb'],hidden=True)
     @commands.is_owner()
     async def importleaderboard(self, ctx):
         """Import a leaderboard JSON file to replace the current one (owner only)
@@ -391,7 +391,7 @@ class Games(commands.Cog):
             await ctx.send("❌ An error occurred while importing the leaderboard.")
             logger.error(f"Error in importleaderboard command: {e}", exc_info=True)
 
-    @commands.command(aliases=['exportlb'])
+    @commands.command(aliases=['exportlb'],hidden=True)
     @commands.is_owner()
     async def exportleaderboard(self, ctx):
         """Export the current leaderboard JSON (owner only)"""
