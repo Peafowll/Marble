@@ -10,146 +10,19 @@ from dotenv import load_dotenv
 import os
 import requests
 from match_score_calculator import calculate_int_scores
-from helpers import convert_queue_type_to_id, convert_queue_aliases_to_queue
+from helpers import convert_queue_aliases_to_queue
+from helpers import get_loses_data_list, get_match_int_scores_list
 load_dotenv()
 riot_token = os.getenv("RIOT_KEY")
 
-# TODO : reformat the !mass_register command by hand and by using a register function called my both !register and !mass_register
-
-# TODO : make the command work for soloqueue and randoms, or make a new one
+# TODO : reformat the !mass_register command by hand anEd by using a register function called my both !register and !mass_register
 
 # TODO : polish polish polish
 
 # TODO : caching
 
+logger = logging.getLogger('discord.blamer')
 
-
-
-def get_matches_by_player_id(riot_id, queue_name=None, count=20, start=0):
-    """
-    Gets a list of match IDs based on a player's ID.
-    Args:
-        riot_id: player's PUUID
-        queue_name: the name of a specific queue type. (optional)
-        count: number of match IDs to return (default: 20, max: 100)
-        start: starting index for pagination (default: 0)
-    Returns:
-        data
-    """
-    #POSSIBLE QUEUE TYPES:
-        #"Ranked Solo/Duo"
-        #"Ranked Flex"
-        #"Normal Draft"
-        #"Normal Blind"
-        #"Normal (Quickplay)"
-        #"ARAM"
-        #"Clash"
-        #"ARAM Clash"
-        #"ARURF"
-        #"URF"
-        #"One for All"
-        #"Nexus Blitz"
-        #"Ultimate Spellbook"
-        #"Arena"
-        #"Co-op vs AI Intro"
-        #"Co-op vs AI Beginner"
-        #"Co-op vs AI Intermediate"
-        #"TFT Normal"
-        #"TFT Ranked"
-        #"Swarm"
-    params = {"api_key" : riot_token, "count" : count, "start": start}
-    if queue_name:
-        queue_id = convert_queue_type_to_id(queue_name)
-        if queue_id:
-            params["queue"] = queue_id
-    response = requests.get(f"https://europe.api.riotgames.com/lol/match/v5/matches/by-puuid/{riot_id}/ids",params=params)
-    data = response.json()
-    return data
-
-def get_match_stats_by_id(match_id):
-    """
-    Returns a dict of match data based on a match ID.
-    """
-    response = requests.get(f"https://europe.api.riotgames.com/lol/match/v5/matches/{match_id}", params={"api_key": riot_token})
-    data = response.json()
-    return data 
-
-def get_loses_data_list(riot_id, count = 5, queue_name = None):
-    """
-    Returns a list of full match data dicts for a player's recent loses.
-    
-    Args:
-        riot_id: Player's PUUID
-        count: Number of losses to retrieve (default: 5)
-        queue_id: Queue type filter (optional)
-    
-    Returns:
-        List of match data dictionaries
-    """
-    loses = 0
-    loses_list = []
-    start_index = 0
-    
-    while loses < count:
-        matches_ids = get_matches_by_player_id(
-            riot_id=riot_id,
-            queue_name=queue_name,
-            count=count,
-            start=start_index
-        )
-        
-        if not matches_ids:
-            break
-            
-        for match_id in matches_ids:
-            if loses >= count:
-                break
-            match_data = get_match_stats_by_id(match_id=match_id)
-
-            if not match_data or "info" not in match_data:
-                print(f"Skipping match {match_id} - invalid or missing data")
-                continue
-        
-
-            game_duration = match_data["info"]["gameDuration"]
-            if game_duration < 300:
-                continue
-            player_data = next((p for p in match_data["info"]["participants"] if p["puuid"] == riot_id), None)
-            if not player_data["win"]:
-                loses+=1
-                loses_list.append(match_data)
-        
-        # Move to the next batch of matches
-        start_index += len(matches_ids)
-
-    return loses_list
-            
-def get_match_int_scores_list(match_data_list, player_pool):
-    """
-    Returns a list of dicts containing int scores for players across multiple matches.
-
-    Args:
-        match_data_list: List of match data dictionaries
-        player_pool: List of player names to calculate INT scores for
-
-    Returns:
-        list: List of dicts, where each dict contains INT scores for that match.
-              Only includes players from player_pool.
-        
-        Example: 
-        >>> get_match_int_scores_list(matches, ["PlayerA", "PlayerB"])
-        [{"PlayerA": 890, "PlayerB": 426}, {"PlayerA": 752, "PlayerB": 381}]
-    """
-    match_scores_list = []
-
-    for match_data in match_data_list:
-        int_scores = calculate_int_scores(match_data)
-        filtered_scores = {player: score for player, score in int_scores.items() 
-                          if player in player_pool}
-        if filtered_scores:
-            match_scores_list.append(filtered_scores) 
-    
-    return match_scores_list
     
 def get_player_pool():
     """
@@ -157,10 +30,20 @@ def get_player_pool():
     Returns:
         A dict of players, of type `discord_name = {"riot_name": riot_name,"riot_tag": "EUNE","riot_id": id}`
     """
-    with open("players.json", "r" ,encoding="utf8") as file:
-        players = json.load(file)
+    filepath = "players.json"
+    if not os.path.exists(filepath):
+        with open(filepath,"w",encoding="utf8") as file:
+            json.dump({}, file)
+        logger.warning("Created missing players.json file")
     
-    return players
+    try:
+        with open("players.json", "r" ,encoding="utf8") as file:
+            players = json.load(file)
+        logger.debug(f"Loaded {len(players)} players from pool")
+        return players
+    except Exception as e:
+        logger.error(f"Error loading player pool: {e}")
+        return {}
 
 def get_player_pool_names():
     """
@@ -172,6 +55,7 @@ def get_player_pool_names():
     names = []
     for player in pool:
         names.append(pool[player]["riot_name"])
+    logger.debug(f"Retrieved {len(names)} player names from pool")
     return names
 
 def find_inters(list_of_int_scores):
@@ -182,7 +66,9 @@ def find_inters(list_of_int_scores):
     Returns:
 
     """
+    logger.debug(f"Analyzing {len(list_of_int_scores)} matches for inter detection")
     if len(list_of_int_scores) == 0:
+        logger.warning("No int scores provided to find_inters")
         return None, None
     worst_player_frequency = {}
     total_int_scores = {}
@@ -213,10 +99,14 @@ def find_inters(list_of_int_scores):
     
     most_frequent_worst_player = max(worst_player_frequency, key=worst_player_frequency.get)
     highest_average_int_score_player = max(average_int_scores, key=average_int_scores.get)
+    
+    logger.info(f"Most frequent worst: {most_frequent_worst_player} ({worst_player_frequency[most_frequent_worst_player]} times)")
+    logger.info(f"Highest avg INT: {highest_average_int_score_player} ({average_int_scores[highest_average_int_score_player]:.1f})")
         
     return most_frequent_worst_player, highest_average_int_score_player
         
 def get_solo_duo_avg_blame_percent(match_data_list, playerOne, playerTwo = None):
+    logger.debug(f"Calculating blame percentage for {playerOne} across {len(match_data_list)} matches")
     match_count = 0
     percentages = []
     for match_data in match_data_list:
@@ -224,9 +114,6 @@ def get_solo_duo_avg_blame_percent(match_data_list, playerOne, playerTwo = None)
         personal_int = 0
         match_count+=1
         int_scores = calculate_int_scores(match_data)
-        print("==============")
-        print(int_scores)
-        print(f"looking for {playerOne}")
         for player in int_scores:
             if player == playerOne:
                 personal_int += int_scores[player]
@@ -237,6 +124,7 @@ def get_solo_duo_avg_blame_percent(match_data_list, playerOne, playerTwo = None)
         percentages.append(percentage)
 
     average_percentages = sum(percentages)/match_count
+    logger.info(f"{playerOne} avg blame percentage: {average_percentages:.1f}%")
     return  average_percentages,percentages
 
 def get_solo_duo_avg_position(match_data_list,playerOne,playerTwo = None):
@@ -274,6 +162,7 @@ def get_solo_duo_avg_position(match_data_list,playerOne,playerTwo = None):
         - Position 5 = highest INT score = worst performance in the loss
         - Only analyzes the 5 players on the losing team
     """
+    logger.debug(f"Calculating position for {playerOne} across {len(match_data_list)} matches")
     match_count = 0
     positions = []
     for match_data in match_data_list:
@@ -281,9 +170,6 @@ def get_solo_duo_avg_position(match_data_list,playerOne,playerTwo = None):
         personal_int = 0
         match_count+=1
         int_scores = calculate_int_scores(match_data)
-        print("==============")
-        print(int_scores)
-        print(f"looking for {playerOne}")
         sorted_players = sorted(int_scores,key=int_scores.get)
         for i, player in enumerate(sorted_players):
             if player == playerOne:
@@ -291,6 +177,7 @@ def get_solo_duo_avg_position(match_data_list,playerOne,playerTwo = None):
         positions.append(place)
 
     average_pos= sum(positions)/match_count
+    logger.info(f"{playerOne} avg position: {average_pos:.2f}/5")
 
     return  average_pos,positions
 
@@ -298,23 +185,24 @@ class Blamer(commands.Cog):
     def __init__(self,bot):
         self.bot = bot
 
-    @commands.command(aliases=['whydidwelose'], hidden=True)
+    @commands.command(aliases=['whydidwelose'])
+    @commands.cooldown(1, 30, commands.BucketType.guild) 
     async def blame(self,ctx,match_count:int = 5 ,queue:str = "Flex"):
         """
         See who's fault it was you lost your previous games!
         Usage: !blame [match_count] [queue]
-        - match_count : how many of your most recent losses you want to look at. (default = 5, max = 100)
+        - match_count : how many of your most recent losses you want to look at. (default = 5, max = 25)
                         Be CAREFUL! Big requests will take ages, so limit yourself to around 10 games!
         - queue : the queue type you want to look at (ex : flex, solo/duo etc.)
         
         - Example : !blame 5 Flex
         """
+        logger.info(f"Blame command invoked by {ctx.author.name} in {ctx.guild.name if ctx.guild else 'DM'}: {match_count} matches, queue={queue}")
         author_name = ctx.author.name
         registered_players = get_player_pool()
-        # ====== LINE FOR TESTING PURPOSES =====
-        author_name = "itz_wolfseer"
-        # ======================================
+
         if author_name not in registered_players:
+            logger.warning(f"Unregistered user {author_name} attempted to use blame command")
 
             await ctx.send(f"❌ {author_name} is not registered! Use `!register` first.")
             return
@@ -322,37 +210,68 @@ class Blamer(commands.Cog):
         author_riot_name = registered_players[author_name]["riot_name"]
 
         queue_correct_name = convert_queue_aliases_to_queue(queue)
+        if not queue_correct_name:
+            logger.warning(f"Invalid queue type provided: {queue}")
+            await ctx.send("Invalid queue type.")
+            return
+        
+        logger.debug(f"Queue alias '{queue}' resolved to '{queue_correct_name}'")
+        
+        if match_count < 1 :
+            logger.warning(f"Invalid match count: {match_count}")
+            await ctx.send("Please ask for at least one match. ")
+            return
+        if match_count > 25:
+            logger.info(f"Match count {match_count} capped at 25")
+            await ctx.send("The match has been capped at 20 to avoid long wait times.")
+
         if not queue_correct_name == "Ranked Solo/Duo":
-            await ctx.send(f"Let's see who lost you your last **{match_count}** {queue_correct_name} games...")
+            proccesing_text = f"🔍 Let's see who lost you your last **{match_count}** {queue_correct_name} games...\n⌛ *This may take a moment.*"
+            proccesing_message = await ctx.send(proccesing_text)
+            async with ctx.typing():
+                loss_data = get_loses_data_list(riot_id=author_riot_id,count=match_count,queue_name=queue_correct_name)
+                logger.info(f"Retrieved {len(loss_data)} losses for {author_name}")
+                
+                if match_count > len(loss_data):
+                    logger.info(f"Requested {match_count} matches but only found {len(loss_data)}")
+                    await ctx.send(f"ℹ️ Only found {len(loss_data)} matches.")
+                
+                player_pool = get_player_pool_names()
+                list_of_int_scores = get_match_int_scores_list(loss_data, player_pool)
+                logger.debug(f"Calculated INT scores for {len(list_of_int_scores)} matches")
+                
+                frequent_inter, worst_average_inter = find_inters(list_of_int_scores)
 
-            loss_data = get_loses_data_list(riot_id=author_riot_id,count=match_count,queue_name=queue_correct_name)
-            player_pool = get_player_pool_names()
-            list_of_int_scores = get_match_int_scores_list(loss_data, player_pool)
+            await proccesing_message.delete()
 
-            frequent_inter, worst_average_inter = find_inters(list_of_int_scores)
             if frequent_inter != worst_average_inter:
+                logger.info(f"Flex blame result: frequent={frequent_inter}, worst_avg={worst_average_inter}")
                 await ctx.send(
                 f"Overall, the person who's lost you the most matches was **{frequent_inter}**, "
                 f"while **{worst_average_inter}** played the worst on average during your losses.")
             else:
+                logger.info(f"Flex blame result: {worst_average_inter} was both frequent and worst average")
                 await ctx.send(f"Sheesh! **{worst_average_inter}** lost you your last {match_count} games.")
         else:
-            await ctx.send(f"Let's see if you or your team are to blame fo your last {match_count} soloQ losses...")
+            proccesing_text = f"🔍 Let's see if you or your team are to blame for your last {match_count} soloQ losses...\n⌛ *This might take a while.*"
+            proccesing_message = await ctx.send(proccesing_text)
 
-            loss_data = get_loses_data_list(riot_id=author_riot_id,count=match_count,queue_name=queue_correct_name)
+            async with ctx.typing():
+                loss_data = get_loses_data_list(riot_id=author_riot_id,count=match_count,queue_name=queue_correct_name)
+                logger.info(f"Retrieved {len(loss_data)} solo queue losses for {author_name}")
+                
+                if match_count > len(loss_data):
+                    logger.info(f"Requested {match_count} matches but only found {len(loss_data)}")
+                    await ctx.send(f"ℹ️ Only found {len(loss_data)} matches.")
+                
+                avg_percentage, percentages = get_solo_duo_avg_blame_percent(loss_data,author_riot_name)
+                avg_pos , poses = get_solo_duo_avg_position(loss_data,author_riot_name)
 
-            avg_percentage, percentages = get_solo_duo_avg_blame_percent(loss_data,author_riot_name)
-
-            #await ctx.send(f"avg_perc = {avg_percentage}, percentages = {percentages}")
-            avg_pos , poses = get_solo_duo_avg_position(loss_data,author_riot_name)
-
-            #await ctx.send(f"avg_pos = {avg_pos}, poses = {poses}")
-
-            percentage_score = ((avg_percentage - 15) / 10) * 40
-            position_score = (avg_pos / 4) * 60
-
-            blame_score = percentage_score + position_score
-            #await ctx.send(f"Blame score = {blame_score}")
+                percentage_score = ((avg_percentage - 15) / 10) * 40
+                position_score = (avg_pos / 4) * 60
+                blame_score = percentage_score + position_score
+                
+                logger.info(f"Solo blame calculated: score={blame_score:.1f}, avg_pos={avg_pos:.2f}, avg_pct={avg_percentage:.1f}%")
 
             blame_thresholds = [
             (75, "💀", "Yeah, it was definitely your fault.", "You were the main problem in these losses."),
@@ -361,13 +280,20 @@ class Blamer(commands.Cog):
             (30, "😅", "Your team lost you your games.", "Your team held you back more than you held them back."),
             (0, "🙏", "Team gap.", "These losses were NOT on you.")
             ]
+
+            await proccesing_message.delete()
+
             message = ""
             for threshold, emoji, verdict, advice in blame_thresholds:
                 if blame_score >= threshold:
                     message = f"{emoji} **{verdict}** *{advice}*"
+                    logger.info(f"Solo blame verdict for {author_name}: {verdict} (score={blame_score:.1f})")
                     break
-            await ctx.send(message)
-
+            if message:
+                await ctx.send(message)
+            else:
+                logger.error(f"Unable to calculate blame score for {author_name}")
+                await ctx.send("Oops! Unable to calculate blame score.")
 
     
 
@@ -380,16 +306,45 @@ class Blamer(commands.Cog):
         Example : !register HideOnBush#KR
         Example : !register clover chance#77777
         """
+        logger.info(f"Register command invoked by {ctx.author.name} for username: {username}")
+        
         if not username:
+            logger.warning(f"Registration attempted by {ctx.author.name} with no username")
             await ctx.send("❌ Please provide a username!")
             return
         if "#" not in username:
+            logger.warning(f"Registration attempted with invalid format: {username}")
             await ctx.send("❌ The username provided doesn't have the correct structure. Try the structure `username#tag`!")
             return
         # Split from the right to handle spaces in riot names
         playername, tag = username.rsplit("#", 1)
-        response = requests.get(f"https://europe.api.riotgames.com/riot/account/v1/accounts/by-riot-id/{playername}/{tag}",
-                                params={"api_key": riot_token})
+        logger.debug(f"Parsed registration request: {playername}#{tag}")
+
+        try:
+            logger.debug(f"Fetching Riot account data for {playername}#{tag}")
+            response = requests.get(f"https://europe.api.riotgames.com/riot/account/v1/accounts/by-riot-id/{playername}/{tag}",
+                                params={"api_key": riot_token}, timeout=10)
+            response.raise_for_status()
+        except requests.exceptions.Timeout:
+            logger.error(f"Timeout fetching profile for {playername}#{tag}")
+            await ctx.send("❌ Request timed out. Please try again.")
+            return
+        except requests.exceptions.HTTPError as e:
+            if e.response.status_code == 429:
+                logger.warning("Rate limit hit during registration")
+                await ctx.send("❌ Rate limit reached. Please try again in a moment.")
+            elif e.response.status_code == 404:
+                logger.warning(f"Riot account not found: {playername}#{tag}")
+                await ctx.send(f"❌ Riot account **{playername}#{tag}** not found.")
+            else:
+                logger.error(f"HTTP error during registration: {e}")
+                await ctx.send("❌ Error contacting Riot API. Please try again.")
+            return
+        except Exception as e:
+            logger.error(f"Unexpected error in register: {e}", exc_info=True)
+            await ctx.send("❌ An unexpected error occurred. Please try again.")
+            return
+
         data = response.json()
         author_name = ctx.author.name
         player_dict = {}
@@ -403,16 +358,21 @@ class Blamer(commands.Cog):
             players_dict = json.load(file)
 
         if author_name in players_dict.keys():
+            logger.warning(f"{author_name} attempted to register but is already registered")
             await ctx.send(f"{ctx.author.mention}, you have already registered an account.")
             return
+        
         for discord_name, existing_player in players_dict.items():
             if existing_player.get("riot_id") == player_dict["riot_id"]:
+                logger.warning(f"{author_name} attempted to register {playername}#{tag} but it's already linked to {discord_name}")
                 await ctx.send(f"{ctx.author.mention}, this Riot account is already registered to another user.")
                 return
 
         players_dict[author_name] = player_dict
         with open("players.json","w",encoding="utf8") as file:
             json.dump(players_dict,file,indent=4)
+        
+        logger.info(f"Successfully registered {author_name} to Riot account {playername}#{tag} (PUUID: {player_dict['riot_id']})")
         await ctx.send(f"{ctx.author.mention}, we have linked you to account **{playername}**#{tag}.")
 
     @commands.command(aliases=["mass_register"])
@@ -429,7 +389,10 @@ class Blamer(commands.Cog):
                 JohnDoe PlayerOne#NA1
                 JaneSmith PlayerTwo#EUW
         """
+        logger.info(f"Mass register command invoked by {ctx.author.name} in {ctx.guild.name if ctx.guild else 'DM'}")
+        
         if not users_data:
+            logger.warning("Mass register attempted with no data")
             await ctx.send("❌ Please provide user data in the format:\n`discord_name riotname#tag` (one per line)")
             return
         
@@ -437,6 +400,7 @@ class Blamer(commands.Cog):
             players_dict = json.load(file)
         
         lines = users_data.strip().split('\n')
+        logger.info(f"Processing {len(lines)} registration lines")
         success_count = 0
         failed = []
         
@@ -469,12 +433,15 @@ class Blamer(commands.Cog):
                 continue
             
             try:
+                logger.debug(f"Mass register: Fetching {playername}#{tag} for {discord_name}")
                 response = requests.get(
                     f"https://europe.api.riotgames.com/riot/account/v1/accounts/by-riot-id/{playername}/{tag}",
-                    params={"api_key": riot_token}
+                    params={"api_key": riot_token},
+                    timeout=10
                 )
                 
                 if response.status_code != 200:
+                    logger.warning(f"Mass register: Riot account not found for {discord_name}: {playername}#{tag}")
                     failed.append(f"❌ {discord_name}: Riot account not found")
                     continue
                 
@@ -484,6 +451,7 @@ class Blamer(commands.Cog):
                 already_registered = False
                 for existing_player in players_dict.values():
                     if existing_player.get("riot_id") == riot_id:
+                        logger.warning(f"Mass register: {playername}#{tag} already registered")
                         failed.append(f"❌ {discord_name}: Riot account already registered")
                         already_registered = True
                         break
@@ -497,13 +465,16 @@ class Blamer(commands.Cog):
                     "riot_id": riot_id
                 }
                 success_count += 1
+                logger.info(f"Mass register: Successfully added {discord_name} -> {playername}#{tag}")
                 
             except Exception as e:
+                logger.error(f"Mass register error for {discord_name}: {e}")
                 failed.append(f"❌ {discord_name}: Error - {str(e)}")
         
         if success_count > 0:
             with open("players.json", "w", encoding="utf8") as file:
                 json.dump(players_dict, file, indent=4)
+            logger.info(f"Mass register: Saved {success_count} new registrations to players.json")
         
         result_msg = f"**Mass Registration Complete**\n✅ Successfully registered: {success_count}\n"
         if failed:
@@ -511,6 +482,7 @@ class Blamer(commands.Cog):
             if len(failed) > 10:
                 result_msg += f"\n... and {len(failed) - 10} more"
         
+        logger.info(f"Mass register complete: {success_count} success, {len(failed)} failed")
         await ctx.send(result_msg)
 
 

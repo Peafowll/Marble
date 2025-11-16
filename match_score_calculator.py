@@ -116,7 +116,7 @@ def calculate_int_scores(match_json,match_log_json=None, target_player=None):
             if team_position == "UTILITY":
                 damage_per_minute_baseline = 470
                 damage_per_minute_harshness = 2.6
-            if team_position == "JUNLGE":
+            if team_position == "JUNGLE":
                 damage_per_minute_baseline = 650
                 damage_per_minute_harshness = 2.8
             else:
@@ -125,8 +125,19 @@ def calculate_int_scores(match_json,match_log_json=None, target_player=None):
 
             damage_int_score = int(1000/(1+(damage_per_minute/damage_per_minute_baseline)**damage_per_minute_harshness))
 
-            int_score = (kda_int_score + vision_int_score + gold_int_score + damage_int_score)/4
+
+            #KP INT VALUE
+            kill_participation = round(participant["challenges"]["killParticipation"]*10,2)
             
+            kill_participation_baseline = 47
+            if team_position in ["UTILITY","JUNGLE"]:
+                kill_participation_harshness = 3.4
+            else:
+                kill_participation_harshness = 2.8
+
+            kill_participation_score = int(1000/(1+(kill_participation/kill_participation_baseline)**kill_participation_harshness))
+
+            int_score = (kda_int_score + vision_int_score + gold_int_score + damage_int_score+kill_participation_score)/5
             # Debug print for score breakdown
             #print(f"{name} ({team_position}): INT={int_score:.1f} | KDA={kda_int_score} Vision={vision_int_score} Gold={gold_int_score} Damage={damage_int_score}")
             

@@ -10,9 +10,6 @@ import logging
 
 logger = logging.getLogger('discord.games')
 
-
-# TODO : Show the ability upon losing the game
-
 # Create a separate logger for game debugging
 game_debug_logger = logging.getLogger('game_debug')
 game_debug_logger.setLevel(logging.DEBUG)
