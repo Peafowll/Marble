@@ -109,6 +109,9 @@ def get_solo_duo_avg_blame_percent(match_data_list, playerOne, playerTwo = None)
     logger.debug(f"Calculating blame percentage for {playerOne} across {len(match_data_list)} matches")
     match_count = 0
     percentages = []
+    if not match_data_list:  # ADD THIS
+        logger.warning(f"No match data for {playerOne}")
+        return 0, []
     for match_data in match_data_list:
         randoms_int = 0
         personal_int = 0
@@ -165,6 +168,9 @@ def get_solo_duo_avg_position(match_data_list,playerOne,playerTwo = None):
     logger.debug(f"Calculating position for {playerOne} across {len(match_data_list)} matches")
     match_count = 0
     positions = []
+    if not match_data_list:  # ADD THIS
+        logger.warning(f"No match data for {playerOne}")
+        return 0, []
     for match_data in match_data_list:
         randoms_int = 0
         personal_int = 0
@@ -186,10 +192,19 @@ class Blamer(commands.Cog):
         self.bot = bot
 
     @commands.command(aliases=['whydidwelose'])
-    @commands.cooldown(1, 30, commands.BucketType.guild) 
+    @commands.cooldown(1, 15, commands.BucketType.guild) 
     async def blame(self,ctx,match_count:int = 5 ,queue:str = "Flex"):
         """
         See who's fault it was you lost your previous games!
+    
+        This command DOES NOT LOOK AT *ANY* WINS.
+
+        When using this command for any queue type that isn't Ranked Solo/Duo, it will look at all the registered players and tell you who lost you your games out of those.
+        Be careful! This means if someone is not registered, they can't be blamed!
+        This also means if you're the only registered player, it will always blame you =).
+
+        When using this commad for Ranked Solo/Duo, it will instead tell you if, overall, your last ranked games loses were your fault or your team's faults.
+
         Usage: !blame [match_count] [queue]
         - match_count : how many of your most recent losses you want to look at. (default = 5, max = 25)
                         Be CAREFUL! Big requests will take ages, so limit yourself to around 10 games!
@@ -223,7 +238,8 @@ class Blamer(commands.Cog):
             return
         if match_count > 25:
             logger.info(f"Match count {match_count} capped at 25")
-            await ctx.send("The match has been capped at 20 to avoid long wait times.")
+            match_count = 25
+            await ctx.send("The match has been capped at 25 to avoid long wait times.")
 
         if not queue_correct_name == "Ranked Solo/Duo":
             proccesing_text = f"🔍 Let's see who lost you your last **{match_count}** {queue_correct_name} games...\n⌛ *This may take a moment.*"
@@ -243,6 +259,10 @@ class Blamer(commands.Cog):
                 frequent_inter, worst_average_inter = find_inters(list_of_int_scores)
 
             await proccesing_message.delete()
+            if not frequent_inter or not worst_average_inter:
+                await ctx.send(f"❓ No registered players were in your {queue_correct_name} losses.")
+                logger.warning(f"No registered players found in last {match_count} {queue_correct_name} losses of {author_name}")
+                return
 
             if frequent_inter != worst_average_inter:
                 logger.info(f"Flex blame result: frequent={frequent_inter}, worst_avg={worst_average_inter}")
@@ -274,9 +294,9 @@ class Blamer(commands.Cog):
                 logger.info(f"Solo blame calculated: score={blame_score:.1f}, avg_pos={avg_pos:.2f}, avg_pct={avg_percentage:.1f}%")
 
             blame_thresholds = [
-            (75, "💀", "Yeah, it was definitely your fault.", "You were the main problem in these losses."),
+            (70, "💀", "Yeah, it was definitely your fault.", "You were the main problem in these losses."),
             (60, "💧", "Mostly your fault.", "You contributed significantly to these losses."),
-            (45, "😐", "About equal blame.", "You and your teammates share the responsibility."),
+            (40, "😐", "About equal blame.", "You and your teammates share the responsibility."),
             (30, "😅", "Your team lost you your games.", "Your team held you back more than you held them back."),
             (0, "🙏", "Team gap.", "These losses were NOT on you.")
             ]
@@ -375,7 +395,7 @@ class Blamer(commands.Cog):
         logger.info(f"Successfully registered {author_name} to Riot account {playername}#{tag} (PUUID: {player_dict['riot_id']})")
         await ctx.send(f"{ctx.author.mention}, we have linked you to account **{playername}**#{tag}.")
 
-    @commands.command(aliases=["mass_register"])
+    @commands.command(aliases=["mass_register"], hidden=True)
     @commands.is_owner()
     async def massregister(self, ctx, *, users_data: str = None):
         """
@@ -485,6 +505,27 @@ class Blamer(commands.Cog):
         logger.info(f"Mass register complete: {success_count} success, {len(failed)} failed")
         await ctx.send(result_msg)
 
+    @commands.command(aliases=["wholepool"],hidden=True)
+    @commands.is_owner()
+    async def allplayers(self,ctx, command = False):
+        players = get_player_pool()
+        player_message = ""
+        mass_register_command = "!massregister\n"
+        for player in players: 
+            individual = players[player]
+            individual_message = f"**{player}** *discord account* is linked to **{individual["riot_name"]}#{individual["riot_tag"]}**\n"
+            individual_command = f"{player} {individual["riot_name"]}#{individual["riot_tag"]}\n"
+            mass_register_command+= individual_command
+            player_message+=individual_message
+        if player_message == "":
+            await ctx.send("Player message empty.")
+            return
+        await ctx.send(player_message)
+        if command == True:
+            await ctx.send(f"==== THE MASS REGISTER COMMAND IS : ============")
+            await ctx.send(mass_register_command)
+            await ctx.send(f"================================================")
+        
 
 async def setup(bot):
     try:

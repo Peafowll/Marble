@@ -151,6 +151,7 @@ def get_matches_by_player_id(riot_id, queue_name=None, count=20, start=0):
             params["queue"] = queue_id
     try:
         response = requests.get(f"https://europe.api.riotgames.com/lol/match/v5/matches/by-puuid/{riot_id}/ids",params=params)
+        response.raise_for_status()
     except requests.exceptions.Timeout:
         logger.error(f"Timeout fetching matches for {riot_id}")
         return []
@@ -172,6 +173,7 @@ def get_match_stats_by_id(match_id):
     """
     try:
         response = requests.get(f"https://europe.api.riotgames.com/lol/match/v5/matches/{match_id}", params={"api_key": riot_token})
+        response.raise_for_status()
     except requests.exceptions.Timeout:
         logger.error(f"Timeout fetching match stats for {match_id}")
         return []
