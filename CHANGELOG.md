@@ -2,7 +2,7 @@
 
 ### Added
 
-- **The Blame Command**: Analyze who's responsible for your ranked losses! 😉
+- **The Blame Command**: Analyze who's responsible for your LoL ranked losses! 😉
   - `!blame` command for flex/normal queues
   - Solo queue blame analysis with personal responsibility metrics
 

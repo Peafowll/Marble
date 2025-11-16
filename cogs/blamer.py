@@ -17,8 +17,6 @@ riot_token = os.getenv("RIOT_KEY")
 
 # TODO : reformat the !mass_register command by hand anEd by using a register function called my both !register and !mass_register
 
-# TODO : polish polish polish
-
 # TODO : caching
 
 logger = logging.getLogger('discord.blamer')
@@ -195,7 +193,7 @@ class Blamer(commands.Cog):
     @commands.cooldown(1, 15, commands.BucketType.guild) 
     async def blame(self,ctx,match_count:int = 5 ,queue:str = "Flex"):
         """
-        See who's fault it was you lost your previous games!
+        See who's fault it was you lost your previous League of Legends games!
     
         This command DOES NOT LOOK AT *ANY* WINS.
 
