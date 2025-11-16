@@ -101,8 +101,8 @@ def calculate_int_scores(match_json,match_log_json=None, target_player=None):
                 gold_per_minute_harshness = 2.4
 
             else:
-                vision_per_min_baseline = 0.6
-                vision_per_min_harshness = 2.2
+                vision_per_min_baseline = 0.5
+                vision_per_min_harshness = 1.2
 
                 gold_per_minute_baseline = 420
                 gold_per_minute_harshness = 3.2
