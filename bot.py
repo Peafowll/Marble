@@ -6,7 +6,7 @@ import asyncio
 import logging
 from datetime import datetime
 
-
+# TODO : rewrite changelog command and file by hand
 
 logging.basicConfig(
     level=logging.INFO,
@@ -39,6 +39,23 @@ async def load_cogs():
 @bot.event
 async def on_ready():
     logger.info(f"MARBLE is online! Logged in as {bot.user.name} (ID: {bot.user.id})")
+    try:
+        with open("CHANGELOG.md", "r", encoding="utf8") as file:
+            changelog_content = file.read()
+        
+        # Extract the latest version number
+        for line in changelog_content.split('\n'):
+            if line.startswith('## [') and 'Unreleased' not in line:
+                # Extract version from line like "## [1.0.0] - 2025-11-16"
+                version = line.split('[')[1].split(']')[0]
+                await bot.change_presence(
+                    activity=discord.Game(name=f"v{version} | !changelog | \"!\" for commands!")
+                )
+                logger.info(f"Set bot status to version {version}")
+                break
+    except Exception as e:
+        logger.warning(f"Could not set version status: {e}")
+        await bot.change_presence(activity=discord.Game(name="!changelog for updates"))
     print(f"MARBLE is online!") 
 
 @bot.event
@@ -82,6 +99,59 @@ async def exportleaderboard(ctx):
     except FileNotFoundError:
         await ctx.send("No leaderboard file found!")
 
+@bot.command(aliases=['updates', 'changes', 'whatsnew'])
+async def changelog(ctx, version: str = None):
+    """View the changelog for Marble bot updates!
+    
+    Usage: !changelog [version]
+    - If no version is specified, shows the latest changes
+    - Use !changelog all to see the full changelog
+    """
+    try:
+        with open("CHANGELOG.md", "r", encoding="utf8") as file:
+            changelog_content = file.read()
+        
+        if version and version.lower() == "all":
+            if len(changelog_content) > 1900:
+                with open("CHANGELOG.md", "rb") as file:
+                    await ctx.send("📜 **Full Changelog:**", file=discord.File(file, "CHANGELOG.md"))
+            else:
+                await ctx.send(f"📜 **Full Changelog:**\n```md\n{changelog_content}\n```")
+        else:
+            lines = changelog_content.split('\n')
+            latest_section = []
+            in_section = False
+            section_count = 0
+            
+            for line in lines:
+                if line.startswith('## ['):
+                    section_count += 1
+                    if section_count > 2:
+                        break
+                    in_section = True
+                
+                if in_section or line.startswith('# Marble Changelog'):
+                    latest_section.append(line)
+            
+            latest_content = '\n'.join(latest_section)
+            
+            embed = discord.Embed(
+                title="📜 Marble Changelog",
+                description=latest_content[:4000],
+                color=discord.Color.blue(),
+                timestamp=datetime.now()
+            )
+            embed.set_footer(text="Use !changelog all to see full history")
+            
+            await ctx.send(embed=embed)
+        
+        logger.info(f"Changelog command used by {ctx.author}")
+    except FileNotFoundError:
+        await ctx.send("❌ Changelog file not found!")
+        logger.error("CHANGELOG.md file not found")
+    except Exception as e:
+        logger.error(f"Error in changelog command: {e}", exc_info=True)
+        await ctx.send("❌ An error occurred while reading the changelog.")
 
 try:
     asyncio.run(load_cogs())
