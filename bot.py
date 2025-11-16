@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 import os
 import asyncio
 import logging
+import json
 from datetime import datetime
 
 # TODO : rewrite changelog command and file by hand
@@ -94,10 +95,46 @@ async def hi(ctx):
 async def exportleaderboard(ctx):
     """Export the current leaderboard JSON (owner only)"""
     try:
-        with open("loltriviaLeaderboards.json", "r", encoding="utf8") as file:
+        with open("data/loltriviaLeaderboards.json", "r", encoding="utf8") as file:
             await ctx.send(file=discord.File(file, "loltriviaLeaderboards.json"))
     except FileNotFoundError:
         await ctx.send("No leaderboard file found!")
+
+@bot.command()
+@commands.is_owner()
+async def importleaderboard(ctx):
+    """Import a leaderboard JSON file to replace the current one (owner only)
+    
+    Usage: Upload a JSON file with the command !importleaderboard
+    """
+    try:
+        if not ctx.message.attachments:
+            await ctx.send("❌ Please attach a JSON file to import.")
+            return
+        
+        attachment = ctx.message.attachments[0]
+        
+        if not attachment.filename.endswith('.json'):
+            await ctx.send("❌ File must be a .json file!")
+            return
+        
+        # Download and read the file
+        file_content = await attachment.read()
+        data = json.loads(file_content.decode('utf-8'))
+        
+        # Write to leaderboard file
+        with open("data/loltriviaLeaderboards.json", "w", encoding="utf8") as file:
+            json.dump(data, file, indent=4)
+        
+        await ctx.send(f"✅ Successfully imported leaderboard from `{attachment.filename}`!")
+        logger.info(f"Leaderboard imported by {ctx.author} from {attachment.filename}")
+        
+    except json.JSONDecodeError:
+        await ctx.send("❌ Invalid JSON file!")
+        logger.error("Failed to parse imported JSON file")
+    except Exception as e:
+        await ctx.send("❌ An error occurred while importing the leaderboard.")
+        logger.error(f"Error in importleaderboard command: {e}", exc_info=True)
 
 @bot.command(aliases=['updates', 'changes', 'whatsnew'])
 async def changelog(ctx, version: str = None):

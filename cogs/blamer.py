@@ -28,14 +28,14 @@ def get_player_pool():
     Returns:
         A dict of players, of type `discord_name = {"riot_name": riot_name,"riot_tag": "EUNE","riot_id": id}`
     """
-    filepath = "players.json"
+    filepath = "data/players.json"
     if not os.path.exists(filepath):
         with open(filepath,"w",encoding="utf8") as file:
             json.dump({}, file)
         logger.warning("Created missing players.json file")
     
     try:
-        with open("players.json", "r" ,encoding="utf8") as file:
+        with open("data/players.json", "r" ,encoding="utf8") as file:
             players = json.load(file)
         logger.debug(f"Loaded {len(players)} players from pool")
         return players
@@ -372,7 +372,7 @@ class Blamer(commands.Cog):
             "riot_id" : data["puuid"]
         }
 
-        with open("players.json", "r", encoding="utf8") as file:
+        with open("data/players.json", "r", encoding="utf8") as file:
             players_dict = json.load(file)
 
         if author_name in players_dict.keys():
@@ -387,7 +387,7 @@ class Blamer(commands.Cog):
                 return
 
         players_dict[author_name] = player_dict
-        with open("players.json","w",encoding="utf8") as file:
+        with open("data/players.json","w",encoding="utf8") as file:
             json.dump(players_dict,file,indent=4)
         
         logger.info(f"Successfully registered {author_name} to Riot account {playername}#{tag} (PUUID: {player_dict['riot_id']})")
@@ -414,7 +414,7 @@ class Blamer(commands.Cog):
             await ctx.send("❌ Please provide user data in the format:\n`discord_name riotname#tag` (one per line)")
             return
         
-        with open("players.json", "r", encoding="utf8") as file:
+        with open("data/players.json", "r", encoding="utf8") as file:
             players_dict = json.load(file)
         
         lines = users_data.strip().split('\n')
@@ -490,7 +490,7 @@ class Blamer(commands.Cog):
                 failed.append(f"❌ {discord_name}: Error - {str(e)}")
         
         if success_count > 0:
-            with open("players.json", "w", encoding="utf8") as file:
+            with open("data/players.json", "w", encoding="utf8") as file:
                 json.dump(players_dict, file, indent=4)
             logger.info(f"Mass register: Saved {success_count} new registrations to players.json")
         

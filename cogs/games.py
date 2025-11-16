@@ -37,7 +37,7 @@ except Exception as e:
 
 def get_leaderboards():
     try:
-        with open("loltriviaLeaderboards.json", "r",encoding="utf8") as file:
+        with open("data/loltriviaLeaderboards.json", "r",encoding="utf8") as file:
             data = json.load(file)
         logger.debug("Leaderboards loaded successfully")
         return data
@@ -73,7 +73,7 @@ def update_leaderboard(player_name,player_id,leaderboard,difficulty,score):
 
 def save_leaderboard(leaderboards):
     try:
-        with open("loltriviaLeaderboards.json", "w", encoding="utf8") as file:
+        with open("data/loltriviaLeaderboards.json", "w", encoding="utf8") as file:
             json.dump(leaderboards,file,indent=4)
         logger.info("Leaderboards saved successfully")
     except IOError as e:
@@ -354,6 +354,54 @@ class Games(commands.Cog):
         except Exception as e:
             logger.error(f"Error in loltlb command: {e}", exc_info=True)
             await ctx.send(f"❌ An error occurred while fetching the leaderboard.")
+
+    @commands.command(aliases=['importlb'])
+    @commands.is_owner()
+    async def importleaderboard(self, ctx):
+        """Import a leaderboard JSON file to replace the current one (owner only)
+        
+        Usage: Upload a JSON file with the command !importleaderboard
+        """
+        try:
+            if not ctx.message.attachments:
+                await ctx.send("❌ Please attach a JSON file to import.")
+                return
+            
+            attachment = ctx.message.attachments[0]
+            
+            if not attachment.filename.endswith('.json'):
+                await ctx.send("❌ File must be a .json file!")
+                return
+            
+            # Download and read the file
+            file_content = await attachment.read()
+            data = json.loads(file_content.decode('utf-8'))
+            
+            # Write to leaderboard file
+            with open("data/loltriviaLeaderboards.json", "w", encoding="utf8") as file:
+                json.dump(data, file, indent=4)
+            
+            await ctx.send(f"✅ Successfully imported leaderboard from `{attachment.filename}`!")
+            logger.info(f"Trivia leaderboard imported by {ctx.author} from {attachment.filename}")
+            
+        except json.JSONDecodeError:
+            await ctx.send("❌ Invalid JSON file!")
+            logger.error("Failed to parse imported trivia leaderboard JSON file")
+        except Exception as e:
+            await ctx.send("❌ An error occurred while importing the leaderboard.")
+            logger.error(f"Error in importleaderboard command: {e}", exc_info=True)
+
+    @commands.command(aliases=['exportlb'])
+    @commands.is_owner()
+    async def exportleaderboard(self, ctx):
+        """Export the current leaderboard JSON (owner only)"""
+        try:
+            with open("data/loltriviaLeaderboards.json", "r", encoding="utf8") as file:
+                await ctx.send(file=discord.File(file, "loltriviaLeaderboards.json"))
+            logger.info(f"Trivia leaderboard exported by {ctx.author}")
+        except FileNotFoundError:
+            await ctx.send("❌ No leaderboard file found!")
+            logger.error("Leaderboard file not found for export")
        
 async def setup(bot):
     try:
