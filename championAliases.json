@@ -45,7 +45,7 @@
         "bard"
     ],
     "Belveth": [
-        "belveth","bel veth","bel'veth"
+        "belveth","bel veth","bel'veth","bel","veth"
     ],
     "Blitzcrank": [
         "blitzcrank","blitz"
@@ -69,7 +69,7 @@
         "cassiopeia","cass","cassi"
     ],
     "Chogath": [
-        "chogath","cho","cho gath","cho'gath"
+        "chogath","cho","cho gath","cho'gath","gath"
     ],
     "Corki": [
         "corki"
@@ -165,7 +165,7 @@
         "jinx"
     ],
     "Kaisa": [
-        "kaisa","kai sa","kai'sa"
+        "kaisa","kai sa","kai'sa","kai","sa"
     ],
     "Kalista": [
         "kalista"
@@ -192,7 +192,7 @@
         "kennen"
     ],
     "Khazix": [
-        "khazix","kha zix","kha","kha'zix"
+        "khazix","kha zix","kha","kha'zix","zix"
     ],
     "Kindred": [
         "kindred"
@@ -201,10 +201,10 @@
         "kled"
     ],
     "KogMaw": [
-        "kogmaw","kog","kog'maw","kogmaw"
+        "kogmaw","kog","kog'maw","kogmaw","maw"
     ],
     "KSante": [
-        "ksante","k'sante","k sante"
+        "ksante","k'sante","k sante","sante"
     ],
     "Leblanc": [
         "leblanc","lb"
@@ -318,7 +318,7 @@
         "rammus"
     ],
     "RekSai": [
-        "reksai","rek'sai","rek sai"
+        "reksai","rek'sai","rek sai","rek"
     ],
     "Rell": [
         "rell"
@@ -444,7 +444,7 @@
         "veigar"
     ],
     "Velkoz": [
-        "velkoz","vel koz","vel'koz","zapzap","velkox"
+        "velkoz","vel koz","vel'koz","zapzap","velkox","vel","koz"
     ],
     "Vex": [
         "vex"

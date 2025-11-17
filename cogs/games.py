@@ -140,7 +140,7 @@ class Games(commands.Cog):
     def __init__(self,bot):
         self.bot = bot
     
-    @commands.command(aliases=["lol_trivia","ltrivia","lt"])
+    @commands.command(aliases=["lol_trivia","ltrivia","lt","lolt"])
     async def loltrivia(self,ctx):
         """Play a League of Legends trivia game! Guess champions by their abilities, ultimates, or titles. Choose your difficulty and see how high you can score!"""
         try:
@@ -236,18 +236,18 @@ class Games(commands.Cog):
                         answer = reply_text.lower()
                         logger.info(f"{author_name} gussed {answer}.")
                         if answer in ["quit", "q", "ff"]:
-                            await ctx.send(f"{author_mention}, you surrendered. The answer was **{current_champion}**")
+                            await ctx.send(f"{author_mention}, you surrendered. The answer was **{current_champion}**.")
                             game_on = False
                             logger.info(f"{author_name} surrendered with score: {score}")
                         elif answer in champion_aliases.get(current_champion, []):
                             score += 1
                             await ctx.send(f"{author_mention} ✅ Correct! **+1 point**")
                         else:
-                            await ctx.send(f"{author_mention} ❌ Wrong! The answer was **{current_champion}**")
+                            await ctx.send(f"{author_mention} ❌ Wrong! The answer was **{current_champion}**.")
                             game_on = False
                             logger.info(f"{author_name} got wrong answer. Final score: {score}")
                     except asyncio.TimeoutError:
-                        await ctx.send(f"{author_mention} ⏱️ Time's up! The answer was **{current_champion}**")
+                        await ctx.send(f"{author_mention} ⏱️ Time's up! The answer was **{current_champion}**.")
                         game_on = False
                         logger.info(f"{author_name} timed out. Final score: {score}")
                 except Exception as e:

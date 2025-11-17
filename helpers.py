@@ -10,6 +10,9 @@ from match_score_calculator import calculate_int_scores
 load_dotenv()
 riot_token = os.getenv("RIOT_KEY")
 
+
+# TODO : str command explanations
+
 def find_lol_spells():
     try:
         with open("championFull.json", "r", encoding="utf8") as file:

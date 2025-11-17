@@ -19,6 +19,8 @@ riot_token = os.getenv("RIOT_KEY")
 
 # TODO : caching
 
+# TODO : str command explenations
+
 logger = logging.getLogger('discord.blamer')
 
     
@@ -269,7 +271,7 @@ class Blamer(commands.Cog):
                 f"while **{worst_average_inter}** played the worst on average during your losses.")
             else:
                 logger.info(f"Flex blame result: {worst_average_inter} was both frequent and worst average")
-                await ctx.send(f"Sheesh! **{worst_average_inter}** lost you your last {match_count} games.")
+                await ctx.send(f"Sheesh! **{worst_average_inter}** lost you your last {match_count} {queue_correct_name} games.")
         else:
             proccesing_text = f"🔍 Let's see if you or your team are to blame for your last {match_count} soloQ losses...\n⌛ *This might take a while.*"
             proccesing_message = await ctx.send(proccesing_text)
@@ -294,8 +296,8 @@ class Blamer(commands.Cog):
             blame_thresholds = [
             (70, "💀", "Yeah, it was definitely your fault.", "You were the main problem in these losses."),
             (60, "💧", "Mostly your fault.", "You contributed significantly to these losses."),
-            (40, "😐", "About equal blame.", "You and your teammates share the responsibility."),
-            (30, "😅", "Your team lost you your games.", "Your team held you back more than you held them back."),
+            (50, "😐", "About equal blame.", "You and your teammates share the responsibility."),
+            (25, "😅", "Your team lost you your games.", "Your team held you back more than you held them back."),
             (0, "🙏", "Team gap.", "These losses were NOT on you.")
             ]
 

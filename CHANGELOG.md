@@ -1,3 +1,7 @@
+## [0.5.1] - 
+### Fixes
+- Fixed void champion aliases for **!loltrivia**, now all champions should be able to be guessed by either half of theri name
+
 ## [0.5.0] - 2025-11-16
 
 ### Added
