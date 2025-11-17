@@ -1,8 +1,9 @@
-## [0.5.1] - 
+## [0.5.1] - 17-11-2025
 ### Fixes
 - Fixed void champion aliases for **!loltrivia**, now all champions should be able to be guessed by either half of theri name
-
-## [0.5.0] - 2025-11-16
+  - ex : Rek'Sai may now be guessed as"rek", "sai", "reksai", "rek'sai".
+- Made the changelog command have multiple types of arguments, allowing you to see the last major, minor or patch-type update.
+## [0.5.0] - 17-11-2025
 
 ### Added
 
