@@ -1,6 +1,6 @@
 ## [0.5.1] - 17-11-2025
 ### Fixes
-- **!loltrivia aliases:** Added newvoid champion aliases. You can now guess them by even more covenient partial names.
+- **!loltrivia aliases:** Added new void champion aliases. You can now guess them by even more covenient partial names.
   - *ex* : Rek'Sai may now be guessed as `rek`, `sai`, `reksai`, `rek'sai`.
 - **!changelog filters:** Added arguments to the command. You can now filter by `major`, `minor`, or `patch` updates.
 
