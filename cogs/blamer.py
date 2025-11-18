@@ -1,10 +1,6 @@
 import discord
 from discord.ext import commands
-from discord.ui import Button, View
-import random
 import json
-import asyncio
-import time, datetime
 import logging
 from dotenv import load_dotenv
 import os
