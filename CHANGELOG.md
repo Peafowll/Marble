@@ -1,3 +1,8 @@
+[0.6.0]
+### Fixes :
+- Added Braum's new alias, Barum.
+
+
 ## [0.5.1] - 
 ### Fixes
 - Fixed void champion aliases for **!loltrivia**, now all champions should be able to be guessed by either half of theri name
