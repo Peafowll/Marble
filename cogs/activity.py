@@ -223,13 +223,18 @@ class Activity(commands.Cog):
                     self.voice_presences[name] = []
                     self.voice_presences[name].append(voice_presence)
 
-    @tasks.loop(minutes=10)
+    @tasks.loop(minutes=1)
     async def auto_save_presences(self):
         """
-        Tries to save the presences to json every 10 minutes.
+        Tries to save the presences to json every 1 minutes.
         """
         try:
+            self.create_artificial_disconnects()  
             self.save_presences()
+            for guild in self.bot.guilds:
+                for member in guild.members:
+                    if member.voice and member.voice.channel and member.name in self.user_last_activity:
+                        self.user_last_activity[member.name].timestamp = datetime.datetime.now()
             logger.info(f"Auto-saved presences at {datetime.datetime.now()}")
         except Exception as e:
             logger.error(f"Failed auto-save for presences at {datetime.datetime.now()} : {e}")
