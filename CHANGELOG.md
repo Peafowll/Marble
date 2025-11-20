@@ -1,3 +1,8 @@
+## [0.5.2] - 20-11-2025
+### Fixes
+- Added Braum's new alias, *Barum*.
+- Added Zaheen to `!loltrivia`
+
 ## [0.5.1] - 17-11-2025
 ### Fixes
 - **!loltrivia aliases:** Added new void champion aliases. You can now guess them by even more covenient partial names.

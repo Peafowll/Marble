@@ -39,21 +39,6 @@ def find_lol_spells():
         logger.error(f"Unexpected error in find_lol_spells: {e}", exc_info=True)
         return {}
 
-def resfresh_ult_json():
-    try:
-        response = requests.get("https://ddragon.leagueoflegends.com/cdn/15.21.1/data/en_US/championFull.json", timeout=10)
-        response.raise_for_status()
-        data=response.text
-        with open("championFull.json", "w", encoding="utf8") as file:
-            file.write(response.text)
-        logger.info("Successfully refreshed championFull.json")
-    except requests.exceptions.RequestException as e:
-        logger.error(f"Network error while refreshing champion data: {e}", exc_info=True)
-    except IOError as e:
-        logger.error(f"Error writing championFull.json: {e}", exc_info=True)
-    except Exception as e:
-        logger.error(f"Unexpected error in resfresh_ult_json: {e}", exc_info=True)
-
 def convert_queue_type_to_id(queue_type):
     convert_dict = {
         "Ranked Solo/Duo": 420,
