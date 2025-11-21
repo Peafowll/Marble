@@ -21,7 +21,8 @@
         "ali"
     ],
     "Ambessa": [
-        "ambessa"
+        "ambessa",
+        "ambesa"
     ],
     "Amumu": [
         "amumu",
@@ -30,10 +31,12 @@
     ],
     "Anivia": [
         "anivia",
+        "annivia",
         "bird"
     ],
     "Annie": [
-        "annie"
+        "annie",
+        "anie"
     ],
     "Aphelios": [
         "aphelios"
@@ -66,6 +69,7 @@
     ],
     "Blitzcrank": [
         "blitzcrank",
+        "blitzcranc",
         "blitz"
     ],
     "Brand": [
@@ -79,6 +83,7 @@
     ],
     "Caitlyn": [
         "caitlyn",
+        "caitlin",
         "cait"
     ],
     "Camille": [
@@ -87,7 +92,10 @@
     "Cassiopeia": [
         "cassiopeia",
         "cass",
-        "cassi"
+        "cassi",
+        "casiopeia",
+        "casiopeia",
+        "cassiopea"
     ],
     "Chogath": [
         "chogath",
@@ -112,16 +120,22 @@
         "drmundo",
         "mundo",
         "dr.mundo",
-        "dr. mundo"
+        "dr. mundo",
+        "doctor mundo",
+        "doctor"
     ],
     "Ekko": [
-        "ekko"
+        "ekko",
+        "eko"
     ],
     "Elise": [
         "elise"
     ],
     "Evelynn": [
         "evelynn",
+        "evelyn",
+        "evelin",
+        "evelinn",
         "eve"
     ],
     "Ezreal": [
@@ -130,13 +144,18 @@
     ],
     "Fiddlesticks": [
         "fiddlesticks",
+        "fidle",
+        "fidlesticks",
+        "fiddlestix",
+        "fidlestix",
         "fiddle"
     ],
     "Fiora": [
         "fiora"
     ],
     "Fizz": [
-        "fizz"
+        "fizz",
+        "fiz"
     ],
     "Galio": [
         "galio"
@@ -175,7 +194,8 @@
         "hwei"
     ],
     "Illaoi": [
-        "illaoi"
+        "illaoi",
+        "ilaoi"
     ],
     "Irelia": [
         "irelia"
@@ -184,7 +204,8 @@
         "ivern"
     ],
     "Janna": [
-        "janna"
+        "janna",
+        "jana"
     ],
     "JarvanIV": [
         "jarvaniv",
@@ -196,7 +217,8 @@
         "jax"
     ],
     "Jayce": [
-        "jayce"
+        "jayce",
+        "jaice"
     ],
     "Jhin": [
         "jhin"
@@ -207,9 +229,7 @@
     "Kaisa": [
         "kaisa",
         "kai sa",
-        "kai'sa",
-        "kai",
-        "sa"
+        "kai'sa"
     ],
     "Kalista": [
         "kalista"
@@ -225,6 +245,7 @@
     ],
     "Kassadin": [
         "kassadin",
+        "kasadin",
         "kass"
     ],
     "Katarina": [
@@ -233,13 +254,16 @@
         "kat"
     ],
     "Kayle": [
-        "kayle"
+        "kayle",
+        "kaile"
     ],
     "Kayn": [
-        "kayn"
+        "kayn",
+        "kain"
     ],
     "Kennen": [
-        "kennen"
+        "kennen",
+        "kenen"
     ],
     "Khazix": [
         "khazix",
@@ -273,6 +297,8 @@
     ],
     "LeeSin": [
         "leesin",
+        "lesin",
+        "le sin",
         "lee",
         "lee sin"
     ],
@@ -285,7 +311,9 @@
     ],
     "Lissandra": [
         "lissandra",
-        "liss"
+        "lisandara",
+        "liss",
+        "lis"
     ],
     "Lucian": [
         "lucian"
@@ -298,7 +326,8 @@
     ],
     "Malphite": [
         "malphite",
-        "malph"
+        "malph",
+        "rock"
     ],
     "Malzahar": [
         "malzahar",
@@ -310,13 +339,16 @@
     "MasterYi": [
         "masteryi",
         "master yi",
+        "mastery",
+        "master y",
         "yi"
     ],
     "Mel": [
         "mel"
     ],
     "Milio": [
-        "milio"
+        "milio",
+        "millio"
     ],
     "MissFortune": [
         "missfortune",
@@ -353,14 +385,17 @@
         "naut"
     ],
     "Neeko": [
-        "neeko"
+        "neeko",
+        "neko"
     ],
     "Nidalee": [
         "nidalee",
+        "nidale",
         "nida"
     ],
     "Nilah": [
-        "nilah"
+        "nilah",
+        "nillah"
     ],
     "Nocturne": [
         "nocturne",
@@ -380,34 +415,43 @@
     ],
     "Orianna": [
         "orianna",
+        "oriana",
         "ori"
     ],
     "Ornn": [
-        "ornn"
+        "ornn",
+        "orn"
     ],
     "Pantheon": [
         "pantheon",
         "panth"
     ],
     "Poppy": [
-        "poppy"
+        "poppy",
+        "poppi",
+        "popy"
     ],
     "Pyke": [
-        "pyke"
+        "pyke",
+        "pike"
     ],
     "Qiyana": [
         "qiyana",
         "qiqi",
-        "qyiana"
+        "qyiana",
+        "qyana",
+        "qiana"
     ],
     "Quinn": [
-        "quinn"
+        "quinn",
+        "quin"
     ],
     "Rakan": [
         "rakan"
     ],
     "Rammus": [
-        "rammus"
+        "rammus",
+        "ramus"
     ],
     "RekSai": [
         "reksai",
@@ -449,14 +493,16 @@
         "seju"
     ],
     "Senna": [
-        "senna"
+        "senna",
+        "senas"
     ],
     "Seraphine": [
         "seraphine",
         "sera"
     ],
     "Sett": [
-        "sett"
+        "sett",
+        "set"
     ],
     "Shaco": [
         "shaco"
@@ -465,7 +511,11 @@
         "shen"
     ],
     "Shyvana": [
-        "shyvana"
+        "shyvana",
+        "shivana",
+        "shyvanna",
+        "shiv",
+        "shyv"
     ],
     "Singed": [
         "singed"
@@ -493,10 +543,12 @@
         "balan"
     ],
     "Sylas": [
-        "sylas"
+        "sylas",
+        "silas"
     ],
     "Syndra": [
-        "syndra"
+        "syndra",
+        "sindra"
     ],
     "TahmKench": [
         "tahmkench",
@@ -505,7 +557,10 @@
         "tahm kench"
     ],
     "Taliyah": [
-        "taliyah"
+        "taliyah",
+        "talyiah",
+        "taliah",
+        "talyah"
     ],
     "Talon": [
         "talon"
@@ -515,6 +570,8 @@
     ],
     "Teemo": [
         "teemo",
+        "temo",
+        "tenmo",
         "teeto"
     ],
     "Thresh": [
@@ -529,6 +586,8 @@
     ],
     "Tryndamere": [
         "tryndamere",
+        "trindamere",
+        "trinda",
         "trynda"
     ],
     "TwistedFate": [
@@ -543,7 +602,8 @@
         "twitch"
     ],
     "Udyr": [
-        "udyr"
+        "udyr",
+        "udir"
     ],
     "Urgot": [
         "urgot"
@@ -577,6 +637,7 @@
     ],
     "Viktor": [
         "viktor",
+        "vikktor",
         "vik",
         "victor"
     ],
@@ -594,7 +655,8 @@
         "ww"
     ],
     "Xayah": [
-        "xayah"
+        "xayah",
+        "xaiah"
     ],
     "Xerath": [
         "xerath"
@@ -621,7 +683,8 @@
     "Yuumi": [
         "yuumi",
         "yumi",
-        "yummi"
+        "yummi",
+        "cat"
     ],
     "Zac": [
         "zac"

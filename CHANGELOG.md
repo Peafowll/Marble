@@ -1,3 +1,7 @@
+## [0.5.3] - 21-11-2025
+### Fixes
+- Multiple new aliases added, focused on making the detection of champions with doubled letters or *"y"*s in their name more indulgent.
+
 ## [0.5.2] - 20-11-2025
 ### Fixes
 - Added Braum's new alias, *Barum*.
