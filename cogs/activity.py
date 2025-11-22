@@ -6,6 +6,7 @@ import json
 import datetime
 import logging
 import os
+import copy
 
 logger = logging.getLogger('discord.activity')
 
@@ -145,6 +146,8 @@ class Activity(commands.Cog):
     async def cog_load(self):
         self.load_presences()
         self.auto_save_presences.start()
+        #self.get_daily_presence.start()
+        self.test_tasks.start()
 
     def cleanup_presences(self):
         """
@@ -243,6 +246,56 @@ class Activity(commands.Cog):
     async def init_artificial_connects(self):
         await self.bot.wait_until_ready()
         await self.create_artificial_connects()
+
+    # @tasks.loop(seconds=60) # TODO : 60 SECONDS FOR TESTING PURPOSES ONLY!!!
+    # async def get_daily_presence(self):
+    #     logger.info("Getting daily presences.")
+    #     # A copy of voice_presences, that will sort presences and also add an artifical end to all ongoing presences
+    #     temp_voice_presences = copy.deepcopy(self.voice_presences)
+
+
+    #     right_now = datetime.datetime.now()
+    #     cutoff = right_now - datetime.timedelta(hours=24)
+
+    #     # Creating artifical ends to presences at the moment the daily presence check occurs
+    #     for name, last_activity in list(self.user_last_activity.items()):
+    #         if last_activity.activity_type not in ["disconnect", "afk"]:
+    #             voice_presence = VoicePresence(
+    #                 discord_name = name,
+    #                 timestamp_start = last_activity.timestamp,
+    #                 timestamp_end = right_now,
+    #                 channel_name = last_activity.after_channel_name,
+    #                 present = True
+    #             )
+    #             temp_voice_presences[name].append(voice_presence)
+        
+    #     time_spent_dict = {}
+
+
+    #     for name in temp_voice_presences:
+    #         daily_presences = [p for p in temp_voice_presences[name] if p.timestamp_end >= cutoff]
+    #         daily_presences.sort(key=lambda p: p.timestamp_start)            
+    #         seconds_spent = sum(presence.total_time for presence in daily_presences)
+    #         time_spent_dict[name] = seconds_spent
+
+    #     user = self.bot.get_user(264416824777637898)
+    #     await user.send(str(time_spent_dict))
+
+    # @get_daily_presence.before_loop
+    # async def before_get_daily_presence(self):
+    #     await self.bot.wait_until_ready()
+
+
+    @tasks.loop(seconds=5.0)
+    async def test_tasks(self):
+        print("pulse")
+        user = self.bot.get_user(264416824777637898)
+        await user.send("pulse")
+
+    @test_tasks.before_loop
+    async def befote_test_tasks(self):
+        print("badum badum")
+        await self.bot.wait_until_ready()
 
     @commands.Cog.listener()
     async def on_ready(self):

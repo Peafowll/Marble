@@ -10,6 +10,30 @@ import logging
 
 logger = logging.getLogger('discord.games')
 
+
+#FIXME : fix max amount of champions bugging out
+# Log entry : 2025-11-22 14:44:43,693 - discord.games - INFO - peafowl gussed maokai.
+# [2025-11-22 14:44:43] [ERROR   ] discord.games: Error during game loop: empty range for randrange()
+# Traceback (most recent call last):
+#   File "/opt/render/project/src/cogs/games.py", line 205, in loltrivia
+#     hint_index = random.randrange(len(remaining_hints))
+#   File "/opt/render/project/python/Python-3.13.4/lib/python3.13/random.py", line 313, in randrange
+#     raise ValueError("empty range for randrange()")
+# ValueError: empty range for randrange()
+# 2025-11-22 14:44:43,938 - discord.games - ERROR - Error during game loop: empty range for randrange()
+# Traceback (most recent call last):
+#   File "/opt/render/project/src/cogs/games.py", line 205, in loltrivia
+#     hint_index = random.randrange(len(remaining_hints))
+#   File "/opt/render/project/python/Python-3.13.4/lib/python3.13/random.py", line 313, in randrange
+#     raise ValueError("empty range for randrange()")
+
+
+#TODO : remove printing the correct results in the log
+
+#TODO : add dates of when someone got max score in a loltrivia
+
+#TODO : add perfect socre indicator
+
 # Create a separate logger for game debugging
 game_debug_logger = logging.getLogger('game_debug')
 game_debug_logger.setLevel(logging.DEBUG)

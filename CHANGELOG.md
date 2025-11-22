@@ -1,7 +1,4 @@
-[0.6.0]
-### Fixes :
-- Added Braum's new alias, Barum.
-
+## [TESTING]
 
 ## [0.5.1] - 
 ### Fixes
