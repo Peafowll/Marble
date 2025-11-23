@@ -34,13 +34,6 @@ logger = logging.getLogger('discord.games')
 
 #TODO : add perfect socre indicator
 
-# Create a separate logger for game debugging
-game_debug_logger = logging.getLogger('game_debug')
-game_debug_logger.setLevel(logging.DEBUG)
-game_debug_handler = logging.FileHandler(f'game_debug_{datetime.datetime.now().strftime("%Y%m%d")}.log', encoding='utf-8')
-game_debug_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
-game_debug_logger.addHandler(game_debug_handler)
-
 try:
     champion_abilities = find_lol_spells()
     with open("championAliases.json","r",encoding="utf8") as file:
@@ -228,9 +221,7 @@ class Games(commands.Cog):
                 try:
                     hint_index = random.randrange(len(remaining_hints))
                     current_champion, hint = remaining_hints.pop(hint_index)
-                    
-                    game_debug_logger.debug(f"Hint given to {author_name}: '{hint}' (Answer: {current_champion}, Difficulty: {difficulty})")
-
+                
                     if difficulty == "Ults":
                         description = f"{author_mention}\nWhat champion has the ultimate **{hint}**?"
                     elif difficulty == "Abilities":
