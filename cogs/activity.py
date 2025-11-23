@@ -9,6 +9,9 @@ import os
 import copy
 import asyncio
 
+#TODO : only count activity if someone else is on (maybe)
+#TODO : better display for weekly hours
+
 # Logger and constants
 logger = logging.getLogger('discord.activity')
 MAX_DAYS_SAVED = 100
@@ -647,29 +650,7 @@ class Activity(commands.Cog):
 
         for chunk in _chunks(formatted):
             await ctx.send(f"```json\n{chunk}\n```")
-        
-
     
-    @commands.command(hidden=True) #TODO : DELETE AFTER TESTING
-    async def check_presences(self,ctx):
-        """
-        Display all stored presence data.
-        
-        Shows detailed information about all presences for all users.
-        
-        Parameters
-        ----------
-        ctx : commands.Context
-            The command context.
-        """
-        print("checking presences")
-        message = ""
-        for presence in self.voice_presences:
-            message += f"{presence}:\n"
-            for entry in self.voice_presences[presence]:
-                message += f"    {entry}\n"
-        await ctx.send(message)
-
 
 # ============================================================================
 # Setup

@@ -1,4 +1,9 @@
-## [TESTING]
+## [0.6.0]
+### Added
+- **Weekly Activity Tracking**
+  - Every Sunday, find out who spent the most time on voice chat!
+### Fixes
+- New alias for K'Sante
 
 ## [0.5.1] - 
 ### Fixes
