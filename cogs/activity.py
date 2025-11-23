@@ -7,6 +7,7 @@ import datetime
 import logging
 import os
 import copy
+import asyncio
 
 # Logger and constants
 logger = logging.getLogger('discord.activity')
@@ -217,6 +218,10 @@ class Activity(commands.Cog):
         self.user_last_activity = {}
         self._artificial_connects_created = False
         self.day_count = 1
+        
+        # Locks to prevent race conditions
+        self.data_lock = asyncio.Lock()   # Protects BOTH voice_presences and user_last_activity
+        self.file_lock = asyncio.Lock()   # Protects file I/O operations
 
     # ------------------------------------------------------------------------
     # Lifecycle methods
@@ -234,7 +239,7 @@ class Activity(commands.Cog):
         Loads saved presences, creates artificial connects for users already
         in voice channels, and starts all background tasks.
         """
-        self.load_presences()
+        await self.load_presences()
         await self.create_artificial_connects()
         if not self.auto_save_presences.is_running():
             self.auto_save_presences.start()
@@ -247,25 +252,44 @@ class Activity(commands.Cog):
         """
         Called when the cog is unloaded.
         
-        Creates artificial disconnects for active users and saves all presences
-        before stopping background tasks.
+        Stops background tasks and triggers final save.
         """
-        snapshot = self.build_snapshot_with_artificial_disconnects()
-        self.save_presences(presences_override=snapshot)
-        self.auto_save_presences.cancel()
-
+        # Cancel all background tasks first
         if self.auto_save_presences.is_running():
             self.auto_save_presences.cancel()
         if self.get_daily_presence.is_running():
             self.get_daily_presence.cancel()
         if self.daily_cleanup.is_running():
             self.daily_cleanup.cancel()
+        
+        # Schedule final save synchronously
+        # Note: cog_unload can't be async, so we use asyncio.create_task
+        try:
+            loop = asyncio.get_event_loop()
+            if loop.is_running():
+                asyncio.create_task(self._final_save())
+            else:
+                loop.run_until_complete(self._final_save())
+        except Exception as e:
+            logger.error(f"Failed to perform final save on unload: {e}")
+    
+    async def _final_save(self):
+        """Perform final save with proper locking."""
+        try:
+            async with self.data_lock:
+                snapshot = self.build_snapshot_with_artificial_disconnects()
+            async with self.file_lock:
+                await self.save_presences(presences_override=snapshot)
+            logger.info("Final save completed on cog unload")
+        except Exception as e:
+            logger.error(f"Error during final save: {e}")
 
     # ------------------------------------------------------------------------
     # Data persistence methods
     # ------------------------------------------------------------------------
 
-    def save_presences(self, presences_override=None):
+    async def save_presences(self, presences_override=None):
+        """Save presences to disk. Should be called with file_lock held."""
         data = {}
 
         source = presences_override if presences_override else self.voice_presences
@@ -273,14 +297,18 @@ class Activity(commands.Cog):
         for username, presences in source.items():
             data[username] = [p.to_dict() for p in presences]
 
-        os.makedirs("data", exist_ok=True)
-        with open("data/voicePresences.json", "w", encoding="utf8") as f:
-            json.dump(data, f, indent=4)
+        # Use asyncio.to_thread for blocking I/O
+        def _write_file():
+            os.makedirs("data", exist_ok=True)
+            with open("data/voicePresences.json", "w", encoding="utf8") as f:
+                json.dump(data, f, indent=4)
+        
+        await asyncio.to_thread(_write_file)
 
         if not presences_override:
-            self.cleanup_presences()
+            await self.cleanup_presences()
 
-    def load_presences(self):
+    async def load_presences(self):
         """
         Load voice presences from JSON file.
         
@@ -290,8 +318,13 @@ class Activity(commands.Cog):
         if not os.path.exists("data/voicePresences.json"):
                 return
         try:
-            with open("data/voicePresences.json","r",encoding="utf8") as f:
-                data = json.load(f)
+            def _read_file():
+                with open("data/voicePresences.json","r",encoding="utf8") as f:
+                    return json.load(f)
+            
+            data = await asyncio.to_thread(_read_file)
+            
+            async with self.data_lock:
                 self.voice_presences = {
                     username: [VoicePresence.from_dict(p) for p in presences]
                     for username, presences in data.items()
@@ -299,12 +332,13 @@ class Activity(commands.Cog):
         except Exception as e:
             logger.error(f"Error loading presences : {e}")
 
-    def cleanup_presences(self):
+    async def cleanup_presences(self):
         """
         Clean up old presences and stale user data.
         
         Removes presences older than MAX_DAYS_SAVED (100 days) and cleans up
         user_last_activity entries for users who haven't been active recently.
+        Should be called with data_lock held.
         """
         cutoff = datetime.datetime.now() - datetime.timedelta(days=MAX_DAYS_SAVED)
         for username in list(self.voice_presences.keys()):
@@ -357,17 +391,18 @@ class Activity(commands.Cog):
             return
         self._artificial_connects_created = True
 
-        for guild in self.bot.guilds:
-            if guild.id == YKTP_ID or guild.id == 932887674413535262:
-                for member in guild.members:
-                    if member.voice and member.voice.channel:
-                        voice_entry = VoiceActivity(
-                        member=member,
-                        before=None,
-                        after=member.voice
-                        )
-                        self.user_last_activity[member.name] = voice_entry
-                        logger.info(f"Created artifical connect for {member.name} in {member.voice.channel.name}")
+        async with self.data_lock:
+            for guild in self.bot.guilds:
+                if guild.id == YKTP_ID or guild.id == 932887674413535262:
+                    for member in guild.members:
+                        if member.voice and member.voice.channel:
+                            voice_entry = VoiceActivity(
+                            member=member,
+                            before=None,
+                            after=member.voice
+                            )
+                            self.user_last_activity[member.name] = voice_entry
+                            logger.info(f"Created artifical connect for {member.name} in {member.voice.channel.name}")
 
     # ------------------------------------------------------------------------
     # Helper functions
@@ -407,17 +442,18 @@ class Activity(commands.Cog):
         try:
             voice_entry = VoiceActivity(member=member,before=before,after=after)
 
-            if member.name in self.user_last_activity:
-                last_activity = self.user_last_activity[member.name]
-                voice_presence = VoicePresence.get_presence_from_activities(last_activity, voice_entry)
+            # Single lock for both dictionaries - prevents deadlocks
+            async with self.data_lock:
+                if member.name in self.user_last_activity:
+                    last_activity = self.user_last_activity[member.name]
+                    voice_presence = VoicePresence.get_presence_from_activities(last_activity, voice_entry)
 
-                if voice_presence.present:
-                    user_presences = self.voice_presences.get(member.name)
-                    if not user_presences:
-                        self.voice_presences[member.name] = []
-                    self.voice_presences[member.name].append(voice_presence)
-            
-            self.user_last_activity[member.name] = voice_entry
+                    if voice_presence.present:
+                        if member.name not in self.voice_presences:
+                            self.voice_presences[member.name] = []
+                        self.voice_presences[member.name].append(voice_presence)
+                
+                self.user_last_activity[member.name] = voice_entry
         except Exception as e:
             logger.exception(f"Failed to track voice update for {member.name}")
 
@@ -432,8 +468,13 @@ class Activity(commands.Cog):
         """
 
         try:
-            snapshot = self.build_snapshot_with_artificial_disconnects()
-            self.save_presences(presences_override=snapshot)
+            # Lock data while creating snapshot
+            async with self.data_lock:
+                snapshot = self.build_snapshot_with_artificial_disconnects()
+            
+            # Lock file I/O separately to minimize lock duration
+            async with self.file_lock:
+                await self.save_presences(presences_override=snapshot)
             logger.info(f"Auto-save completed at {datetime.datetime.now()}")
         except Exception as e:
             logger.error(f"Auto-save failed at {datetime.datetime.now()} : {e}")
@@ -464,39 +505,47 @@ class Activity(commands.Cog):
         right_now = datetime.datetime.now()
         cutoff = right_now - datetime.timedelta(hours=24)
 
-        names = set(self.voice_presences.keys()) | set(self.user_last_activity.keys())
-        time_spent_dict = {}
+        # Lock data while calculating daily stats
+        async with self.data_lock:
+            names = set(self.voice_presences.keys()) | set(self.user_last_activity.keys())
+            time_spent_dict = {}
 
-        for name in names:
-            base = self.get_total_time(name, cutoff)
-            ongoing = 0
-            last_activity = self.user_last_activity.get(name)
-            if last_activity and last_activity.activity_type not in ["disconnect", "afk", "mute", "deaf"]:
-                ongoing = (right_now - last_activity.timestamp).total_seconds()
-            time_spent_dict[name] = base + ongoing
+            for name in names:
+                base = self.get_total_time(name, cutoff)
+                ongoing = 0
+                last_activity = self.user_last_activity.get(name)
+                if last_activity and last_activity.activity_type not in ["disconnect", "afk", "mute", "deaf"]:
+                    ongoing = (right_now - last_activity.timestamp).total_seconds()
+                time_spent_dict[name] = base + ongoing
 
 
         today = datetime.datetime.now().date().isoformat()
 
 
-        daily = {}
-        if os.path.exists("data/dailyPresences.json"):
+        # Lock file I/O for daily presences
+        async with self.file_lock:
+            daily = {}
+            if os.path.exists("data/dailyPresences.json"):
+                try:
+                    def _read():
+                        with open("data/dailyPresences.json", "r", encoding="utf8") as f:
+                            return json.load(f)
+                    daily = await asyncio.to_thread(_read)
+                except Exception as e:
+                    logger.error(f"Failed reading dailyPresences.json: {e}")
+                    daily = {}
+
+            daily[today] = {user: round(seconds, 2) for user, seconds in time_spent_dict.items()}
+
+            def _write():
+                os.makedirs("data", exist_ok=True)
+                with open("data/dailyPresences.json", "w", encoding="utf8") as f:
+                    json.dump(daily, f, indent=2)
+            
             try:
-                with open("data/dailyPresences.json", "r", encoding="utf8") as f:
-                    daily = json.load(f)
+                await asyncio.to_thread(_write)
             except Exception as e:
-                logger.error(f"Failed reading dailyPresences.json: {e}")
-                daily = {}
-
-        daily[today] = {user: round(seconds, 2) for user, seconds in time_spent_dict.items()}
-
-
-        os.makedirs("data", exist_ok=True)
-        try:
-            with open("data/dailyPresences.json", "w", encoding="utf8") as f:
-                json.dump(daily, f, indent=2)
-        except Exception as e:
-            logger.error(f"Failed writing dailyPresences.json: {e}")
+                logger.error(f"Failed writing dailyPresences.json: {e}")
 
 
         
@@ -521,8 +570,10 @@ class Activity(commands.Cog):
 
     @tasks.loop(hours=24)
     async def daily_cleanup(self):
-        self.cleanup_presences()
-        self.save_presences()
+        async with self.data_lock:
+            await self.cleanup_presences()
+        async with self.file_lock:
+            await self.save_presences()
     # ------------------------------------------------------------------------
     # Commands
     # ------------------------------------------------------------------------
@@ -541,8 +592,11 @@ class Activity(commands.Cog):
             The command context.
         """
         try:
-            self.save_presences()
-            await ctx.send(f"👍 Saved {sum(len(p) for p in self.voice_presences.values())} presences.")
+            async with self.file_lock:
+                await self.save_presences()
+            async with self.data_lock:
+                count = sum(len(p) for p in self.voice_presences.values())
+            await ctx.send(f"👍 Saved {count} presences.")
         except Exception as e:
             await ctx.send(f"❌ There was an error saving the presences : {e}")
 
