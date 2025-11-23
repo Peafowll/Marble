@@ -407,11 +407,11 @@ class Activity(commands.Cog):
     # ------------------------------------------------------------------------
     # Helper functions
     # ------------------------------------------------------------------------
-    def get_total_time(self, user_id, since):
+    def get_total_time(self, user_name, since):
         """Calculate total time in voice channels since a given timestamp."""
         now = datetime.datetime.now()
         total = 0
-        for p in self.voice_presences.get(user_id, []):
+        for p in self.voice_presences.get(user_name, []):
             overlap_start = max(p.timestamp_start, since)
             overlap_end = min(p.timestamp_end, now)
             if overlap_end > overlap_start:
