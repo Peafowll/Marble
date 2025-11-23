@@ -11,7 +11,9 @@ import copy
 # Logger and constants
 logger = logging.getLogger('discord.activity')
 MAX_DAYS_SAVED = 100
-
+WEEKLY_CHANNEL_ID = 1353156986547736758
+OWNER_USER_ID = 264416824777637898
+YKTP_ID = 890252683657764894
 
 # ============================================================================
 # Data Classes
@@ -39,8 +41,8 @@ class VoiceActivity:
             Represents the timestamp of when the activity took place.
         """
         self.discord_name = member.name
-        self.before_channel_name = before.channel.name if before.channel else None
-        self.after_channel_name = after.channel.name if after.channel else None
+        self.before_channel_name = before.channel.name if (before and before.channel) else None
+        self.after_channel_name = after.channel.name if (after and after.channel) else None
         self.activity_type = self.detect_activity_type(before, after)
         self.timestamp = datetime.datetime.now()
 
@@ -214,6 +216,7 @@ class Activity(commands.Cog):
         self.voice_presences = {}
         self.user_last_activity = {}
         self._artificial_connects_created = False
+        self.day_count = 1
 
     # ------------------------------------------------------------------------
     # Lifecycle methods
@@ -250,6 +253,13 @@ class Activity(commands.Cog):
         snapshot = self.build_snapshot_with_artificial_disconnects()
         self.save_presences(presences_override=snapshot)
         self.auto_save_presences.cancel()
+
+        if self.auto_save_presences.is_running():
+            self.auto_save_presences.cancel()
+        if self.get_daily_presence.is_running():
+            self.get_daily_presence.cancel()
+        if self.daily_cleanup.is_running():
+            self.daily_cleanup.cancel()
 
     # ------------------------------------------------------------------------
     # Data persistence methods
@@ -348,7 +358,7 @@ class Activity(commands.Cog):
         self._artificial_connects_created = True
 
         for guild in self.bot.guilds:
-            if guild.id == 890252683657764894 or guild.id == 932887674413535262: #TODO : CHANGE AFTER TESTING
+            if guild.id == YKTP_ID or guild.id == 932887674413535262:
                 for member in guild.members:
                     if member.voice and member.voice.channel:
                         voice_entry = VoiceActivity(
@@ -363,10 +373,15 @@ class Activity(commands.Cog):
     # Helper functions
     # ------------------------------------------------------------------------
     def get_total_time(self, user_id, since):
-        return sum(
-            p.total_time for p in self.voice_presences.get(user_id, [])
-            if p.timestamp_end >= since
-        )
+        """Calculate total time in voice channels since a given timestamp."""
+        now = datetime.datetime.now()
+        total = 0
+        for p in self.voice_presences.get(user_id, []):
+            overlap_start = max(p.timestamp_start, since)
+            overlap_end = min(p.timestamp_end, now)
+            if overlap_end > overlap_start:
+                total += (overlap_end - overlap_start).total_seconds()
+        return total
 
     # ------------------------------------------------------------------------
     # Event listeners
@@ -389,20 +404,22 @@ class Activity(commands.Cog):
         after : VoiceState
             The voice state after the change.
         """
+        try:
+            voice_entry = VoiceActivity(member=member,before=before,after=after)
 
-        voice_entry = VoiceActivity(member=member,before=before,after=after)
+            if member.name in self.user_last_activity:
+                last_activity = self.user_last_activity[member.name]
+                voice_presence = VoicePresence.get_presence_from_activities(last_activity, voice_entry)
 
-        if member.name in self.user_last_activity:
-            last_activity = self.user_last_activity[member.name]
-            voice_presence = VoicePresence.get_presence_from_activities(last_activity, voice_entry)
-
-            if voice_presence.present:
-                user_presences = self.voice_presences.get(member.name)
-                if not user_presences:
-                    self.voice_presences[member.name] = []
-                self.voice_presences[member.name].append(voice_presence)
-        
-        self.user_last_activity[member.name] = voice_entry
+                if voice_presence.present:
+                    user_presences = self.voice_presences.get(member.name)
+                    if not user_presences:
+                        self.voice_presences[member.name] = []
+                    self.voice_presences[member.name].append(voice_presence)
+            
+            self.user_last_activity[member.name] = voice_entry
+        except Exception as e:
+            logger.exception(f"Failed to track voice update for {member.name}")
 
     # ------------------------------------------------------------------------
     # Background tasks
@@ -417,7 +434,7 @@ class Activity(commands.Cog):
         try:
             snapshot = self.build_snapshot_with_artificial_disconnects()
             self.save_presences(presences_override=snapshot)
-            logger.info(f"Crash-safe auto-save completed at {datetime.datetime.now()}")
+            logger.info(f"Auto-save completed at {datetime.datetime.now()}")
         except Exception as e:
             logger.error(f"Auto-save failed at {datetime.datetime.now()} : {e}")
 
@@ -431,46 +448,76 @@ class Activity(commands.Cog):
         await self.bot.wait_until_ready()
         await self.create_artificial_connects()
 
-    @tasks.loop(seconds=60) # TODO : 60 SECONDS FOR TESTING PURPOSES ONLY!!!
+
+    
+    @tasks.loop(time=datetime.time(hour=0, minute=5, tzinfo=datetime.timezone.utc))
     async def get_daily_presence(self):
         """
         Calculate and report daily presence statistics.
         
-        Computes total time spent in voice channels over the last 24 hours
-        for each user and sends the results via DM.
+        Runs daily at 00:05 UTC. Computes total time spent in voice channels 
+        over the last 24 hours. On Sundays (UTC), also computes and posts 
+        weekly summary covering the previous 7 calendar days.
         """
-        logger.info("Getting daily presences.")
-        # A copy of voice_presences, that will sort presences and also add an artifical end to all ongoing presences
-        temp_voice_presences = copy.deepcopy(self.voice_presences)
-
+        logger.info("Running daily presence calculation at 00:05 UTC.")
 
         right_now = datetime.datetime.now()
         cutoff = right_now - datetime.timedelta(hours=24)
 
-        # Creating artifical ends to presences at the moment the daily presence check occurs
-        for name, last_activity in list(self.user_last_activity.items()):
-            if last_activity.activity_type not in ["disconnect", "afk", "mute","deaf"]:
-                voice_presence = VoicePresence(
-                    discord_name = name,
-                    timestamp_start = last_activity.timestamp,
-                    timestamp_end = right_now,
-                    channel_name = last_activity.after_channel_name,
-                    present = True
-                )
-                temp_voice_presences.setdefault(name, []).append(voice_presence)
-
-        
+        names = set(self.voice_presences.keys()) | set(self.user_last_activity.keys())
         time_spent_dict = {}
 
+        for name in names:
+            base = self.get_total_time(name, cutoff)
+            ongoing = 0
+            last_activity = self.user_last_activity.get(name)
+            if last_activity and last_activity.activity_type not in ["disconnect", "afk", "mute", "deaf"]:
+                ongoing = (right_now - last_activity.timestamp).total_seconds()
+            time_spent_dict[name] = base + ongoing
 
-        for name in temp_voice_presences:
-            daily_presences = [p for p in temp_voice_presences[name] if p.timestamp_end >= cutoff]
-            daily_presences.sort(key=lambda p: p.timestamp_start)            
-            seconds_spent = sum(presence.total_time for presence in daily_presences)
-            time_spent_dict[name] = seconds_spent
 
-        user = await self.bot.fetch_user(264416824777637898)
-        await user.send(str(time_spent_dict))
+        today = datetime.datetime.now().date().isoformat()
+
+
+        daily = {}
+        if os.path.exists("data/dailyPresences.json"):
+            try:
+                with open("data/dailyPresences.json", "r", encoding="utf8") as f:
+                    daily = json.load(f)
+            except Exception as e:
+                logger.error(f"Failed reading dailyPresences.json: {e}")
+                daily = {}
+
+        daily[today] = {user: round(seconds, 2) for user, seconds in time_spent_dict.items()}
+
+
+        os.makedirs("data", exist_ok=True)
+        try:
+            with open("data/dailyPresences.json", "w", encoding="utf8") as f:
+                json.dump(daily, f, indent=2)
+        except Exception as e:
+            logger.error(f"Failed writing dailyPresences.json: {e}")
+
+
+        
+        if right_now.weekday() == 6:
+            last_seven_days = [(datetime.date.today() - datetime.timedelta(days=i)).isoformat() for i in range(7)]
+            weekly_seconds = {}
+            for day in last_seven_days:
+                day_data = daily.get(day, {})
+                for user, seconds in day_data.items():
+                    weekly_seconds[user] = weekly_seconds.get(user, 0) + seconds
+            sorted_weekly = dict(sorted(weekly_seconds.items(), key=lambda x: x[1], reverse=True))
+
+            message = "# This week's voice chat presences!\n"
+            for person in sorted_weekly.keys():
+                hours = sorted_weekly[person] / 3600
+                message+= f"{str(person)} - {hours:.2f} hours.\n"
+
+            channel = await self.bot.fetch_channel(WEEKLY_CHANNEL_ID)
+            await channel.send(message)
+        owner = await self.bot.fetch_user(OWNER_USER_ID)
+        await owner.send(f"Daily activity : {str(time_spent_dict)}")
 
     @tasks.loop(hours=24)
     async def daily_cleanup(self):
@@ -549,7 +596,7 @@ class Activity(commands.Cog):
         
 
     
-    @commands.command() #TODO : DELETE AFTER TESTING
+    @commands.command(hidden=True) #TODO : DELETE AFTER TESTING
     async def check_presences(self,ctx):
         """
         Display all stored presence data.
