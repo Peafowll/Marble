@@ -237,6 +237,8 @@ class Activity(commands.Cog):
             self.auto_save_presences.start()
         if not self.get_daily_presence.is_running():
             self.get_daily_presence.start()
+        if not self.daily_cleanup.is_running():
+            self.daily_cleanup.start()
 
     def cog_unload(self):
         """
@@ -245,29 +247,28 @@ class Activity(commands.Cog):
         Creates artificial disconnects for active users and saves all presences
         before stopping background tasks.
         """
-        self.create_artificial_disconnects()
-        self.save_presences()
+        snapshot = self.build_snapshot_with_artificial_disconnects()
+        self.save_presences(presences_override=snapshot)
         self.auto_save_presences.cancel()
 
     # ------------------------------------------------------------------------
     # Data persistence methods
     # ------------------------------------------------------------------------
 
-    def save_presences(self):
-        """
-        Save all voice presences to JSON file.
-        
-        Serializes presence data and writes it to data/voicePresences.json,
-        then performs cleanup of old data.
-        """
-        data = {
-            username: [p.to_dict() for p in presences]
-            for username, presences in self.voice_presences.items()
-        }
+    def save_presences(self, presences_override=None):
+        data = {}
+
+        source = presences_override if presences_override else self.voice_presences
+
+        for username, presences in source.items():
+            data[username] = [p.to_dict() for p in presences]
+
         os.makedirs("data", exist_ok=True)
         with open("data/voicePresences.json", "w", encoding="utf8") as f:
             json.dump(data, f, indent=4)
-        self.cleanup_presences()
+
+        if not presences_override:
+            self.cleanup_presences()
 
     def load_presences(self):
         """
@@ -299,7 +300,7 @@ class Activity(commands.Cog):
         for username in list(self.voice_presences.keys()):
             self.voice_presences[username] = [
                 presence for presence in self.voice_presences[username]
-                if presence.timestamp_end > cutoff
+                if presence.timestamp_end is None or presence.timestamp_end > cutoff
             ]
             if not self.voice_presences[username]:
                 del self.voice_presences[username]
@@ -312,6 +313,27 @@ class Activity(commands.Cog):
     # ------------------------------------------------------------------------
     # Artificial connect/disconnect helpers
     # ------------------------------------------------------------------------
+
+    def build_snapshot_with_artificial_disconnects(self):
+        """
+        Returns a presence dictionary identical to self.voice_presences,
+        but with artificial disconnects appended for users still in voice.
+        """
+        snapshot = copy.deepcopy(self.voice_presences)
+        now = datetime.datetime.now()
+
+        for name, last_activity in self.user_last_activity.items():
+            if last_activity.activity_type not in ["disconnect", "afk"]:
+                presence = VoicePresence(
+                    discord_name=name,
+                    timestamp_start=last_activity.timestamp,
+                    timestamp_end=now,
+                    channel_name=last_activity.after_channel_name,
+                    present=True
+                )
+                snapshot.setdefault(name, []).append(presence)
+
+        return snapshot
 
     async def create_artificial_connects(self):
         """
@@ -330,34 +352,21 @@ class Activity(commands.Cog):
                 for member in guild.members:
                     if member.voice and member.voice.channel:
                         voice_entry = VoiceActivity(
-                            member = member,
-                            before = discord.VoiceState(data = {}, channel = None),
-                            after = member.voice
+                        member=member,
+                        before=None,
+                        after=member.voice
                         )
                         self.user_last_activity[member.name] = voice_entry
                         logger.info(f"Created artifical connect for {member.name} in {member.voice.channel.name}")
 
-    def create_artificial_disconnects(self):
-        """
-        Create artificial disconnect presences for users still in voice channels.
-        
-        For users whose last activity wasn't a disconnect, this creates a presence
-        entry ending at the current time. Used when saving or shutting down to
-        properly capture ongoing voice sessions.
-        """
-        right_now = datetime.datetime.now()
-        for name, last_activity in list(self.user_last_activity.items()):
-            if last_activity.activity_type not in ["disconnect", "afk"]:
-                voice_presence = VoicePresence(
-                    discord_name = name,
-                    timestamp_start = last_activity.timestamp,
-                    timestamp_end = right_now,
-                    channel_name = last_activity.after_channel_name,
-                    present = True
-                )
-                if name not in self.voice_presences:
-                    self.voice_presences[name] = []
-                    self.voice_presences[name].append(voice_presence)
+    # ------------------------------------------------------------------------
+    # Helper functions
+    # ------------------------------------------------------------------------
+    def get_total_time(self, user_id, since):
+        return sum(
+            p.total_time for p in self.voice_presences.get(user_id, [])
+            if p.timestamp_end >= since
+        )
 
     # ------------------------------------------------------------------------
     # Event listeners
@@ -388,8 +397,8 @@ class Activity(commands.Cog):
             voice_presence = VoicePresence.get_presence_from_activities(last_activity, voice_entry)
 
             if voice_presence.present:
-                dictionary = self.voice_presences.get(member.name)
-                if not dictionary:
+                user_presences = self.voice_presences.get(member.name)
+                if not user_presences:
                     self.voice_presences[member.name] = []
                 self.voice_presences[member.name].append(voice_presence)
         
@@ -403,21 +412,14 @@ class Activity(commands.Cog):
     async def auto_save_presences(self):
         """
         Automatically save presences every 1 minute.
-        
-        Creates artificial disconnects for active users, saves all presence data,
-        and updates timestamps for users currently in voice channels.
         """
-        #TODO dont actually make dcs
+
         try:
-            self.create_artificial_disconnects()  
-            self.save_presences()
-            for guild in self.bot.guilds:
-                for member in guild.members:
-                    if member.voice and member.voice.channel and member.name in self.user_last_activity:
-                        self.user_last_activity[member.name].timestamp = datetime.datetime.now()
-            logger.info(f"Auto-saved presences at {datetime.datetime.now()}")
+            snapshot = self.build_snapshot_with_artificial_disconnects()
+            self.save_presences(presences_override=snapshot)
+            logger.info(f"Crash-safe auto-save completed at {datetime.datetime.now()}")
         except Exception as e:
-            logger.error(f"Failed auto-save for presences at {datetime.datetime.now()} : {e}")
+            logger.error(f"Auto-save failed at {datetime.datetime.now()} : {e}")
 
     @tasks.loop(count=1)
     async def init_artificial_connects(self):
@@ -447,7 +449,7 @@ class Activity(commands.Cog):
 
         # Creating artifical ends to presences at the moment the daily presence check occurs
         for name, last_activity in list(self.user_last_activity.items()):
-            if last_activity.activity_type not in ["disconnect", "afk"]:
+            if last_activity.activity_type not in ["disconnect", "afk", "mute","deaf"]:
                 voice_presence = VoicePresence(
                     discord_name = name,
                     timestamp_start = last_activity.timestamp,
@@ -455,7 +457,8 @@ class Activity(commands.Cog):
                     channel_name = last_activity.after_channel_name,
                     present = True
                 )
-                temp_voice_presences[name].append(voice_presence)
+                temp_voice_presences.setdefault(name, []).append(voice_presence)
+
         
         time_spent_dict = {}
 
@@ -469,7 +472,10 @@ class Activity(commands.Cog):
         user = await self.bot.fetch_user(264416824777637898)
         await user.send(str(time_spent_dict))
 
-
+    @tasks.loop(hours=24)
+    async def daily_cleanup(self):
+        self.cleanup_presences()
+        self.save_presences()
     # ------------------------------------------------------------------------
     # Commands
     # ------------------------------------------------------------------------
