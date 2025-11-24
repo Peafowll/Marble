@@ -45,23 +45,80 @@ DAG_MEMBERS = {
 }
 STANDARD_HEADERS = {"Authorization": hv_token}
 
+class Player():
+    def __init__(self, hv_puuid : str = "placeholder-id", name : str = "placeholder-name"):
+        self.name = name
+        self.hv_puuid = hv_puuid
+
+    def get_stats(self, player_data : dict, kill_data, round_data, meta_data):
+        self.agent = player_data["agent"]["name"]
+        self.base_stats = player_data["stats"] #"score", "kills", "deats", "assists", "headshots", "bodyshots", "legshots", "damage" : {"dealt", "received"}
+        self.ability_casts = player_data["ability_casts"] # "grenade", "ability1", "ability2", "ultimate"
+        self.title_stats = {}
+
+        self.title_stats["hs_percentage"] = round(self.base_stats["headshots"]/self.base_stats["bodyshots"]*100)
+        self.title_stats["deaths"] = self.base_stats["deaths"]
+        self.title_stats["damage"] = self.base_stats["damage"]
+
+
+    def __str__(self):
+        return f"{self.name}, id = {self.hv_puuid}"
+    
+    def title_stats_str(self):
+        return str(self.title_stats)
+    
+
+class Match():
+    def __init__(self, match_json, main_player_id):
+
+        #Parses data from the match_json
+        match_data = match_json # DICT
+        self.player_data = match_data["players"] # LIST 
+        self.team_data = match_data["teams"] # LIST
+        self.meta_data = match_data["metadata"] # DICT
+        self.round_data = match_data["rounds"] # LIST
+        self.kill_data = match_data["kills"] # LIST
+
+        #Finds the team that the main player was in
+        self.main_team_id = "none"
+        found_player = False
+
+        for player in self.player_data:
+            if player["puuid"] == main_player_id:
+                self.main_team_id = player["team_id"]
+                found_player=True
+                break
+
+        if found_player == False:
+            return None
+
+
+        self.main_players_data = [player for player in self.player_data if player["team_id"] == self.main_team_id]     
+
+        self.main_players_names = [player_data["name"] for player_data in self.main_players_data]
+
+        self.main_players = []
+        for player_data_dict in self.main_players_data:
+            player_object = Player(name=player_data_dict["name"], hv_puuid=player_data_dict["puuid"])
+            player_object.get_stats(player_data=player_data_dict, kill_data=self.kill_data, round_data=self.round_data, meta_data=self.meta_data)
+            self.main_players.append(player_object)
+
+
+    def str_main_players(self):
+        message = ""
+        for player in self.main_players:
+            message += str(player)
+            message += "\n"
+        return message
+
+        
 def get_last_match(puuid, match_type = None):
     url = f"https://api.henrikdev.xyz/valorant/v4/by-puuid/matches/eu/pc/{puuid}"
+    if match_type:
+        url+=f"?mode={match_type}"
     response = requests.get(url, headers=STANDARD_HEADERS)
     data = response.json()
-    matches_checked = 0
-    if match_type:
-        for match in data["data"]:
-            if match["metadata"]["mode"] == match_type:
-                match_id = match["metadata"]["match_id"]
-                return match_id
-            matches_checked+=1
-            if matches_checked == 10:
-                return None
-    else:
-        match_id = data["data"][0]["metadata"]["match_id"]
-        return match_id
-    return None
+    return data["data"][0]
 
 def get_match_stats(match_id):
 
@@ -74,10 +131,14 @@ def get_match_stats(match_id):
 def get_last_premier_match_stats():
     for player in DAG_MEMBERS:
         puuid = DAG_MEMBERS[player]["hv_id"]
-        match_id = get_last_match(puuid=puuid, match_type="Premier")
-        if match_id:
-            return get_match_stats(match_id=match_id)
+        match_stats = get_last_match(puuid=puuid, match_type="premier")
+        return match_stats
     return None
+
+def create_match_object_from_last_premier(match_data, main_player_id) -> Match: #TODO : make it so i only need player id
+    match = Match(match_json=match_data, main_player_id=main_player_id)
+    return match
+
 
 class Titles(commands.Cog):
     def __init__(self,bot):
@@ -89,11 +150,12 @@ class Titles(commands.Cog):
 
     @commands.command(hidden=True)
     @commands.is_owner()
-    async def tester(self,ctx):
-        with open("testValoMatch.json", "w", encoding="utf8") as file:
-            match_id = get_last_match("64792ac3-0873-55f5-9348-725082445eef")
-            match_data = get_match_stats(match_id)
-            json.dump(match_data, file, indent=4)
+    async def last_match_test(self,ctx):
+        match_data = get_last_premier_match_stats()
+        match = create_match_object_from_last_premier(match_data=match_data, main_player_id='64792ac3-0873-55f5-9348-725082445eef')
+        #print(match.main_players)
+        for player in match.main_players:
+            print(player.title_stats_str())
 
 async def setup(bot):
     """
