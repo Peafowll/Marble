@@ -4,6 +4,7 @@
   - Every Sunday, find out who spent the most time on voice chat!
 ### Fixes
 - New alias for K'Sante
+
 ## [0.5.3] - 21-11-2025
 ### Fixes
 - Multiple new aliases added, focused on making the detection of champions with doubled letters or *"y"*s in their name more indulgent.

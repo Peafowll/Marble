@@ -1,4 +1,3 @@
-import discord
 from discord.ext import commands, tasks
 from discord.member import Member
 from discord import VoiceState
@@ -11,6 +10,8 @@ import asyncio
 
 #TODO : only count activity if someone else is on (maybe)
 #TODO : better display for weekly hours
+#TODO : separate logger
+
 
 # Logger and constants
 logger = logging.getLogger('discord.activity')
