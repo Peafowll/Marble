@@ -69,6 +69,17 @@ class Player():
             if player_data["player"]["name"] == self.name
         ]
 
+        self.kill_stats = [
+            kill
+            for kill in kill_data
+            if kill["killer"]["name"] == self.name
+        ]
+
+        self.title_stats["phantom_kills"]=len([
+            kill
+            for kill in self.kill_stats
+            if kill["weapon"]["name"] == "Phantom"
+        ])
 
         self.title_stats["triple_kills"] = len([
             round_data
