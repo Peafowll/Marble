@@ -6,7 +6,7 @@ import logging
 import os
 import copy
 from dotenv import load_dotenv
-
+from typing import List
 logger = logging.getLogger('discord.titles')
 
 load_dotenv()
@@ -60,12 +60,51 @@ class Player():
         self.title_stats["deaths"] = self.base_stats["deaths"]
         self.title_stats["damage"] = self.base_stats["damage"]
 
+        self.rounds_stats = []
 
+        self.rounds_stats =[
+            player_data
+            for game_round in round_data
+            for player_data in game_round["stats"]
+            if player_data["player"]["name"] == self.name
+        ]
+
+
+        self.title_stats["triple_kills"] = len([
+            round_data
+            for round_data in self.rounds_stats
+            if round_data["stats"]["kills"] == 3]
+            )
+        
+        self.title_stats["double_kills"] = len([
+            round_data
+            for round_data in self.rounds_stats
+            if round_data["stats"]["kills"] == 2]
+            )
+        
+        self.title_stats["quadra_kills"] = len([
+            round_data
+            for round_data in self.rounds_stats
+            if round_data["stats"]["kills"] == 4]
+            )
+        
+        self.title_stats["aces"] = len([
+            round_data
+            for round_data in self.rounds_stats
+            if round_data["stats"]["kills"] == 5]
+            )
+        
     def __str__(self):
         return f"{self.name}, id = {self.hv_puuid}"
     
     def title_stats_str(self):
         return str(self.title_stats)
+    
+    def get_title_stats(self):
+        return self.title_stats
+    
+    def get_round_stats(self):
+        return self.rounds_stats
     
 
 class Match():
@@ -97,7 +136,7 @@ class Match():
 
         self.main_players_names = [player_data["name"] for player_data in self.main_players_data]
 
-        self.main_players = []
+        self.main_players : List[Player] = []
         for player_data_dict in self.main_players_data:
             player_object = Player(name=player_data_dict["name"], hv_puuid=player_data_dict["puuid"])
             player_object.get_stats(player_data=player_data_dict, kill_data=self.kill_data, round_data=self.round_data, meta_data=self.meta_data)
@@ -153,9 +192,10 @@ class Titles(commands.Cog):
     async def last_match_test(self,ctx):
         match_data = get_last_premier_match_stats()
         match = create_match_object_from_last_premier(match_data=match_data, main_player_id='64792ac3-0873-55f5-9348-725082445eef')
-        #print(match.main_players)
         for player in match.main_players:
-            print(player.title_stats_str())
+            message = f"{player.name}:\n "
+            message += json.dumps(player.get_title_stats(), indent=4)
+            await ctx.send(message)
 
 async def setup(bot):
     """
