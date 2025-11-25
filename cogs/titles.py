@@ -207,6 +207,46 @@ class Player():
         rifle_kills = []
         knife_kills = []
 
+
+        for kill in self.my_kills:
+            if kill["weapon"]["name"] in pistols:
+                pistol_kills.append(kill)
+            elif kill["weapon"]["name"] in smgs:
+                smg_kills.append(kill)
+            elif kill["weapon"]["name"] in shotguns:
+                shotgun_kills.append(kill)
+            elif kill["weapon"]["name"] in snipers:
+                sniper_kills.append(kill)
+            elif kill["weapon"]["name"] in lmgs:
+                lmg_kills.append(kill)    
+            elif kill["weapon"]["name"] in rifles:
+                rifle_kills.append(kill)
+            elif kill["weapon"]["name"] in knives:
+                knife_kills.append(kill)
+
+        self.title_stats["pistol_kills"] = len(pistol_kills)
+        self.title_stats["smg_kills"] = len(smg_kills)
+        self.title_stats["lmg_kills"] = len(lmg_kills)
+        self.title_stats["shotgun_kills"] = len(shotgun_kills)
+        self.title_stats["sniper_kills"] = len(sniper_kills)
+        self.title_stats["rifle_kills"] = len(rifle_kills)
+        self.title_stats["knife_kills"] = len(knife_kills)
+    
+    def set_kills_by_ranges(self):
+        for kill in self.my_kills:
+            killer_name = self.name
+            victim_name = kill["victim"]["name"]
+            victim_x = kill["location"]["x"]
+            victim_y = kill["location"]["y"]
+            for player_data in kill["player_locations"]:
+                #print(f"We are at player data {player_data}")
+                if player_data["player"]["name"] == killer_name:
+                    killer_x = player_data["location"]["x"]
+                    killer_y = player_data["location"]["y"]
+                    distance = math.sqrt((killer_x - victim_x)**2 + (killer_y - victim_y)**2)
+                    distance_in_meters = round(distance/100,1)
+                    print(f"Distance: {distance_in_meters}, victim = {victim_name}")
+                    break
 class Match():
     def __init__(self, match_json, main_player_id):
 
