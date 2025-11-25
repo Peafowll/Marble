@@ -1,0 +1,50 @@
+{
+    "hs_percentage" : {
+        "title" : "The Headhunter",
+        "award" : "Headshot Percentage :"
+    },
+    "double_kills" : {
+        "title" : "The Jack",
+        "award" : "Double Kills :"
+    },
+    "triple_kills" :{
+        "title" : "The Queen",
+        "award" : "Triple Kills :"
+    },
+    "quadra_kills" :{
+        "title" : "The King",
+        "award" : "Quadra Kills :"
+    },
+    "aces" :{
+        "title" : "The Ace",
+        "award" : "Aces :"
+    },
+    "hexakills" : {
+        "title" : "The Joker",
+        "award" : "Hexakills :"
+    },
+    "damage_dealt" : {
+        "title" : "The Pain Train",
+        "award" : "Damage Dealt :"
+    },
+    "deaths" :{
+        "title" : "The Survivalist",
+        "award" : "Least Deaths :"
+    },
+    "unique_weapon_kills" : {
+        "title" : "The Renegade",
+        "award" : "Unique Weapon Kills :"
+    },
+    "enemy_top_frag_killed" :{
+        "title" : "The Answer",
+        "award" : "Kills on Enemy Top Fragger :"
+    },
+    "enemy_bottom_frag_killed":{
+        "title" : "The Question",
+        "award" : "Kills on Enemy Bottom Fragger :"
+    },
+    "assists":{
+        "title" : "The Magic",
+        "award" : "Assists :"
+    }
+}

@@ -50,15 +50,16 @@ class Player():
         self.name = name
         self.hv_puuid = hv_puuid
 
-    def get_stats(self, player_data : dict, kill_data, round_data, meta_data):
+    def get_stats(self, player_data : dict, kill_data, round_data, meta_data, all_players_data):
         self.agent = player_data["agent"]["name"]
+        self.team_id = player_data["team_id"]
         self.base_stats = player_data["stats"] #"score", "kills", "deats", "assists", "headshots", "bodyshots", "legshots", "damage" : {"dealt", "received"}
         self.ability_casts = player_data["ability_casts"] # "grenade", "ability1", "ability2", "ultimate"
         self.title_stats = {}
 
         self.title_stats["hs_percentage"] = round(self.base_stats["headshots"]/self.base_stats["bodyshots"]*100)
         self.title_stats["deaths"] = self.base_stats["deaths"]
-        self.title_stats["damage"] = self.base_stats["damage"]
+        self.title_stats["damage_dealt"] = self.base_stats["damage"]["dealt"]
 
         self.rounds_stats = []
 
@@ -69,15 +70,47 @@ class Player():
             if player_data["player"]["name"] == self.name
         ]
 
-        self.kill_stats = [
+        self.my_kills = [
             kill
             for kill in kill_data
             if kill["killer"]["name"] == self.name
         ]
+        
+        self.my_assists = [
+            kill
+            for kill in kill_data
+            if any(assistant["name"] == self.name for assistant in kill["assistants"])
+        ]
 
+        self.set_multikills()   
+        self.set_unique_weapon_kills()
+        self.set_targeted_kills(all_players_data)
+        self.set_assists()
         self.title_stats["phantom_kills"]=len([
             kill
-            for kill in self.kill_stats
+            for kill in self.my_kills
+            if kill["weapon"]["name"] == "Phantom"
+        ])
+
+        
+
+        
+    def __str__(self):
+        return f"{self.name}, id = {self.hv_puuid}"
+    
+    def title_stats_str(self):
+        return str(self.title_stats)
+    
+    def get_title_stats(self):
+        return self.title_stats
+    
+    def get_round_stats(self):
+        return self.rounds_stats
+    
+    def set_multikills(self):
+        self.title_stats["phantom_kills"]=len([
+            kill
+            for kill in self.my_kills
             if kill["weapon"]["name"] == "Phantom"
         ])
 
@@ -105,18 +138,53 @@ class Player():
             if round_data["stats"]["kills"] == 5]
             )
         
-    def __str__(self):
-        return f"{self.name}, id = {self.hv_puuid}"
+        self.title_stats["hexakills"] =len([
+            round_data
+            for round_data in self.rounds_stats
+            if round_data["stats"]["kills"] == 6]
+            )
     
-    def title_stats_str(self):
-        return str(self.title_stats)
-    
-    def get_title_stats(self):
-        return self.title_stats
-    
-    def get_round_stats(self):
-        return self.rounds_stats
-    
+    def set_unique_weapon_kills(self):
+        weapons_used = set()
+        for kill in self.my_kills:
+            weapons_used.add(kill["weapon"]["name"])
+        self.title_stats["unique_weapon_kills"] = len(weapons_used)
+
+    def set_targeted_kills(self, all_players_data):
+        targeted_kills = dict()
+        for kill in self.my_kills:
+            victim_name = kill["victim"]["name"]
+            if not targeted_kills.get(victim_name):
+                targeted_kills[victim_name] = 1
+            else:
+                targeted_kills[victim_name] += 1
+
+        enemy_scores = dict()
+        for player_data in all_players_data:
+            if player_data["team_id"] == self.team_id:
+                continue
+            player_score = player_data["stats"]["score"]
+            player_name = player_data["name"]
+            enemy_scores[player_name] = player_score
+        
+        sorted_enemies = sorted(enemy_scores.items(), key = lambda x:x[1] , reverse=True)
+
+        enemy_carry_name = sorted_enemies[0][0]
+        enemy_inter_name = sorted_enemies[4][0]
+
+        carry_kills = targeted_kills.get(enemy_carry_name)
+        inter_kills = targeted_kills.get(enemy_inter_name)
+
+        if not carry_kills:
+            carry_kills = 0
+        if not inter_kills:
+            inter_kills = 0
+        self.title_stats["enemy_top_frag_killed"] = carry_kills
+        self.title_stats["enemy_bottom_frag_killed"] = inter_kills
+
+    def set_assists(self):
+        self.title_stats["assists"] = self.base_stats["assists"]
+
 
 class Match():
     def __init__(self, match_json, main_player_id):
@@ -150,7 +218,11 @@ class Match():
         self.main_players : List[Player] = []
         for player_data_dict in self.main_players_data:
             player_object = Player(name=player_data_dict["name"], hv_puuid=player_data_dict["puuid"])
-            player_object.get_stats(player_data=player_data_dict, kill_data=self.kill_data, round_data=self.round_data, meta_data=self.meta_data)
+            player_object.get_stats(player_data=player_data_dict, 
+                                    kill_data=self.kill_data, 
+                                    round_data=self.round_data, 
+                                    meta_data=self.meta_data,
+                                    all_players_data=self.player_data)
             self.main_players.append(player_object)
 
 
