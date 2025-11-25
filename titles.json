@@ -46,5 +46,91 @@
     "assists":{
         "title" : "The Magic",
         "award" : "Assists :"
+    },
+    "ability_kills" :{
+        "title" : "The Caster",
+        "award" : "Ability Kills :"
+    },
+    "plants" : {
+        "title" : "The ",
+        "award" : "Spikes Planted :"
+        NOT IMPLMENET        
+    },
+    "defuses" :{
+        "tile" : "The Savior",
+        "award" : "Spikes Defused :",
+        NOT IMPLMENET
+    },
+    "first_bloods" :{
+        "title" : "The Opener",
+        "award" : "First Bloods :"
+        NOT IMPLMENET
+    },
+    "last_bloods":{
+        "title" : "The Closer",
+        "award" : "Finisher Kills :"
+    },
+    "long_range_kills":{
+        "title" : "The Laser",
+        "award" : "Long Range Kills :"
+    },
+    "short_range_kills":{
+        "title" : "The CQB",
+        "award" : "Close Range Kills :"
+        NOT IMPLMENET
+    },
+    "total_time_alive":{
+        "title" : "The Persistent",
+        "award" : "Time Spend Alive :"
+        NOT IMPLMENET
+    },
+    "clutches" :{
+        "title" : "The Underdog",
+        "award" : "Clutches :"
+        NT IMPLMENET
+    },
+    "pistol_kills":{
+        "title" : "The Desperado",
+        "award" : "Pistol Kills :"
+    },
+    "shotgun_kills":{
+        "title" : "The Overkill",
+        "award" : "Shotgun Kills :"
+    },
+    "sniper_kills":{
+        "title" : "The Sniper",
+        "award" : "Sniper Kills :"
+    },
+    "lmg_kills":{
+        "title" : "The Bulletstorm",
+        "award" : "LMG Kills :"
+    },
+    "smg_kills":{
+        "title" : "The Surefire",
+        "award" : "SMG Kills :"
+    },
+    "rifle_kills":{
+        "title" : "The Fundementals",
+        "award" : "Rifle Kills :"
+    },
+    "knife_kills":{
+        "title" : "The Sociopath",
+        "award" : "Melee Kills :"
+    },
+    "second_half_kill_increase":{
+        "title" : "The Round Mound of Rebounds",
+        "award" : "Kill Increase in Second Half :"
+        NIT IMPLMENET
+    },
+    "kill_from_behind":{
+        "title" : "The Sneaky Bastard",
+        "award" : "Kill from Behind"
+        not impmemnt
+    },
+    "ninja_defuses":{
+        
     }
+    
+
+    
 }

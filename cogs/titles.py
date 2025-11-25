@@ -7,6 +7,7 @@ import os
 import copy
 from dotenv import load_dotenv
 from typing import List
+import math
 logger = logging.getLogger('discord.titles')
 
 load_dotenv()
@@ -86,11 +87,9 @@ class Player():
         self.set_unique_weapon_kills()
         self.set_targeted_kills(all_players_data)
         self.set_assists()
-        self.title_stats["phantom_kills"]=len([
-            kill
-            for kill in self.my_kills
-            if kill["weapon"]["name"] == "Phantom"
-        ])
+        self.set_weapon_types_kills()
+        if self.name == "Peafowl":
+            self.set_kills_by_ranges()
 
         
 
@@ -185,6 +184,28 @@ class Player():
     def set_assists(self):
         self.title_stats["assists"] = self.base_stats["assists"]
 
+    def set_ability_kills(self):
+        self.title_stats["ability_kills"]=len([
+            kill
+            for kill in self.my_kills
+            if kill["weapon"]["type"] == "Ability"
+        ])
+
+    def set_weapon_types_kills(self):
+        pistols = ["Classic", "Frenzy", "Sheriff", "Ghost"]
+        smgs = ["Stinger", "Spectre"]
+        shotguns = ["Shorty", "Judge", "Bucky"]
+        snipers = ["Marshall", "Outlaw", "Operator"]
+        lmgs = ["Ares", "Odin"]
+        rifles = ["Bulldog", "Phantom", "Vandal","Guardian"]
+        knives = ["Knife", "Melee"]
+        pistol_kills = []
+        smg_kills = []
+        lmg_kills = []
+        shotgun_kills = []
+        sniper_kills = []
+        rifle_kills = []
+        knife_kills = []
 
 class Match():
     def __init__(self, match_json, main_player_id):
