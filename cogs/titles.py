@@ -87,6 +87,8 @@ class Player():
         self.set_unique_weapon_kills()
         self.set_targeted_kills(all_players_data)
         self.set_assists()
+        self.set_ability_kills()
+        self.set_kills_by_ranges()
         self.set_weapon_types_kills()
         if self.name == "Peafowl":
             self.set_kills_by_ranges()
@@ -233,20 +235,28 @@ class Player():
         self.title_stats["knife_kills"] = len(knife_kills)
     
     def set_kills_by_ranges(self):
+
+        kill_distances =[]
+
         for kill in self.my_kills:
             killer_name = self.name
             victim_name = kill["victim"]["name"]
             victim_x = kill["location"]["x"]
             victim_y = kill["location"]["y"]
             for player_data in kill["player_locations"]:
-                #print(f"We are at player data {player_data}")
                 if player_data["player"]["name"] == killer_name:
                     killer_x = player_data["location"]["x"]
                     killer_y = player_data["location"]["y"]
                     distance = math.sqrt((killer_x - victim_x)**2 + (killer_y - victim_y)**2)
                     distance_in_meters = round(distance/100,1)
-                    print(f"Distance: {distance_in_meters}, victim = {victim_name}")
-                    break
+                    kill_distances.append(distance_in_meters)
+
+        short_range_kills = [distance for distance in kill_distances if distance<=7.5]
+        long_range_kills = [distance for distance in kill_distances if distance>=34]
+
+        self.title_stats["short_range_kills"] = len(short_range_kills)
+        self.title_stats["long_range_kills"] = len(long_range_kills)
+
 class Match():
     def __init__(self, match_json, main_player_id):
 
@@ -286,6 +296,7 @@ class Match():
                                     all_players_data=self.player_data)
             self.main_players.append(player_object)
 
+        self.get_zs()
 
     def str_main_players(self):
         message = ""
@@ -293,6 +304,49 @@ class Match():
             message += str(player)
             message += "\n"
         return message
+    
+    def get_titles_from_tiers(self):
+        pass
+    def get_zs(self):
+
+        with open("titlesFakeComplete.json", "r") as file:    
+            titles_dict = json.load(file)
+
+        player_best_z_scores = {}
+
+        for stat in titles_dict:
+            players_score_in_this_stat = {}
+            player_titles_manger = {}
+            for player in self.main_players:
+                players_score_in_this_stat[player.name] = player.title_stats[stat]
+            all_scores = [score for score in players_score_in_this_stat.values()]
+            print(f"All_scores for {stat} = {all_scores}")
+
+            mean = sum(all_scores)/len(all_scores)
+            print(f"The mean is {mean}")
+
+            numerator = sum([(score-mean)**2 for score in all_scores])
+            standard_dev = math.sqrt(numerator/(len(all_scores)-1))
+            print(f"The standard dev is {standard_dev}")
+
+            if standard_dev == 0:
+                print(f"All players have the same {stat} score")
+                continue
+
+            for player in players_score_in_this_stat:
+                z = (players_score_in_this_stat[player] - mean)/standard_dev
+                print(f"Player {player} has a z score of {z}")
+
+                if player not in player_best_z_scores or z > player_best_z_scores[player]['z_score']:
+                    player_best_z_scores[player] = {
+                        'z_score': z,
+                        'title': titles_dict[stat],
+                        'stat': stat
+                    }
+    
+            for player, data in player_best_z_scores.items():
+                #player_titles_manger[player] = data['title']
+                print(f"{player} gets title '{data['title']}")
 
         
 def get_last_match(puuid, match_type = None):
@@ -336,10 +390,10 @@ class Titles(commands.Cog):
     async def last_match_test(self,ctx):
         match_data = get_last_premier_match_stats()
         match = create_match_object_from_last_premier(match_data=match_data, main_player_id='64792ac3-0873-55f5-9348-725082445eef')
-        for player in match.main_players:
-            message = f"{player.name}:\n "
-            message += json.dumps(player.get_title_stats(), indent=4)
-            await ctx.send(message)
+        # for player in match.main_players:
+        #     message = f"{player.name}:\n "
+        #     message += json.dumps(player.get_title_stats(), indent=4)
+        #     await ctx.send(message)
 
 async def setup(bot):
     """
