@@ -155,8 +155,7 @@
         "minimum" : 10
     },
     "ninja_defuses": {
-        "title": "The Spy",
-        "award": "Ninja Defuses :",
-        "implemented": false
+        "title": "The Sneaky Bastard",
+        "award": "Defuses with Enemies Alive :"
     }
 }

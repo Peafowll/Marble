@@ -1,4 +1,5 @@
 from discord.ext import commands, tasks
+import discord
 import json
 import requests
 import datetime
@@ -274,12 +275,16 @@ class Player():
 
     def set_defuses(self,round_data):
         defuses = 0
+        ninja_defuses = 0
         for round_details in round_data:
             if round_details["defuse"]:
                 if round_details["defuse"]["player"]["name"] == self.name:
                     defuses+=1
+                    if round_details["defuse"]["player_locations"] and any([player for player in round_details["defuse"]["player_locations"] if player.get("team") != self.team_id]):
+                        ninja_defuses+=1
         
         self.title_stats["defuses"] = defuses
+        self.title_stats["ninja_defuses"] = ninja_defuses
     
     def set_bloods(self, kills_data):
         first_bloods = 0
@@ -333,6 +338,11 @@ class Player():
 
         self.title_stats["rebound_percentage"] = rebound_percentage
 
+    def set_time_alive(self, round_data):
+        pass
+        #This will be developed later.
+    
+            
 class Match():
     def __init__(self, match_json, main_player_id):
 
@@ -372,6 +382,13 @@ class Match():
                                     all_players_data=self.player_data)
             self.main_players.append(player_object)
 
+        self.main_players.sort(key=lambda player: player.base_stats["score"], reverse=True)
+        
+        self.map_name = self.meta_data["map"]["name"]
+        self.date = self.meta_data["started_at"].split("T")[0]
+        
+        self._set_team_scores()
+
         self.get_titles_from_zs()
 
     def str_main_players(self):
@@ -381,6 +398,36 @@ class Match():
             message += "\n"
         return message
     
+    def _set_team_scores(self):
+        """Extract round wins for each team"""
+        for team in self.team_data:
+            if team["team_id"] == self.main_team_id:
+                self.main_team_rounds_won = team["rounds"]["won"]
+                self.main_team_rounds_lost = team["rounds"]["lost"]
+            else:
+                self.enemy_team_rounds_won = team["rounds"]["won"]
+                self.enemy_team_rounds_lost = team["rounds"]["lost"]
+
+    def get_main_team_score(self):
+        """Returns main team's round score"""
+        return self.main_team_rounds_won
+
+    def get_enemy_team_score(self):
+        """Returns enemy team's round score"""
+        return self.main_team_rounds_lost
+
+    def get_match_score_string(self):
+        """Returns formatted score string"""
+        return f"**{self.main_team_rounds_won}** — **{self.main_team_rounds_lost}**"
+
+    def get_map_name(self):
+        """Returns map name"""
+        return self.map_name
+
+    def get_match_date(self):
+        """Returns match start date."""
+        return self.date
+
     def get_titles_from_zs(self):
 
         with open("titles.json", "r") as file:    
@@ -421,10 +468,8 @@ class Match():
                 z = (players_score_in_this_stat[player] - mean)/standard_dev
                 if is_reverse:
                     z = -z
-                print(f"Player {player} has a z score of {z}")
 
                 z_weighted = z * weight
-                print(f"Player {player} has a weighted z-stat of {z_weighted}")
 
                 if player not in player_z_scores:
                     player_z_scores[player] = []
@@ -433,7 +478,7 @@ class Match():
                     'title': titles_dict[stat],
                     'stat_nr' :players_score_in_this_stat[player]})
                 
-            print("=====================================")
+
 
         threshold = 0.3  # The max range of z-scores between titles
 
@@ -442,7 +487,7 @@ class Match():
             max_z = z_score_list[0]['z_score']
 
             close_titles = [title for title in z_score_list if max_z - title['z_score'] <= threshold]
-            
+
             #filter for minimums
             close_titles = [title for title in close_titles if title["stat_nr"] >= title["title"].get("minimum", 0)]
 
@@ -489,7 +534,7 @@ class Match():
         #     print(f"{player} gets title '{data['title']}")
             
     def get_title_manager(self):
-        return self.title_manager()
+        return self.title_manager
     
 
         
@@ -527,7 +572,7 @@ class Titles(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):   
-        logger.log("Activity cog loaded!")
+        logger.log("Titles cog loaded!")
 
     @commands.command(hidden=True)
     @commands.is_owner()
@@ -538,6 +583,54 @@ class Titles(commands.Cog):
             message = f"{player.name}:\n "
             message += json.dumps(player.get_title_stats(), indent=4)
             await ctx.send(message)
+
+    @commands.command(hidden=True)
+    @commands.is_owner()
+    async def force_send_premier_results(self,ctx):
+        match_data = get_last_premier_match_stats()
+        match = create_match_object_from_last_premier(match_data=match_data, main_player_id='64792ac3-0873-55f5-9348-725082445eef')
+        rounds_won = match.get_main_team_score()
+        rounds_lost = match.get_enemy_team_score()
+        map_name = match.get_map_name()
+        date = match.get_match_date()
+
+        result = "🟢 **WIN**" if rounds_won > rounds_lost else "🔴 **LOSS**"
+        score_line = f"**DAG** {rounds_won} — {rounds_lost} **Opponents**"
+
+        map_image = discord.File(f"map_photos/{map_name.lower()}.jpeg",filename="map_image.jpeg")
+        embed = discord.Embed(
+            title="DAG Match Report",
+            colour=0xf50000,
+            timestamp=datetime.datetime.now(),
+            description=(
+                f"{result}\n"
+                f"{score_line}\n\n"
+                f"🗺️ **Map:** `{map_name}`\n"
+                f"📅 **Date:** `{date}`"
+            )
+        )
+        title_manager = match.get_title_manager()
+        #print(title_manager)
+        for player in match.main_players:
+            player_name = player.name
+            title_name = title_manager[player_name]["title_name"]
+            award_text = title_manager[player_name]["award_text"]
+            stat_count = title_manager[player_name]["stat_count"]
+            kill_count = player.base_stats['kills']
+            assist_count = player.base_stats['assists']
+            death_count = player.base_stats['deaths']
+            embed.add_field(
+            name=f"{player.name} (*{player.agent}*) : **{kill_count}** / **{death_count}** / **{assist_count}**",
+                value=(
+                    f"《 **{title_name}** 》\n"
+                    f" > {award_text} "
+                    f"{stat_count}\n"
+                    "\n"
+                ),
+                inline=False
+            )
+        embed.set_image(url="attachment://map_image.jpeg")
+        await ctx.send(file=map_image,embed=embed)
 
 async def setup(bot):
     """
