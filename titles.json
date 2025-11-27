@@ -7,12 +7,14 @@
     "double_kills": {
         "title": "The Jack",
         "award": "Double Kills :",
-        "weight": 1
+        "weight": 0.8,
+        "minimum" : 3
     },
     "triple_kills": {
         "title": "The Queen",
         "award": "Triple Kills :",
-        "weight": 1
+        "weight": 0.9,
+        "minimum" : 2
     },
     "quadra_kills": {
         "title": "The King",
@@ -66,7 +68,7 @@
         "weight": 0.9
     },
     "plants": {
-        "title": "The ",
+        "title": "The Demolitionist",
         "award": "Spikes Planted :",
         "weight" : 0.7
     },
@@ -100,10 +102,16 @@
         "award": "Time Spend Alive :",
         "implemented": false
     },
-    "clutches": {
-        "title": "The Underdog",
-        "award": "Clutches :",
-        "implemented": false
+    "outnumbered_clutches": {
+        "title": "The One-Man Army",
+        "award": "Outnumbered Clutches :",
+        "weight" : 1
+    },
+    "1v1_clutches":{
+        "title" : "The Checkmate",
+        "award" : "1v1 Clutches :",
+        "weight" : 1,
+        "minimum" : 2
     },
     "pistol_kills": {
         "title": "The Desperado",
@@ -140,10 +148,11 @@
         "award": "Melee Kills :",
         "weight": 2
     },
-    "second_half_kill_increase": {
+    "rebound_percentage": {
         "title": "The Round Mound of Rebound",
         "award": "Kill Increase in Second Half :",
-        "implemented": false
+        "weight" : 0.9,
+        "minimum" : 10
     },
     "ninja_defuses": {
         "title": "The Spy",

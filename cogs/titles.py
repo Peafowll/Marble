@@ -96,8 +96,8 @@ class Player():
         self.set_plants(round_data=round_data)
         self.set_defuses(round_data=round_data)
         self.set_bloods(kills_data=kill_data)
-        if self.name == "Peafowl":
-            self.set_kills_by_ranges()
+        self.set_clutches(round_data=round_data, kill_data=kill_data)
+        self.set_rebound_percent()
 
         
 
@@ -265,24 +265,23 @@ class Player():
 
     def set_plants(self,round_data):
         plants = 0
-        for round in round_data:
-            if round["plant"]:
-                if round["plant"]["player"]["name"] == self.name:
+        for round_details in round_data:
+            if round_details["plant"]:
+                if round_details["plant"]["player"]["name"] == self.name:
                     plants+=1
         
         self.title_stats["plants"] = plants
 
     def set_defuses(self,round_data):
         defuses = 0
-        for round in round_data:
-            if round["defuse"]:
-                if round["defuse"]["player"]["name"] == self.name:
+        for round_details in round_data:
+            if round_details["defuse"]:
+                if round_details["defuse"]["player"]["name"] == self.name:
                     defuses+=1
         
         self.title_stats["defuses"] = defuses
     
     def set_bloods(self, kills_data):
-        current_round = -1
         first_bloods = 0
         last_bloods = 0
         kills_by_round = {}
@@ -302,6 +301,37 @@ class Player():
         self.title_stats["first_bloods"] = first_bloods
         self.title_stats["last_bloods"] = first_bloods
 
+        #NOTE : The last_bloods also tracks kills that were obtained after a round's winner has been declared
+
+    def set_clutches(self,round_data, kill_data):
+        one_v_one_clutches = 0
+        out_numbered_clutches = 0
+        for round_details in round_data: # looking at all rounds
+            round_ceremony = round_details["ceremony"]
+            round_kills = [kill for kill in kill_data if kill["round"] == round_details["id"]] #getting all kills from this round
+
+            if round_kills:
+                last_kill = round_kills[-1]
+                clutcher_name = last_kill["killer"]["name"]
+                if clutcher_name == self.name:
+                    if round_ceremony== "CeremonyCloser": #1v1 clutches
+                        one_v_one_clutches+=1
+                    elif round_ceremony == "CeremonyClutch": #1vMany clutches
+                        out_numbered_clutches+=1
+            
+        self.title_stats["1v1_clutches"] = one_v_one_clutches
+        self.title_stats["outnumbered_clutches"] = out_numbered_clutches
+
+    def set_rebound_percent(self):
+        kills_in_second_half = [kill for kill in self.my_kills if kill["round"]>12]
+        kills_in_first_half = [kill for kill in self.my_kills if kill["round"]<=12]
+
+        kill_count_first_half = len(kills_in_first_half)
+        kill_count_second_half = len(kills_in_second_half)
+
+        rebound_percentage = ((kill_count_second_half-kill_count_first_half)/kill_count_first_half)*100
+
+        self.title_stats["rebound_percentage"] = rebound_percentage
 
 class Match():
     def __init__(self, match_json, main_player_id):
@@ -342,7 +372,7 @@ class Match():
                                     all_players_data=self.player_data)
             self.main_players.append(player_object)
 
-        #self.get_titles_from_zs()
+        self.get_titles_from_zs()
 
     def str_main_players(self):
         message = ""
@@ -358,8 +388,14 @@ class Match():
 
         self.title_manager = {}
         player_z_scores = {}
+        
+        #LOGGING
+        log_file = open("titles_attribution_log.txt", "w")
+        #LOGGING
 
         for stat in titles_dict:
+            if not titles_dict[stat].get("implemented", True):
+                continue
             players_score_in_this_stat = {}
             for player in self.main_players:
                 players_score_in_this_stat[player.name] = player.title_stats[stat]
@@ -406,19 +442,37 @@ class Match():
             max_z = z_score_list[0]['z_score']
 
             close_titles = [title for title in z_score_list if max_z - title['z_score'] <= threshold]
+            
+            #filter for minimums
+            close_titles = [title for title in close_titles if title["stat_nr"] >= title["title"].get("minimum", 0)]
 
             close_title_names = [title["title"]["title"] for title in close_titles]
 
             print(f"Title candidates for {player} are : {close_title_names}")
+            
+            #LOGGING
+            log_file.write(f"\n{'='*80}\n")
+            log_file.write(f"PLAYER: {player}\n")
+            log_file.write(f"{'='*80}\n")
+            log_file.write(f"{'Title':<30} {'Stat':<30} {'Z-Score':<15} {'Stat Count':<15}\n")
+            log_file.write(f"{'-'*90}\n")
+            
+            for title_data in z_score_list:
+                title_name = title_data["title"]["title"]
+                stat_name = title_data["title"]["award"]
+                z_score = title_data['z_score']
+                stat_count = title_data["stat_nr"]
+                log_file.write(f"{title_name:<30} {stat_name:<30} {z_score:<15.4f} {stat_count:<15}\n")
 
-            if len(close_titles)> 1:
+            if len(close_titles) > 1:
                 min_z = min(title['z_score'] for title in close_titles) # for shifting weights
                 weights = [title['z_score'] - min_z + 1 for title in close_titles]
                 chosen_title = random.choices(close_titles, weights=weights, k=1)[0]
             else:
                 chosen_title = close_titles[0]
             
-            #pprint(f"chosentitle = {chosen_title}")
+            log_file.write(f"\n>>> ASSIGNED TITLE: {chosen_title['title']['title']}\n\n")
+            #LOGGING
 
             self.title_manager[player] = {
                 "title_name" : chosen_title["title"]["title"],
@@ -426,8 +480,10 @@ class Match():
                 "stat_count" : chosen_title["stat_nr"]
             }
 
+        #LOGGING
+        log_file.close()
+        #LOGGING
 
-        pprint(self.title_manager)
         # for player, data in player_best_z_scores.items():
         #     #player_titles_manger[player] = data['title']
         #     print(f"{player} gets title '{data['title']}")
