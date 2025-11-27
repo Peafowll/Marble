@@ -16,7 +16,7 @@ logger = logging.getLogger('discord.titles')
 
 load_dotenv()
 hv_token = os.getenv("HD_KEY")
-
+MARBLE_CHANNEL_ID = 1353156986547736758
 DAG_MEMBERS = {
     "peafowl": {
         "riot_name": "Peafowl",
@@ -48,7 +48,19 @@ DAG_MEMBERS = {
         "hv_id": "1c8ee468-4a77-5f18-b2c3-2016e0c74bba"
     }
 }
+
+DAG_EMOJIS ={
+    "Painite" : "💎",
+    "Peafowl" : "🦚",
+    "vladimus2005" : "🪩",
+    "Dani" : "🎯",
+    "yoyo15" : "🤙"
+}
 STANDARD_HEADERS = {"Authorization": hv_token}
+
+
+def get_emoji_from_player_name(player_name : str):
+    return DAG_EMOJIS.get(player_name, "👤")
 
 class Player():
     def __init__(self, hv_puuid : str = "placeholder-id", name : str = "placeholder-name"):
@@ -386,7 +398,13 @@ class Match():
         
         self.map_name = self.meta_data["map"]["name"]
         self.date = self.meta_data["started_at"].split("T")[0]
-        
+
+        self.enemy_team_tag = "Opponents"
+        for team in self.team_data:
+            if team["team_id"] != self.main_team_id:
+                if team["premier_roster"]:
+                    self.enemy_team_tag = team["premier_roster"]["tag"]
+
         self._set_team_scores()
 
         self.get_titles_from_zs()
@@ -408,6 +426,8 @@ class Match():
                 self.enemy_team_rounds_won = team["rounds"]["won"]
                 self.enemy_team_rounds_lost = team["rounds"]["lost"]
 
+    def get_enemy_team_tag(self):
+        return self.enemy_team_tag
     def get_main_team_score(self):
         """Returns main team's round score"""
         return self.main_team_rounds_won
@@ -570,9 +590,77 @@ class Titles(commands.Cog):
     def __init__(self,bot):
         self.bot = bot
 
+
+    def get_response_from_match_score(self,our_score, enemy_score, team_name="**DAG**"):
+        score_diff = our_score - enemy_score
+        is_overtime = our_score >= 13 or enemy_score >= 13
+
+        responses = []
+          
+        # --- Wins ---
+        if score_diff >= 7:
+            # Stomp
+            responses = [
+                f"Incredible performance, {team_name}! You absolutely dominated out there. Let's see what you each did well.",
+                f"What a statement win, {team_name}! The opposition never stood a chance. Let's see those stats.",
+                f"Flawless execution, {team_name}! That's how champions play. Your awards await below."
+            ]
+        elif 4 <= score_diff < 7:
+            # Solid Win
+            responses = [
+                f"Strong showing today, {team_name}! That's some great consistency. Match report incoming.",
+                f"Well-earned victory, {team_name}. Ups and down, but closed it out. Check your performance below.",
+                f"Professional performance, {team_name}! You played like the pros do. Let's see what you all specialized in."
+            ]
+        elif 1 <= score_diff < 4:
+            # Close Win
+            if is_overtime:
+                responses = [
+                    f"GREAT Overtime, {team_name}! You kept your composure when it mattered most. That's championship mentality right there.",
+                    f"What resilience, {team_name}! Overtime wins are the mark of a great team. Your match report tells the story.",
+                    f"Nerves of steel in overtime, {team_name}! Those are the wins that build legends. Check out your titles below."
+                ]
+            else:
+                responses = [
+                    f"Heart-pounding victory, {team_name}! You stayed focused under pressure and won. Match report below.",
+                    f"Close battles forge strong teams, {team_name}. Great mental fortitude today! Now let's see those stats.",
+                    f"You grinded it out and came out on top, {team_name}. That's the winning mentality! Report incoming."
+                ]
+
+        # --- Losses ---
+        elif -4 < score_diff <= -1:
+            # Close loss
+            if is_overtime:
+                responses = [
+                    f"Overtime heartbreaker, {team_name}, but you fought with everything you had. Hold your heads high and check your titles.",
+                    f"So close in overtime, {team_name}. That competitive fire is exactly what we need. Review your stats and come back stronger.",
+                    f"Tough overtime loss, {team_name}, but you proved you can compete with anyone. The match report shows some accolades to cheer you up."
+                ]
+            else:
+                responses = [
+                    f"Narrow defeat, {team_name}, but you battled hard to the end. Check your individual performances below - we'll get the next one.",
+                    f"Just a few rounds away, {team_name}. Your effort was there, now let's sharpen the execution. Match report ready.",
+                    f"You competed well today, {team_name}. Let's get motivated for the next game with some accolades you've earned. Check below."
+                ]
+        elif -7 < score_diff <= -4:
+            # Solid loss
+            responses = [
+                f"Tough game, {team_name}, but every setback is a setup for a comeback. Next time, you've got this.",
+                f"Not our day, {team_name}, but champions learn from losses. Your performance breakdown is below.",
+                f"We've got work to do, {team_name}, but the effort is there. Next game, we'll come back stronger. Titles below."
+            ]
+        else:
+            # Stomp loss
+            responses = [
+                f"Rough match, {team_name}, but even the best teams have off days. Here are some titles to maybe cheer you up.",
+                f"That was a tough one, {team_name}, but adversity builds character. Your match report is below - use it as fuel for the next game.",
+                f"Not the result we wanted, {team_name}, but stay determined. We've still got some work to do. Stats below."
+            ]
+            
+        return random.choice(responses)
     @commands.Cog.listener()
     async def on_ready(self):   
-        logger.log("Titles cog loaded!")
+        logger.info("Titles cog on_ready triggered.")
 
     @commands.command(hidden=True)
     @commands.is_owner()
@@ -586,16 +674,16 @@ class Titles(commands.Cog):
 
     @commands.command(hidden=True)
     @commands.is_owner()
-    async def force_send_premier_results(self,ctx):
+    async def force_send_premier_results(self,ctx, location = "here"):
         match_data = get_last_premier_match_stats()
         match = create_match_object_from_last_premier(match_data=match_data, main_player_id='64792ac3-0873-55f5-9348-725082445eef')
         rounds_won = match.get_main_team_score()
         rounds_lost = match.get_enemy_team_score()
         map_name = match.get_map_name()
         date = match.get_match_date()
-
-        result = "🟢 **WIN**" if rounds_won > rounds_lost else "🔴 **LOSS**"
-        score_line = f"**DAG** {rounds_won} — {rounds_lost} **Opponents**"
+        enemy_team_tag = match.get_enemy_team_tag()
+        result = "🟢 **WIN** 🟢" if rounds_won > rounds_lost else "🔴 **LOSS** 🔴"
+        score_line = f"**DAG** {rounds_won} — {rounds_lost} **{enemy_team_tag}**"
 
         map_image = discord.File(f"map_photos/{map_name.lower()}.jpeg",filename="map_image.jpeg")
         embed = discord.Embed(
@@ -619,8 +707,9 @@ class Titles(commands.Cog):
             kill_count = player.base_stats['kills']
             assist_count = player.base_stats['assists']
             death_count = player.base_stats['deaths']
+            player_emoji = get_emoji_from_player_name(player_name=player_name)
             embed.add_field(
-            name=f"{player.name} (*{player.agent}*) : **{kill_count}** / **{death_count}** / **{assist_count}**",
+            name=f"{player_emoji}  {player.name} (*{player.agent}*) : **{kill_count}** / **{death_count}** / **{assist_count}**",
                 value=(
                     f"《 **{title_name}** 》\n"
                     f" > {award_text} "
@@ -630,7 +719,15 @@ class Titles(commands.Cog):
                 inline=False
             )
         embed.set_image(url="attachment://map_image.jpeg")
-        await ctx.send(file=map_image,embed=embed)
+        message = self.get_response_from_match_score(our_score=rounds_won, enemy_score=rounds_lost) + "\n"
+        if location == "server":
+            channel = self.bot.get_channel(MARBLE_CHANNEL_ID)
+            if channel is None:
+                channel = await self.bot.fetch_channel(MARBLE_CHANNEL_ID)
+            await channel.send(content=message ,file=map_image,embed=embed)
+        else:
+            await ctx.send(content=message ,file=map_image,embed=embed)
+
 
 async def setup(bot):
     """
