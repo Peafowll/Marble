@@ -1,136 +1,158 @@
 {
-    "hs_percentage" : {
-        "title" : "The Headhunter",
-        "award" : "Headshot Percentage :"
+    "hs_percentage": {
+        "title": "The Headhunter",
+        "award": "Headshot Percentage :",
+        "weight": 1
     },
-    "double_kills" : {
-        "title" : "The Jack",
-        "award" : "Double Kills :"
+    "double_kills": {
+        "title": "The Jack",
+        "award": "Double Kills :",
+        "weight": 1
     },
-    "triple_kills" :{
-        "title" : "The Queen",
-        "award" : "Triple Kills :"
+    "triple_kills": {
+        "title": "The Queen",
+        "award": "Triple Kills :",
+        "weight": 1
     },
-    "quadra_kills" :{
-        "title" : "The King",
-        "award" : "Quadra Kills :"
+    "quadra_kills": {
+        "title": "The King",
+        "award": "Quadra Kills :",
+        "weight": 1
     },
-    "aces" :{
-        "title" : "The Ace",
-        "award" : "Aces :"
+    "aces": {
+        "title": "The Ace",
+        "award": "Aces :",
+        "weight": 2
     },
-    "hexakills" : {
-        "title" : "The Joker",
-        "award" : "Hexakills :"
+    "hexakills": {
+        "title": "The Joker",
+        "award": "Hexakills :",
+        "weight": 5
     },
-    "damage_dealt" : {
-        "title" : "The Pain Train",
-        "award" : "Damage Dealt :"
+    "damage_dealt": {
+        "title": "The Pain Train",
+        "award": "Damage Dealt :",
+        "weight": 1
     },
-    "deaths" :{
-        "title" : "The Survivalist",
-        "award" : "Least Deaths :"
+    "deaths": {
+        "title": "The Survivalist",
+        "award": "Least Deaths :",
+        "weight": 0.8,
+        "reverse": true
     },
-    "unique_weapon_kills" : {
-        "title" : "The Renegade",
-        "award" : "Unique Weapon Kills :"
+    "unique_weapon_kills": {
+        "title": "The Renegade",
+        "award": "Unique Weapon Kills :",
+        "weight": 1
     },
-    "enemy_top_frag_killed" :{
-        "title" : "The Answer",
-        "award" : "Kills on Enemy Top Fragger :"
+    "enemy_top_frag_killed": {
+        "title": "The Answer",
+        "award": "Kills on Enemy Top Fragger :",
+        "weight": 1.2
     },
-    "enemy_bottom_frag_killed":{
-        "title" : "The Question",
-        "award" : "Kills on Enemy Bottom Fragger :"
+    "enemy_bottom_frag_killed": {
+        "title": "The Question",
+        "award": "Kills on Enemy Bottom Fragger :",
+        "weight": 1.3
     },
-    "assists":{
-        "title" : "The Magic",
-        "award" : "Assists :"
+    "assists": {
+        "title": "The Magic",
+        "award": "Assists :",
+        "weight": 1
     },
-    "ability_kills" :{
-        "title" : "The Caster",
-        "award" : "Ability Kills :"
+    "ability_kills": {
+        "title": "The Caster",
+        "award": "Ability Kills :",
+        "weight": 0.9
     },
-    "plants" : {
-        "title" : "The ",
-        "award" : "Spikes Planted :"
-        NOT IMPLMENET        
+    "plants": {
+        "title": "The ",
+        "award": "Spikes Planted :",
+        "implemented": false
     },
-    "defuses" :{
-        "tile" : "The Savior",
-        "award" : "Spikes Defused :",
-        NOT IMPLMENET
+    "defuses": {
+        "title": "The Savior",
+        "award": "Spikes Defused :",
+        "implemented": false
     },
-    "first_bloods" :{
-        "title" : "The Opener",
-        "award" : "First Bloods :"
-        NOT IMPLMENET
+    "first_bloods": {
+        "title": "The Opener",
+        "award": "First Bloods :",
+        "implemented": false
     },
-    "last_bloods":{
-        "title" : "The Closer",
-        "award" : "Finisher Kills :"
+    "last_bloods": {
+        "title": "The Closer",
+        "award": "Finisher Kills :",
+        "implemented" : false
     },
-    "long_range_kills":{
-        "title" : "The Laser",
-        "award" : "Long Range Kills :"
+    "long_range_kills": {
+        "title": "The Laser",
+        "award": "Long Range Kills :",
+        "weight": 1
     },
-    "short_range_kills":{
-        "title" : "The CQB",
-        "award" : "Close Range Kills :"
-        NOT IMPLMENET
+    "short_range_kills": {
+        "title": "The CQB",
+        "award": "Close Range Kills :",
+        "weight": 1
     },
-    "total_time_alive":{
-        "title" : "The Persistent",
-        "award" : "Time Spend Alive :"
-        NOT IMPLMENET
+    "total_time_alive": {
+        "title": "The Persistent",
+        "award": "Time Spend Alive :",
+        "implemented": false
     },
-    "clutches" :{
-        "title" : "The Underdog",
-        "award" : "Clutches :"
-        NT IMPLMENET
+    "clutches": {
+        "title": "The Underdog",
+        "award": "Clutches :",
+        "implemented": false
     },
-    "pistol_kills":{
-        "title" : "The Desperado",
-        "award" : "Pistol Kills :"
+    "pistol_kills": {
+        "title": "The Desperado",
+        "award": "Pistol Kills :",
+        "weight": 1.1
     },
-    "shotgun_kills":{
-        "title" : "The Overkill",
-        "award" : "Shotgun Kills :"
+    "shotgun_kills": {
+        "title": "The Overkill",
+        "award": "Shotgun Kills :",
+        "weight": 1
     },
-    "sniper_kills":{
-        "title" : "The Sniper",
-        "award" : "Sniper Kills :"
+    "sniper_kills": {
+        "title": "The Sniper",
+        "award": "Sniper Kills :",
+        "weight": 1.1
     },
-    "lmg_kills":{
-        "title" : "The Bulletstorm",
-        "award" : "LMG Kills :"
+    "lmg_kills": {
+        "title": "The Bulletstorm",
+        "award": "LMG Kills :",
+        "weight": 1.2
     },
-    "smg_kills":{
-        "title" : "The Surefire",
-        "award" : "SMG Kills :"
+    "smg_kills": {
+        "title": "The Surefire",
+        "award": "SMG Kills :",
+        "weight": 1
     },
-    "rifle_kills":{
-        "title" : "The Fundementals",
-        "award" : "Rifle Kills :"
+    "rifle_kills": {
+        "title": "The Fundementals",
+        "award": "Rifle Kills :",
+        "weight": 1
     },
-    "knife_kills":{
-        "title" : "The Sociopath",
-        "award" : "Melee Kills :"
+    "knife_kills": {
+        "title": "The Sociopath",
+        "award": "Melee Kills :",
+        "weight": 2
     },
-    "second_half_kill_increase":{
-        "title" : "The Round Mound of Rebounds",
-        "award" : "Kill Increase in Second Half :"
-        NIT IMPLMENET
+    "second_half_kill_increase": {
+        "title": "The Round Mound of Rebound",
+        "award": "Kill Increase in Second Half :",
+        "implemented": false
     },
-    "kill_from_behind":{
-        "title" : "The Sneaky Bastard",
-        "award" : "Kill from Behind"
-        not impmemnt
+    "kill_from_behind": {
+        "title": "The Sneaky Bastard",
+        "award": "Kill from Behind :",
+        "implemented": false
     },
-    "ninja_defuses":{
-        
+    "ninja_defuses": {
+        "title": "The Spy",
+        "award": "Ninja Defuses :",
+        "implemented": false
     }
-    
-
-    
 }

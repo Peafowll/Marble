@@ -8,6 +8,9 @@ import copy
 from dotenv import load_dotenv
 from typing import List
 import math
+import random
+from pprint import pprint
+
 logger = logging.getLogger('discord.titles')
 
 load_dotenv()
@@ -296,7 +299,7 @@ class Match():
                                     all_players_data=self.player_data)
             self.main_players.append(player_object)
 
-        self.get_zs()
+        self.get_titles_from_zs()
 
     def str_main_players(self):
         message = ""
@@ -305,18 +308,16 @@ class Match():
             message += "\n"
         return message
     
-    def get_titles_from_tiers(self):
-        pass
-    def get_zs(self):
+    def get_titles_from_zs(self):
 
         with open("titlesFakeComplete.json", "r") as file:    
             titles_dict = json.load(file)
 
-        player_best_z_scores = {}
+        self.title_manager = {}
+        player_z_scores = {}
 
         for stat in titles_dict:
             players_score_in_this_stat = {}
-            player_titles_manger = {}
             for player in self.main_players:
                 players_score_in_this_stat[player.name] = player.title_stats[stat]
             all_scores = [score for score in players_score_in_this_stat.values()]
@@ -332,22 +333,64 @@ class Match():
             if standard_dev == 0:
                 print(f"All players have the same {stat} score")
                 continue
+            
+            weight = titles_dict[stat].get("weight", 1.0)
+            is_reverse = titles_dict[stat].get("reverse", False)
+
 
             for player in players_score_in_this_stat:
                 z = (players_score_in_this_stat[player] - mean)/standard_dev
+                if is_reverse:
+                    z = -z
                 print(f"Player {player} has a z score of {z}")
 
-                if player not in player_best_z_scores or z > player_best_z_scores[player]['z_score']:
-                    player_best_z_scores[player] = {
-                        'z_score': z,
-                        'title': titles_dict[stat],
-                        'stat': stat
-                    }
-    
-            for player, data in player_best_z_scores.items():
-                #player_titles_manger[player] = data['title']
-                print(f"{player} gets title '{data['title']}")
+                z_weighted = z * weight
+                print(f"Player {player} has a weighted z-stat of {z_weighted}")
 
+                if player not in player_z_scores:
+                    player_z_scores[player] = []
+                player_z_scores[player].append({
+                    'z_score': z_weighted,
+                    'title': titles_dict[stat],
+                    'stat_nr' :players_score_in_this_stat[player]})
+                
+            print("=====================================")
+
+        threshold = 0.3  # The max range of z-scores between titles
+
+        for player, z_score_list in player_z_scores.items():
+            z_score_list.sort(key=lambda x: x['z_score'], reverse=True)
+            max_z = z_score_list[0]['z_score']
+
+            close_titles = [title for title in z_score_list if max_z - title['z_score'] <= threshold]
+
+            close_title_names = [title["title"]["title"] for title in close_titles]
+
+            print(f"Title candidates for {player} are : {close_title_names}")
+
+            if len(close_titles)> 1:
+                min_z = min(title['z_score'] for title in close_titles) # for shifting weights
+                weights = [title['z_score'] - min_z + 1 for title in close_titles]
+                chosen_title = random.choices(close_titles, weights=weights, k=1)[0]
+            else:
+                chosen_title = close_titles[0]
+            
+            #pprint(f"chosentitle = {chosen_title}")
+
+            self.title_manager[player] = {
+                "title_name" : chosen_title["title"]["title"],
+                "award_text" : chosen_title["title"]["award"],
+                "stat_count" : chosen_title["stat_nr"]
+            }
+
+
+        pprint(self.title_manager)
+        # for player, data in player_best_z_scores.items():
+        #     #player_titles_manger[player] = data['title']
+        #     print(f"{player} gets title '{data['title']}")
+            
+    def get_title_manager(self):
+        return self.title_manager()
         
 def get_last_match(puuid, match_type = None):
     url = f"https://api.henrikdev.xyz/valorant/v4/by-puuid/matches/eu/pc/{puuid}"
