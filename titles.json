@@ -68,22 +68,22 @@
     "plants": {
         "title": "The ",
         "award": "Spikes Planted :",
-        "implemented": false
+        "weight" : 0.7
     },
     "defuses": {
         "title": "The Savior",
         "award": "Spikes Defused :",
-        "implemented": false
+        "weight" : 0.8
     },
     "first_bloods": {
         "title": "The Opener",
         "award": "First Bloods :",
-        "implemented": false
+        "weight" : 1.1
     },
     "last_bloods": {
         "title": "The Closer",
         "award": "Finisher Kills :",
-        "implemented" : false
+        "weight" : 1
     },
     "long_range_kills": {
         "title": "The Laser",
@@ -143,11 +143,6 @@
     "second_half_kill_increase": {
         "title": "The Round Mound of Rebound",
         "award": "Kill Increase in Second Half :",
-        "implemented": false
-    },
-    "kill_from_behind": {
-        "title": "The Sneaky Bastard",
-        "award": "Kill from Behind :",
         "implemented": false
     },
     "ninja_defuses": {

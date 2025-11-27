@@ -93,6 +93,9 @@ class Player():
         self.set_ability_kills()
         self.set_kills_by_ranges()
         self.set_weapon_types_kills()
+        self.set_plants(round_data=round_data)
+        self.set_defuses(round_data=round_data)
+        self.set_bloods(kills_data=kill_data)
         if self.name == "Peafowl":
             self.set_kills_by_ranges()
 
@@ -260,6 +263,46 @@ class Player():
         self.title_stats["short_range_kills"] = len(short_range_kills)
         self.title_stats["long_range_kills"] = len(long_range_kills)
 
+    def set_plants(self,round_data):
+        plants = 0
+        for round in round_data:
+            if round["plant"]:
+                if round["plant"]["player"]["name"] == self.name:
+                    plants+=1
+        
+        self.title_stats["plants"] = plants
+
+    def set_defuses(self,round_data):
+        defuses = 0
+        for round in round_data:
+            if round["defuse"]:
+                if round["defuse"]["player"]["name"] == self.name:
+                    defuses+=1
+        
+        self.title_stats["defuses"] = defuses
+    
+    def set_bloods(self, kills_data):
+        current_round = -1
+        first_bloods = 0
+        last_bloods = 0
+        kills_by_round = {}
+        for kill in kills_data:
+            round_nr = kill["round"]
+            if round_nr not in kills_by_round:
+                kills_by_round[round_nr] = []
+            kills_by_round[round_nr].append(kill)
+        
+        for round_nr in sorted(kills_by_round.keys()):
+            round_kills = kills_by_round[round_nr]
+            if round_kills and round_kills[0]["killer"]["name"] == self.name:
+                first_bloods+=1
+            if round_kills and round_kills[-1]["killer"]["name"] == self.name:
+                last_bloods += 1
+        
+        self.title_stats["first_bloods"] = first_bloods
+        self.title_stats["last_bloods"] = first_bloods
+
+
 class Match():
     def __init__(self, match_json, main_player_id):
 
@@ -299,7 +342,7 @@ class Match():
                                     all_players_data=self.player_data)
             self.main_players.append(player_object)
 
-        self.get_titles_from_zs()
+        #self.get_titles_from_zs()
 
     def str_main_players(self):
         message = ""
@@ -310,7 +353,7 @@ class Match():
     
     def get_titles_from_zs(self):
 
-        with open("titlesFakeComplete.json", "r") as file:    
+        with open("titles.json", "r") as file:    
             titles_dict = json.load(file)
 
         self.title_manager = {}
@@ -391,6 +434,8 @@ class Match():
             
     def get_title_manager(self):
         return self.title_manager()
+    
+
         
 def get_last_match(puuid, match_type = None):
     url = f"https://api.henrikdev.xyz/valorant/v4/by-puuid/matches/eu/pc/{puuid}"
@@ -433,10 +478,10 @@ class Titles(commands.Cog):
     async def last_match_test(self,ctx):
         match_data = get_last_premier_match_stats()
         match = create_match_object_from_last_premier(match_data=match_data, main_player_id='64792ac3-0873-55f5-9348-725082445eef')
-        # for player in match.main_players:
-        #     message = f"{player.name}:\n "
-        #     message += json.dumps(player.get_title_stats(), indent=4)
-        #     await ctx.send(message)
+        for player in match.main_players:
+            message = f"{player.name}:\n "
+            message += json.dumps(player.get_title_stats(), indent=4)
+            await ctx.send(message)
 
 async def setup(bot):
     """
