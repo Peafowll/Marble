@@ -189,3 +189,9 @@ game_debug_*.log
 players.json
 tools
 data
+testValoMatch.json
+titles_attribution_log.txt
+testValoCompeMatch.json
+roundDataTest.json
+killsTest.json
+review.md

@@ -292,7 +292,7 @@ class Player():
             if round_details["defuse"]:
                 if round_details["defuse"]["player"]["name"] == self.name:
                     defuses+=1
-                    if round_details["defuse"]["player_locations"] and any([player for player in round_details["defuse"]["player_locations"] if player.get("team") != self.team_id]):
+                    if round_details["defuse"]["player_locations"] and any([player for player in round_details["defuse"]["player_locations"] if player["player"]["team"] != self.team_id]):
                         ninja_defuses+=1
         
         self.title_stats["defuses"] = defuses
@@ -316,7 +316,7 @@ class Player():
                 last_bloods += 1
         
         self.title_stats["first_bloods"] = first_bloods
-        self.title_stats["last_bloods"] = first_bloods
+        self.title_stats["last_bloods"] = last_bloods
 
         #NOTE : The last_bloods also tracks kills that were obtained after a round's winner has been declared
 
@@ -345,6 +345,13 @@ class Player():
 
         kill_count_first_half = len(kills_in_first_half)
         kill_count_second_half = len(kills_in_second_half)
+
+        if kill_count_first_half == 0:
+            if kill_count_second_half > 0:
+                self.title_stats["rebound_percentage"] = 999.0
+            else:
+                self.title_stats["rebound_percentage"] = 0.0
+            return
 
         rebound_percentage = ((kill_count_second_half-kill_count_first_half)/kill_count_first_half)*100
 
@@ -376,8 +383,11 @@ class Match():
                 found_player=True
                 break
 
-        if found_player == False:
-            return None
+        if not found_player:
+            raise ValueError(
+                f"Player with ID {main_player_id} not found in match data. "
+                f"Available players: {[p['player_id'] for p in self.player_data]}"
+            )
 
 
         self.main_players_data = [player for player in self.player_data if player["team_id"] == self.main_team_id]     
@@ -428,6 +438,7 @@ class Match():
 
     def get_enemy_team_tag(self):
         return self.enemy_team_tag
+    
     def get_main_team_score(self):
         """Returns main team's round score"""
         return self.main_team_rounds_won
@@ -448,6 +459,9 @@ class Match():
         """Returns match start date."""
         return self.date
 
+    def get_title_manager(self):
+        return self.title_manager
+    
     def get_titles_from_zs(self):
 
         with open("titles.json", "r") as file:    
@@ -456,9 +470,7 @@ class Match():
         self.title_manager = {}
         player_z_scores = {}
         
-        #LOGGING
-        log_file = open("titles_attribution_log.txt", "w")
-        #LOGGING
+        log_file = open("titles_attribution_log.txt", "w")#LOGGING
 
         for stat in titles_dict:
             if not titles_dict[stat].get("implemented", True):
@@ -502,15 +514,26 @@ class Match():
 
         threshold = 0.3  # The max range of z-scores between titles
 
-        for player, z_score_list in player_z_scores.items():
+        assigned_titles = set()
+
+        players_by_best_z = sorted(
+        player_z_scores.items(),
+        key=lambda x: max(title['z_score'] for title in x[1]),
+        reverse=True
+        )# sort players by their best z-score
+
+        for player, z_score_list in players_by_best_z:
             z_score_list.sort(key=lambda x: x['z_score'], reverse=True)
             max_z = z_score_list[0]['z_score']
 
             close_titles = [title for title in z_score_list if max_z - title['z_score'] <= threshold]
 
-            #filter for minimums
+            # Filter for minimums
             close_titles = [title for title in close_titles if title["stat_nr"] >= title["title"].get("minimum", 0)]
-
+            
+            # Filter out already-assigned titles
+            close_titles = [title for title in close_titles if title["title"]["title"] not in assigned_titles]
+    
             close_title_names = [title["title"]["title"] for title in close_titles]
 
             print(f"Title candidates for {player} are : {close_title_names}")
@@ -527,7 +550,20 @@ class Match():
                 stat_name = title_data["title"]["award"]
                 z_score = title_data['z_score']
                 stat_count = title_data["stat_nr"]
-                log_file.write(f"{title_name:<30} {stat_name:<30} {z_score:<15.4f} {stat_count:<15}\n")
+                already_used = " [TAKEN]" if title_name in assigned_titles else ""
+                log_file.write(f"{title_name:<30} {stat_name:<30} {z_score:<15.4f} {stat_count:<15}{already_used}\n")
+
+            # Handle case where all titles are taken - assign "The Heart"
+            if not close_titles:
+                total_rounds = self.main_team_rounds_won + self.main_team_rounds_lost
+                log_file.write(f"\n>>> WARNING: No unique titles available - assigning 'The Heart'\n\n")
+                
+                self.title_manager[player] = {
+                    "title_name": "The Heart",
+                    "award_text": "Rounds spent as the cheerleader of the team",
+                    "stat_count": total_rounds
+                }
+                continue
 
             if len(close_titles) > 1:
                 min_z = min(title['z_score'] for title in close_titles) # for shifting weights
@@ -535,6 +571,9 @@ class Match():
                 chosen_title = random.choices(close_titles, weights=weights, k=1)[0]
             else:
                 chosen_title = close_titles[0]
+            
+            # Mark title as assigned
+            assigned_titles.add(chosen_title["title"]["title"])
             
             log_file.write(f"\n>>> ASSIGNED TITLE: {chosen_title['title']['title']}\n\n")
             #LOGGING
@@ -553,18 +592,61 @@ class Match():
         #     #player_titles_manger[player] = data['title']
         #     print(f"{player} gets title '{data['title']}")
             
-    def get_title_manager(self):
-        return self.title_manager
-    
 
         
 def get_last_match(puuid, match_type = None):
+    """
+    Fetch the last match for a player from Henrik API.
+    
+    Args:
+        puuid: Player's Henrik API UUID
+        match_type: Optional filter (e.g., "premier", "competitive")
+    
+    Returns:
+        Dictionary containing match data
+        
+    Raises:
+        requests.RequestException: Network or API errors
+        ValueError: Invalid API response structure
+    """
     url = f"https://api.henrikdev.xyz/valorant/v4/by-puuid/matches/eu/pc/{puuid}"
     if match_type:
-        url+=f"?mode={match_type}"
-    response = requests.get(url, headers=STANDARD_HEADERS)
-    data = response.json()
-    return data["data"][0]
+        url += f"?mode={match_type}"
+    
+    try:
+        response = requests.get(
+            url, 
+            headers=STANDARD_HEADERS, 
+            timeout=10  # Prevent infinite hangs
+        )
+        response.raise_for_status()  # Raises exception for 4xx/5xx status codes
+        
+        data = response.json()
+        
+        # Validate response structure
+        if "data" not in data:
+            raise ValueError(f"API response missing 'data' field: {data}")
+        
+        if not data["data"]:
+            raise ValueError(f"No matches found for player {puuid}")
+        
+        return data["data"][0]
+        
+    except requests.Timeout:
+        logger.error(f"API request timed out for player {puuid}")
+        raise
+    except requests.HTTPError as e:
+        if e.response.status_code == 429:
+            logger.error("API rate limit exceeded")
+        else:
+            logger.error(f"API returned error {e.response.status_code}: {e}")
+        raise
+    except requests.RequestException as e:
+        logger.error(f"Network error fetching match for {puuid}: {e}")
+        raise
+    except (KeyError, IndexError, ValueError) as e:
+        logger.error(f"Unexpected API response structure: {e}")
+        raise
 
 def get_match_stats(match_id):
 
@@ -709,12 +791,10 @@ class Titles(commands.Cog):
             death_count = player.base_stats['deaths']
             player_emoji = get_emoji_from_player_name(player_name=player_name)
             embed.add_field(
-            name=f"{player_emoji}  {player.name} (*{player.agent}*) : **{kill_count}** / **{death_count}** / **{assist_count}**",
+            name=f"{player_emoji} {player.name}  •  {player.agent}  •  **{kill_count}** / **{death_count}** / **{assist_count}**",
                 value=(
-                    f"《 **{title_name}** 》\n"
-                    f" > {award_text} "
-                    f"{stat_count}\n"
-                    "\n"
+                    f"\n**【 {title_name} 】**\n"
+                    f"⠀*{award_text}* : **{stat_count}**"
                 ),
                 inline=False
             )

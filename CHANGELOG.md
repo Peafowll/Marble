@@ -1,4 +1,9 @@
-## [0.6.0]
+## [0.7.0] - 30-11-2025
+### Added
+- **Vaorant Match Report BETA**
+  - Although it's only a prototype, soon you will be able to see your Valorant Match reports! Stay tuned for more details.
+
+## [0.6.0] - 23-11-2025
 ### Added
 - **Weekly Activity Tracking**
   - Every Sunday, find out who spent the most time on voice chat!
