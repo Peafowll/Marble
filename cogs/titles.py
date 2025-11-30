@@ -16,6 +16,7 @@ logger = logging.getLogger('discord.titles')
 
 #TODO : CALL FOR ROLE
 #TODO : CONFIG
+#TODO : ADD TANGERINE AND LEMON
 
 load_dotenv()
 hv_token = os.getenv("HD_KEY")

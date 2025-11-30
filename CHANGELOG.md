@@ -1,3 +1,7 @@
+## [0.7.1] - 30-11-2025
+### Hotfix
+  - Fixed the headshot% formula
+
 ## [0.7.0] - 30-11-2025
 ### Added
 - **Vaorant Match Report BETA**
