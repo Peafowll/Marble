@@ -14,6 +14,11 @@ from pprint import pprint
 
 logger = logging.getLogger('discord.titles')
 
+#TODO : CALL FOR @DAG ROLE
+#TODO : CONFIG
+#TODO : ADD TANGERINE AND LEMON
+#TODO : ADD SURRENDER MESSAGE
+
 load_dotenv()
 hv_token = os.getenv("HD_KEY")
 MARBLE_CHANNEL_ID = 1353156986547736758
@@ -678,7 +683,13 @@ class Titles(commands.Cog):
         is_overtime = our_score >= 13 or enemy_score >= 13
 
         responses = []
-          
+        # Surrender
+        if our_score<=13 and enemy_score<=13:
+            responses = [
+                f"Got them quivering, {team_name}! They were so intimidated by you, they didn't even let the match end naturally. Your awards are below.",
+                f"Woah, {team_name}, way to do it to them! A forfeit means you dominated. Match report below."
+                f"Sheesh, {team_name}. White flags waving, and you winning! Perfect combination! Let's see how bad you crushed 'em."
+            ]
         # --- Wins ---
         if score_diff >= 7:
             # Stomp
