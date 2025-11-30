@@ -14,6 +14,9 @@ from pprint import pprint
 
 logger = logging.getLogger('discord.titles')
 
+#TODO : CALL FOR ROLE
+#TODO : CONFIG
+
 load_dotenv()
 hv_token = os.getenv("HD_KEY")
 MARBLE_CHANNEL_ID = 1353156986547736758
@@ -74,7 +77,8 @@ class Player():
         self.ability_casts = player_data["ability_casts"] # "grenade", "ability1", "ability2", "ultimate"
         self.title_stats = {}
 
-        self.title_stats["hs_percentage"] = round(self.base_stats["headshots"]/self.base_stats["bodyshots"]*100)
+        total_shots = self.base_stats["headshots"] + self.base_stats["bodyshots"] + self.base_stats["legshots"]
+        self.title_stats["hs_percentage"] = round(self.base_stats["headshots"] / total_shots * 100) if total_shots > 0 else 0
         self.title_stats["deaths"] = self.base_stats["deaths"]
         self.title_stats["damage_dealt"] = self.base_stats["damage"]["dealt"]
 
