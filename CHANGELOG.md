@@ -1,4 +1,4 @@
-## [0.7.1] -
+## [0.7.1] - 1-12-2025
 ### Added
   - When there's a surrender, Marble will now congratulate DAG on their outstanding perfomance.
   - Added role mentions for DAG match reports.
