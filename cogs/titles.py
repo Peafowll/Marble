@@ -28,55 +28,12 @@ from config import (
 
 logger = logging.getLogger('discord.titles')
 
-#TODO : CALL FOR @DAG ROLE (IMPLEMENTED BUT INTESTED)
-#TODO : CONFIG
+#TODO : CALL FOR @DAG ROLE (IMPLEMENTED BUT UNTESTED)
 #TODO : ADD TANGERINE AND LEMON
 #TODO : ADD AUTO-MESSAGE FOR PREMIER
 
 load_dotenv()
 hv_token = os.getenv("HD_KEY")
-MARBLE_CHANNEL_ID = 1353156986547736758
-DAG_ROLE_ID = 1443876656111685652
-YKTP_GUILD_ID = 890252683657764894
-DAG_MEMBERS = {
-    "peafowl": {
-        "riot_name": "Peafowl",
-        "riot_tag": "EUNE",
-        "hv_id": "64792ac3-0873-55f5-9348-725082445eef"
-    },
-    "yoyoo0722": {
-        "riot_name": "yoyo15",
-        "riot_tag": "EUNE",
-        "riot_id": "zy4F2oQ6IXGNMCOJKlUj7gN_ML4tW43zMxECvtD6m2EJCs1JX_fFCiJfR8cQjgJWGp5VbgB4WsCmhg",
-        "hv_id": "7f15608b-dd61-564f-9e1a-94a4936b08f9"
-    },
-    "vladimus2005": {
-        "riot_name": "vladimus2005",
-        "riot_tag": "EUNE",
-        "riot_id": "E6rjy-vG9AMa_dp1HWePQBsJKPwcw36C-JDOyGWJgqw1GQM89t_u39ZPA4KNjWD965mJJrGAYiQxNQ",
-        "hv_id": "c08f6c44-378c-5c82-8ce1-d12f33a0264e"
-    },
-    "arrow_san": {
-        "riot_name": "Dani",
-        "riot_tag": "EUNE1",
-        "riot_id": "lP2icP8VVAMMRnOHlEnFROqdEbd205nRtwD3vOzGZQVsErNjJp5iinXUlxcaZfLJcxpCrRchqPZGow",
-        "hv_id":"7ff1ac69-8901-5634-a4ea-26684d52d9e9"
-    },
-    "painite01":{
-        "riot_name": "Painite",
-        "riot_tag": "4349",
-        "riot_id": "w-bK59spgQkicdzS2WgHp8edRn5MG0lhYdHtYPj5OkEa3JQ0Pow31lsFtSTM34_rGi-nLtpxRZS9-w",
-        "hv_id": "1c8ee468-4a77-5f18-b2c3-2016e0c74bba"
-    }
-}
-
-DAG_EMOJIS ={
-    "Painite" : "💎",
-    "Peafowl" : "🦚",
-    "vladimus2005" : "🪩",
-    "Dani" : "🎯",
-    "yoyo15" : "🤙"
-}
 STANDARD_HEADERS = {"Authorization": hv_token}
 
 
@@ -704,7 +661,7 @@ class Titles(commands.Cog):
         if our_score<=13 and enemy_score<=13:
             responses = [
                 f"Got them quivering, {team_name}! They were so intimidated by you, they didn't even let the match end naturally. Your awards are below.",
-                f"Woah, {team_name}, way to do it to them! A forfeit means you dominated. Match report below."
+                f"Woah, {team_name}, way to do it to them! A forfeit means you dominated. Match report below.",
                 f"Sheesh, {team_name}. White flags waving, and you winning! Perfect combination! Let's see how bad you crushed 'em."
             ]
         # --- Wins ---
@@ -834,7 +791,7 @@ class Titles(commands.Cog):
         if role is None:
             return await ctx.send("Could not find the role in the target server.")
         role_mention = role.mention
-        message = self.get_response_from_match_score(our_score=rounds_won, enemy_score=rounds_lost,team_name=role_mention) + "\n"
+        message = self.get_response_from_match_score(our_score=rounds_won, enemy_score=rounds_lost, team_name=role_mention) + "\n"
         if location == "server":
             channel = self.bot.get_channel(MARBLE_CHANNEL_ID)
             if channel is None:
