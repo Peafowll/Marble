@@ -1,3 +1,7 @@
+## [0.7.1] -
+### Added
+  - When there's a surrender, Marble will now congratulate DAG on their outstanding perfomance.
+
 ## [0.7.0] - 30-11-2025
 ### Added
 - **Vaorant Match Report BETA**

@@ -14,14 +14,16 @@ from pprint import pprint
 
 logger = logging.getLogger('discord.titles')
 
-#TODO : CALL FOR @DAG ROLE
+#TODO : CALL FOR @DAG ROLE (IMPLEMENTED BUT INTESTED)
 #TODO : CONFIG
 #TODO : ADD TANGERINE AND LEMON
-#TODO : ADD SURRENDER MESSAGE
+#TODO : ADD AUTO-MESSAGE FOR PREMIER
 
 load_dotenv()
 hv_token = os.getenv("HD_KEY")
 MARBLE_CHANNEL_ID = 1353156986547736758
+DAG_ROLE_ID = 1443876656111685652
+YKTP_GUILD_ID = 890252683657764894
 DAG_MEMBERS = {
     "peafowl": {
         "riot_name": "Peafowl",
@@ -810,7 +812,14 @@ class Titles(commands.Cog):
                 inline=False
             )
         embed.set_image(url="attachment://map_image.jpeg")
-        message = self.get_response_from_match_score(our_score=rounds_won, enemy_score=rounds_lost) + "\n"
+        guild_yktp = self.bot.get_guild(YKTP_GUILD_ID)
+        if guild_yktp is None:
+            guild_yktp = await self.bot.fetch_guild(YKTP_GUILD_ID)  
+        role = guild_yktp.get_role(DAG_ROLE_ID)
+        if role is None:
+            return await ctx.send("Could not find the role in the target server.")
+        role_mention = role.mention
+        message = self.get_response_from_match_score(our_score=rounds_won, enemy_score=rounds_lost,team_name=role_mention) + "\n"
         if location == "server":
             channel = self.bot.get_channel(MARBLE_CHANNEL_ID)
             if channel is None:
