@@ -28,12 +28,16 @@ from config import (
 
 logger = logging.getLogger('discord.titles')
 
-#TODO : CALL FOR ROLE
+#TODO : CALL FOR @DAG ROLE (IMPLEMENTED BUT INTESTED)
+#TODO : CONFIG
 #TODO : ADD TANGERINE AND LEMON
+#TODO : ADD AUTO-MESSAGE FOR PREMIER
 
 load_dotenv()
 hv_token = os.getenv("HD_KEY")
 MARBLE_CHANNEL_ID = 1353156986547736758
+DAG_ROLE_ID = 1443876656111685652
+YKTP_GUILD_ID = 890252683657764894
 DAG_MEMBERS = {
     "peafowl": {
         "riot_name": "Peafowl",
@@ -696,7 +700,13 @@ class Titles(commands.Cog):
         is_overtime = our_score >= 13 or enemy_score >= 13
 
         responses = []
-          
+        # Surrender
+        if our_score<=13 and enemy_score<=13:
+            responses = [
+                f"Got them quivering, {team_name}! They were so intimidated by you, they didn't even let the match end naturally. Your awards are below.",
+                f"Woah, {team_name}, way to do it to them! A forfeit means you dominated. Match report below."
+                f"Sheesh, {team_name}. White flags waving, and you winning! Perfect combination! Let's see how bad you crushed 'em."
+            ]
         # --- Wins ---
         elif score_diff >= 7:
             # Stomp
@@ -817,7 +827,14 @@ class Titles(commands.Cog):
                 inline=False
             )
         embed.set_image(url="attachment://map_image.jpeg")
-        message = self.get_response_from_match_score(our_score=rounds_won, enemy_score=rounds_lost) + "\n"
+        guild_yktp = self.bot.get_guild(YKTP_GUILD_ID)
+        if guild_yktp is None:
+            guild_yktp = await self.bot.fetch_guild(YKTP_GUILD_ID)  
+        role = guild_yktp.get_role(DAG_ROLE_ID)
+        if role is None:
+            return await ctx.send("Could not find the role in the target server.")
+        role_mention = role.mention
+        message = self.get_response_from_match_score(our_score=rounds_won, enemy_score=rounds_lost,team_name=role_mention) + "\n"
         if location == "server":
             channel = self.bot.get_channel(MARBLE_CHANNEL_ID)
             if channel is None:
