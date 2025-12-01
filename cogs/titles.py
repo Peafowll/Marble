@@ -12,10 +12,23 @@ import math
 import random
 from pprint import pprint
 
+# Import constants from config
+from config import (
+    MARBLE_CHANNEL_ID,
+    DAG_ROLE_ID,
+    YKTP_GUILD_ID,
+    DAG_MEMBERS,
+    DAG_EMOJIS,
+    WEAPON_CATEGORIES,
+    TITLE_ASSIGNMENT_THRESHOLD,
+    SHORT_RANGE_THRESHOLD,
+    LONG_RANGE_THRESHOLD,
+    API_REQUEST_TIMEOUT
+)
+
 logger = logging.getLogger('discord.titles')
 
 #TODO : CALL FOR ROLE
-#TODO : CONFIG
 #TODO : ADD TANGERINE AND LEMON
 
 load_dotenv()
@@ -218,13 +231,13 @@ class Player():
         ])
 
     def set_weapon_types_kills(self):
-        pistols = ["Classic", "Frenzy", "Sheriff", "Ghost"]
-        smgs = ["Stinger", "Spectre"]
-        shotguns = ["Shorty", "Judge", "Bucky"]
-        snipers = ["Marshall", "Outlaw", "Operator"]
-        lmgs = ["Ares", "Odin"]
-        rifles = ["Bulldog", "Phantom", "Vandal","Guardian"]
-        knives = ["Knife", "Melee"]
+        pistols = WEAPON_CATEGORIES["pistols"]
+        smgs = WEAPON_CATEGORIES["smgs"]
+        shotguns = WEAPON_CATEGORIES["shotguns"]
+        snipers = WEAPON_CATEGORIES["snipers"]
+        lmgs = WEAPON_CATEGORIES["lmgs"]
+        rifles = WEAPON_CATEGORIES["rifles"]
+        knives = WEAPON_CATEGORIES["knives"]
         pistol_kills = []
         smg_kills = []
         lmg_kills = []
@@ -275,8 +288,8 @@ class Player():
                     distance_in_meters = round(distance/100,1)
                     kill_distances.append(distance_in_meters)
 
-        short_range_kills = [distance for distance in kill_distances if distance<=7.5]
-        long_range_kills = [distance for distance in kill_distances if distance>=34]
+        short_range_kills = [distance for distance in kill_distances if distance<=SHORT_RANGE_THRESHOLD]
+        long_range_kills = [distance for distance in kill_distances if distance>=LONG_RANGE_THRESHOLD]
 
         self.title_stats["short_range_kills"] = len(short_range_kills)
         self.title_stats["long_range_kills"] = len(long_range_kills)
@@ -517,7 +530,7 @@ class Match():
                 
 
 
-        threshold = 0.3  # The max range of z-scores between titles
+        threshold = TITLE_ASSIGNMENT_THRESHOLD  # The max range of z-scores between titles
 
         assigned_titles = set()
 
@@ -622,7 +635,7 @@ def get_last_match(puuid, match_type = None):
         response = requests.get(
             url, 
             headers=STANDARD_HEADERS, 
-            timeout=10  # Prevent infinite hangs
+            timeout=API_REQUEST_TIMEOUT  # Prevent infinite hangs
         )
         response.raise_for_status()  # Raises exception for 4xx/5xx status codes
         
@@ -685,7 +698,7 @@ class Titles(commands.Cog):
         responses = []
           
         # --- Wins ---
-        if score_diff >= 7:
+        elif score_diff >= 7:
             # Stomp
             responses = [
                 f"Incredible performance, {team_name}! You absolutely dominated out there. Let's see what you each did well.",

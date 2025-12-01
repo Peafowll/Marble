@@ -1,9 +1,14 @@
 import requests
 from dotenv import load_dotenv
 import os
+import logging
 
 load_dotenv()
 riot_token = os.getenv("RIOT_KEY")
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(message)s')
+logger = logging.getLogger(__name__)
 
 def calculate_int_scores(match_json,match_log_json=None, target_player=None):
     """
@@ -138,11 +143,11 @@ def calculate_int_scores(match_json,match_log_json=None, target_player=None):
             kill_participation_score = int(1000/(1+(kill_participation/kill_participation_baseline)**kill_participation_harshness))
 
             int_score = (kda_int_score + vision_int_score + gold_int_score + damage_int_score+kill_participation_score)/5
-            # Debug print for score breakdown
-            #print(f"{name} ({team_position}): INT={int_score:.1f} | KDA={kda_int_score} Vision={vision_int_score} Gold={gold_int_score} Damage={damage_int_score}")
+            
+            # Log the blame score breakdown
+            logger.info(f"{name} ({team_position}): INT={int_score:.1f} | KDA={kda_int_score} Vision={vision_int_score} Gold={gold_int_score} Damage={damage_int_score} KP={kill_participation_score}")
             
             int_scores[name] = int_score
-
   
     return int_scores
 
