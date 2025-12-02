@@ -495,7 +495,7 @@ class Activity(commands.Cog):
 
 
     
-    @tasks.loop(time=datetime.time(hour=0, minute=5, tzinfo=datetime.timezone.utc))
+    @tasks.loop(time=datetime.time(hour=22, minute=5, tzinfo=datetime.timezone.utc))
     async def get_daily_presence(self):
         """
         Calculate and report daily presence statistics.
@@ -553,7 +553,7 @@ class Activity(commands.Cog):
 
 
         
-        if right_now.weekday() == 6:
+        if right_now.weekday() == 7:
             last_seven_days = [(datetime.date.today() - datetime.timedelta(days=i)).isoformat() for i in range(7)]
             weekly_seconds = {}
             for day in last_seven_days:

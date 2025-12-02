@@ -1,3 +1,9 @@
+## [0.7.2] - 2-12-2025
+### Fixed
+  - Fixed KP formulas for `!blame` that previously resulted in extremely unfair ratings for supports and junglers.
+  - Fixed a `!blame` bug that would grade supports against extremely high damage threshholds
+  - Fixed timing of activity summary message.
+
 ## [0.7.1] - 1-12-2025
 ### Added
   - When there's a surrender, Marble will now congratulate DAG on their outstanding perfomance.

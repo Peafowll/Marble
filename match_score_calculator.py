@@ -120,8 +120,8 @@ def calculate_int_scores(match_json,match_log_json=None, target_player=None):
             damage_per_minute = participant["challenges"]["damagePerMinute"]
             if team_position == "UTILITY":
                 damage_per_minute_baseline = 470
-                damage_per_minute_harshness = 1.6
-            if team_position == "JUNGLE":
+                damage_per_minute_harshness = 2.2
+            elif team_position == "JUNGLE":
                 damage_per_minute_baseline = 650
                 damage_per_minute_harshness = 2.8
             else:
