@@ -7,7 +7,7 @@ Contains constants and configuration data used across different cogs.
 MARBLE_CHANNEL_ID = 1445025916802568222
 DAG_ROLE_ID = 1443876656111685652
 YKTP_GUILD_ID = 890252683657764894
-
+OWNER_USER_ID = 264416824777637898
 # API Configuration
 API_REQUEST_TIMEOUT = 10  # seconds
 
@@ -73,3 +73,8 @@ TITLE_ASSIGNMENT_THRESHOLD = 0.3  # Max range of z-scores between titles
 # Kill Distance Ranges (in meters)
 SHORT_RANGE_THRESHOLD = 7.5
 LONG_RANGE_THRESHOLD = 34.0
+
+
+
+# ACTIVTY.PY CONFIGS
+MAX_DAYS_OF_VOICE_ACTIVITY_SAVED = 100

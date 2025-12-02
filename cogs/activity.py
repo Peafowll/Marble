@@ -8,17 +8,19 @@ import os
 import copy
 import asyncio
 
-#TODO : only count activity if someone else is on (maybe)
 #TODO : better display for weekly hours
 #TODO : separate logger
 
 
 # Logger and constants
 logger = logging.getLogger('discord.activity')
-MAX_DAYS_SAVED = 100
-WEEKLY_CHANNEL_ID = 1353156986547736758
-OWNER_USER_ID = 264416824777637898
-YKTP_ID = 890252683657764894
+
+from config import (
+    MARBLE_CHANNEL_ID,
+    OWNER_USER_ID,
+    YKTP_GUILD_ID,
+    MAX_DAYS_OF_VOICE_ACTIVITY_SAVED
+)
 
 # ============================================================================
 # Data Classes
@@ -344,7 +346,7 @@ class Activity(commands.Cog):
         user_last_activity entries for users who haven't been active recently.
         Should be called with data_lock held.
         """
-        cutoff = datetime.datetime.now() - datetime.timedelta(days=MAX_DAYS_SAVED)
+        cutoff = datetime.datetime.now() - datetime.timedelta(days=MAX_DAYS_OF_VOICE_ACTIVITY_SAVED)
         for username in list(self.voice_presences.keys()):
             self.voice_presences[username] = [
                 presence for presence in self.voice_presences[username]
@@ -397,7 +399,7 @@ class Activity(commands.Cog):
 
         async with self.data_lock:
             for guild in self.bot.guilds:
-                if guild.id == YKTP_ID or guild.id == 932887674413535262:
+                if guild.id == YKTP_GUILD_ID or guild.id == 932887674413535262:
                     for member in guild.members:
                         if member.voice and member.voice.channel:
                             voice_entry = VoiceActivity(
@@ -567,7 +569,7 @@ class Activity(commands.Cog):
                 hours = sorted_weekly[person] / 3600
                 message+= f"{str(person)} - {hours:.2f} hours.\n"
 
-            channel = await self.bot.fetch_channel(WEEKLY_CHANNEL_ID)
+            channel = await self.bot.fetch_channel(MARBLE_CHANNEL_ID)
             await channel.send(message)
         owner = await self.bot.fetch_user(OWNER_USER_ID)
         await owner.send(f"Daily activity : {str(time_spent_dict)}")

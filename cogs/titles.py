@@ -443,13 +443,13 @@ class Match():
     
     def get_titles_from_zs(self):
 
-        with open("titles.json", "r") as file:    
+        with open("static/titles.json", "r") as file:    
             titles_dict = json.load(file)
 
         self.title_manager = {}
         player_z_scores = {}
         
-        log_file = open("titles_attribution_log.txt", "w")#LOGGING
+        log_file = open("static/titles_attribution_log.txt", "w")#LOGGING
 
         for stat in titles_dict:
             if not titles_dict[stat].get("implemented", True):

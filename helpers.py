@@ -15,7 +15,7 @@ riot_token = os.getenv("RIOT_KEY")
 
 def find_lol_spells():
     try:
-        with open("championFull.json", "r", encoding="utf8") as file:
+        with open("static/championFull.json", "r", encoding="utf8") as file:
             data=json.load(file)
         abilities = {}
         for champion_name,champion_data in data["data"].items():

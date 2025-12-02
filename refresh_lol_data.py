@@ -17,14 +17,14 @@ try:
     response = requests.get(f"https://ddragon.leagueoflegends.com/cdn/{latest_patch}/data/en_US/championFull.json", timeout=10)
     response.raise_for_status()
     data=response.text
-    with open("championFull.json", "w", encoding="utf8") as file:
+    with open("static/championFull.json", "w", encoding="utf8") as file:
         file.write(data)
     logger.info("Successfully refreshed championFull.json")
 
     champion_data = json.loads(data)
 
     try: 
-        with open("championAliases.json", "r", encoding="utf8") as f:
+        with open("static/championAliases.json", "r", encoding="utf8") as f:
             aliases = json.load(f)
     except FileNotFoundError:
         aliases = {}
@@ -37,7 +37,7 @@ try:
             aliases[champ_name] = [champ_name.lower()]
             new_champs.append(champ_name)
     
-    with open("championAliases.json", "w", encoding="utf8") as f:
+    with open("static/championAliases.json", "w", encoding="utf8") as f:
         json.dump(aliases, f, indent=4, ensure_ascii=False)
     
     if new_champs:

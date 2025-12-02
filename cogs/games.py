@@ -36,7 +36,7 @@ logger = logging.getLogger('discord.games')
 
 try:
     champion_abilities = find_lol_spells()
-    with open("championAliases.json","r",encoding="utf8") as file:
+    with open("static/championAliases.json","r",encoding="utf8") as file:
         champion_aliases=json.load(file)
     logger.info("Successfully loaded champion data")
 except FileNotFoundError as e:
