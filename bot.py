@@ -7,7 +7,6 @@ import logging
 import json
 from datetime import datetime
 
-# TODO : rewrite changelog command and file by hand
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',

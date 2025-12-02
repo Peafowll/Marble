@@ -8,9 +8,7 @@ import os
 import copy
 import asyncio
 
-#TODO : only count activity if someone else is on (maybe)
-#TODO : better display for weekly hours
-#TODO : separate logger
+#TODO : better display for weekly hours (TO BE TESTED)
 
 
 # Logger and constants
@@ -565,12 +563,18 @@ class Activity(commands.Cog):
             message = "# This week's voice chat presences!\n"
             for person in sorted_weekly.keys():
                 hours = sorted_weekly[person] / 3600
-                message+= f"{str(person)} - {hours:.2f} hours.\n"
+                message+= f"**{str(person)}** - `{hours:.2f} hours.`\n"
 
             channel = await self.bot.fetch_channel(WEEKLY_CHANNEL_ID)
             await channel.send(message)
         owner = await self.bot.fetch_user(OWNER_USER_ID)
-        await owner.send(f"Daily activity : {str(time_spent_dict)}")
+        hours_spent_dict = {}
+        message = "Daily Activity : "
+        for person in time_spent_dict:
+            person_name = person
+            hours_spent = round(time_spent_dict[person]/3600,1)
+            message+= f"\n{person} - {hours_spent}"
+        await owner.send(message)
 
     @tasks.loop(hours=24)
     async def daily_cleanup(self):

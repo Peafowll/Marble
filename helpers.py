@@ -11,8 +11,6 @@ load_dotenv()
 riot_token = os.getenv("RIOT_KEY")
 
 
-# TODO : str command explanations
-
 def find_lol_spells():
     try:
         with open("championFull.json", "r", encoding="utf8") as file:
@@ -40,6 +38,7 @@ def find_lol_spells():
         return {}
 
 def convert_queue_type_to_id(queue_type):
+    """Converts a LoL queue type from a Str ID to a numerical id."""
     convert_dict = {
         "Ranked Solo/Duo": 420,
         "Ranked Flex": 440,
@@ -72,6 +71,7 @@ def convert_queue_type_to_id(queue_type):
     return convert_dict.get(queue_type)
 
 def convert_queue_aliases_to_queue(queue_alias):
+    """Converts aliases from league queues into their correct Str IDs."""
     convert_dict = {
         "Ranked Solo/Duo": ["soloqueue","solo","soloduo","solo/duo","solo_queue","soloq","ranked_solo","ranked_solo/duo","ranked_solo_duo"],
         "Ranked Flex": ["flex","ranked_flex"],
