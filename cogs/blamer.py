@@ -73,7 +73,7 @@ def find_inters(list_of_int_scores):
         biggest_score = -1
         biggest_inter = None
         for player in int_scores:
-            if int_scores[player] >= biggest_score: #Find biggest int score this game
+            if int_scores[player] >= biggest_score: #Find biggest int score this game (worst performance)
                 biggest_score = int_scores[player]
                 biggest_inter = player
             
@@ -521,6 +521,45 @@ class Blamer(commands.Cog):
             await ctx.send(f"==== THE MASS REGISTER COMMAND IS : ============")
             await ctx.send(mass_register_command)
             await ctx.send(f"================================================")
+
+    @commands.command(aliases=["removeuser"], hidden=True)
+    @commands.is_owner()
+    async def unregister(self, ctx, discord_name: str = None):
+        """
+        Unregister a Discord user from the player pool. Owner only.
+        Usage: !unregister <discord_name>
+        
+        Example: !unregister vladimus2005
+        """
+        logger.info(f"Unregister command invoked by {ctx.author.name} for user: {discord_name}")
+        
+        if not discord_name:
+            logger.warning("Unregister attempted with no username")
+            await ctx.send("❌ Please provide a Discord username to unregister!")
+            return
+        
+        with open("data/players.json", "r", encoding="utf8") as file:
+            players_dict = json.load(file)
+        
+        if discord_name not in players_dict:
+            logger.warning(f"Unregister attempted for non-existent user: {discord_name}")
+            await ctx.send(f"❌ **{discord_name}** is not registered.")
+            return
+        
+        # Get the Riot account info before removing
+        riot_info = players_dict[discord_name]
+        riot_name = riot_info["riot_name"]
+        riot_tag = riot_info["riot_tag"]
+        
+        # Remove the player
+        del players_dict[discord_name]
+        
+        # Save the updated dictionary
+        with open("data/players.json", "w", encoding="utf8") as file:
+            json.dump(players_dict, file, indent=4)
+        
+        logger.info(f"Successfully unregistered {discord_name} (was linked to {riot_name}#{riot_tag})")
+        await ctx.send(f"✅ Successfully unregistered **{discord_name}** (was linked to **{riot_name}**#{riot_tag}).")
         
 
 async def setup(bot):

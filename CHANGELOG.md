@@ -1,3 +1,7 @@
+## [0.7.3] - 3-12-2025
+### Added
+  - Added an admin command for unregistering people from the `!blame` pool.
+
 ## [0.7.2] - 2-12-2025
 ### Fixed
   - Fixed KP formulas for `!blame` that previously resulted in extremely unfair ratings for supports and junglers.
