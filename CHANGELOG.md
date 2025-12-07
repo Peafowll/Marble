@@ -1,7 +1,7 @@
 ## [0.7.5] - 7-12-2025
 ### Fixed
-  - Fixed surrender ecuation and minimum requirements for some tiles.
-  - Improved title logic, including making some titles easier to get.
+  - Fixed surrender math and minimum requirements for some tiles.
+  - Improved requirments for most titles
   - Made it possile to send a report without @ng DAG members.
 
 ## [0.7.4] - 7-12-2025
