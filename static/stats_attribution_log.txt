@@ -1,0 +1,215 @@
+====================================================================================================
+MATCH STATS LOG - Sunset - 2025-12-07
+Score: 8 - 13
+====================================================================================================
+
+
+====================================================================================================
+PLAYER: yoyo15 (Phoenix)
+====================================================================================================
+K/D/A: 16/18/9
+Score: 5513
+
+Stat Name                                Value               
+------------------------------------------------------------
+1v1_clutches                             1                   
+ability_kills                            0                   
+aces                                     0                   
+assists                                  9                   
+damage_dealt                             3611                
+deaths                                   18                  
+defuses                                  0                   
+double_kills                             3                   
+enemy_bottom_frag_killed                 2                   
+enemy_top_frag_killed                    0                   
+first_bloods                             5                   
+hexakills                                0                   
+hs_percentage                            15                  
+knife_kills                              0                   
+last_bloods                              1                   
+lmg_kills                                0                   
+long_range_kills                         2                   
+ninja_defuses                            0                   
+outnumbered_clutches                     0                   
+phantom_kills                            0                   
+pistol_kills                             2                   
+plants                                   0                   
+quadra_kills                             1                   
+rebound_percentage                       -76.92307692307693  
+rifle_kills                              12                  
+short_range_kills                        2                   
+shotgun_kills                            0                   
+smg_kills                                0                   
+sniper_kills                             1                   
+triple_kills                             0                   
+unique_weapon_kills                      5                   
+
+
+====================================================================================================
+PLAYER: Dani (Chamber)
+====================================================================================================
+K/D/A: 18/15/4
+Score: 4944
+
+Stat Name                                Value               
+------------------------------------------------------------
+1v1_clutches                             0                   
+ability_kills                            0                   
+aces                                     0                   
+assists                                  4                   
+damage_dealt                             3391                
+deaths                                   15                  
+defuses                                  0                   
+double_kills                             6                   
+enemy_bottom_frag_killed                 2                   
+enemy_top_frag_killed                    5                   
+first_bloods                             6                   
+hexakills                                0                   
+hs_percentage                            18                  
+knife_kills                              0                   
+last_bloods                              4                   
+lmg_kills                                0                   
+long_range_kills                         1                   
+ninja_defuses                            0                   
+outnumbered_clutches                     0                   
+phantom_kills                            5                   
+pistol_kills                             0                   
+plants                                   1                   
+quadra_kills                             0                   
+rebound_percentage                       -50.0               
+rifle_kills                              9                   
+short_range_kills                        1                   
+shotgun_kills                            1                   
+smg_kills                                2                   
+sniper_kills                             1                   
+triple_kills                             0                   
+unique_weapon_kills                      7                   
+
+
+====================================================================================================
+PLAYER: Peafowl (Omen)
+====================================================================================================
+K/D/A: 17/16/8
+Score: 4712
+
+Stat Name                                Value               
+------------------------------------------------------------
+1v1_clutches                             0                   
+ability_kills                            0                   
+aces                                     0                   
+assists                                  8                   
+damage_dealt                             3234                
+deaths                                   16                  
+defuses                                  0                   
+double_kills                             2                   
+enemy_bottom_frag_killed                 5                   
+enemy_top_frag_killed                    3                   
+first_bloods                             0                   
+hexakills                                0                   
+hs_percentage                            22                  
+knife_kills                              0                   
+last_bloods                              3                   
+lmg_kills                                0                   
+long_range_kills                         2                   
+ninja_defuses                            0                   
+outnumbered_clutches                     0                   
+phantom_kills                            7                   
+pistol_kills                             6                   
+plants                                   0                   
+quadra_kills                             0                   
+rebound_percentage                       -58.333333333333336 
+rifle_kills                              9                   
+short_range_kills                        2                   
+shotgun_kills                            0                   
+smg_kills                                2                   
+sniper_kills                             0                   
+triple_kills                             1                   
+unique_weapon_kills                      7                   
+
+
+====================================================================================================
+PLAYER: Painite (Sova)
+====================================================================================================
+K/D/A: 14/17/4
+Score: 4034
+
+Stat Name                                Value               
+------------------------------------------------------------
+1v1_clutches                             0                   
+ability_kills                            0                   
+aces                                     0                   
+assists                                  4                   
+damage_dealt                             2319                
+deaths                                   17                  
+defuses                                  1                   
+double_kills                             1                   
+enemy_bottom_frag_killed                 4                   
+enemy_top_frag_killed                    3                   
+first_bloods                             1                   
+hexakills                                0                   
+hs_percentage                            11                  
+knife_kills                              0                   
+last_bloods                              0                   
+lmg_kills                                0                   
+long_range_kills                         0                   
+ninja_defuses                            0                   
+outnumbered_clutches                     0                   
+phantom_kills                            0                   
+pistol_kills                             2                   
+plants                                   3                   
+quadra_kills                             0                   
+rebound_percentage                       -25.0               
+rifle_kills                              5                   
+short_range_kills                        1                   
+shotgun_kills                            0                   
+smg_kills                                7                   
+sniper_kills                             0                   
+triple_kills                             1                   
+unique_weapon_kills                      4                   
+
+
+====================================================================================================
+PLAYER: vladimus2005 (Fade)
+====================================================================================================
+K/D/A: 10/16/2
+Score: 2864
+
+Stat Name                                Value               
+------------------------------------------------------------
+1v1_clutches                             0                   
+ability_kills                            0                   
+aces                                     0                   
+assists                                  2                   
+damage_dealt                             1712                
+deaths                                   16                  
+defuses                                  1                   
+double_kills                             0                   
+enemy_bottom_frag_killed                 3                   
+enemy_top_frag_killed                    1                   
+first_bloods                             0                   
+hexakills                                0                   
+hs_percentage                            15                  
+knife_kills                              0                   
+last_bloods                              1                   
+lmg_kills                                0                   
+long_range_kills                         0                   
+ninja_defuses                            0                   
+outnumbered_clutches                     0                   
+phantom_kills                            0                   
+pistol_kills                             1                   
+plants                                   6                   
+quadra_kills                             1                   
+rebound_percentage                       0.0                 
+rifle_kills                              7                   
+short_range_kills                        0                   
+shotgun_kills                            0                   
+smg_kills                                2                   
+sniper_kills                             0                   
+triple_kills                             0                   
+unique_weapon_kills                      3                   
+
+
+====================================================================================================
+Z-SCORE CALCULATIONS
+====================================================================================================
+

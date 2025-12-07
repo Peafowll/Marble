@@ -448,8 +448,16 @@ class Match():
 
         self.title_manager = {}
         player_z_scores = {}
+        player_stat_z_map = {}  # Map player -> stat_name -> z_score
         
-        log_file = open("titles_attribution_log.txt", "w")#LOGGING
+        title_log_file = open("static/titles_attribution_log.txt", "w")
+        stats_log_file = open("static/stats_attribution_log.txt", "w")
+        
+        # Write stats header
+        stats_log_file.write("="*100 + "\n")
+        stats_log_file.write(f"MATCH STATS LOG - {self.map_name} - {self.date}\n")
+        stats_log_file.write(f"Score: {self.main_team_rounds_won} - {self.main_team_rounds_lost}\n")
+        stats_log_file.write("="*100 + "\n\n")
 
         for stat in titles_dict:
             if not titles_dict[stat].get("implemented", True):
@@ -489,6 +497,11 @@ class Match():
                     'title': titles_dict[stat],
                     'stat_nr' :players_score_in_this_stat[player]})
                 
+                # Also store in stat map for easy lookup
+                if player not in player_stat_z_map:
+                    player_stat_z_map[player] = {}
+                player_stat_z_map[player][stat] = z_weighted
+                
 
 
         threshold = TITLE_ASSIGNMENT_THRESHOLD  # The max range of z-scores between titles
@@ -500,6 +513,22 @@ class Match():
         key=lambda x: max(title['z_score'] for title in x[1]),
         reverse=True
         )# sort players by their best z-score
+
+        # Now log all player stats with z-scores
+        for player_obj in self.main_players:
+            player_name = player_obj.name
+            stats_log_file.write(f"\n{'='*100}\n")
+            stats_log_file.write(f"PLAYER: {player_name} ({player_obj.agent})\n")
+            stats_log_file.write(f"{'='*100}\n")
+            stats_log_file.write(f"K/D/A: {player_obj.base_stats['kills']}/{player_obj.base_stats['deaths']}/{player_obj.base_stats['assists']}\n")
+            stats_log_file.write(f"Score: {player_obj.base_stats['score']}\n")
+            stats_log_file.write(f"\n{'Stat Name':<40} {'Value':<15} {'Z-Score':<15}\n")
+            stats_log_file.write(f"{'-'*70}\n")
+            
+            for stat_name, stat_value in sorted(player_obj.title_stats.items()):
+                z_score = player_stat_z_map.get(player_name, {}).get(stat_name, 0.0)
+                stats_log_file.write(f"{stat_name:<40} {str(stat_value):<15} {z_score:>14.4f}\n")
+            stats_log_file.write("\n")
 
         for player, z_score_list in players_by_best_z:
             z_score_list.sort(key=lambda x: x['z_score'], reverse=True)
@@ -515,10 +544,10 @@ class Match():
             # If no valid titles at all, assign "The Heart"
             if not valid_titles:
                 total_rounds = self.main_team_rounds_won + self.main_team_rounds_lost
-                log_file.write(f"\n{'='*80}\n")
-                log_file.write(f"PLAYER: {player}\n")
-                log_file.write(f"{'='*80}\n")
-                log_file.write(f"\n>>> WARNING: No unique titles available - assigning 'The Heart'\n\n")
+                title_log_file.write(f"\n{'='*80}\n")
+                title_log_file.write(f"PLAYER: {player}\n")
+                title_log_file.write(f"{'='*80}\n")
+                title_log_file.write(f"\n>>> WARNING: No unique titles available - assigning 'The Heart'\n\n")
                 
                 self.title_manager[player] = {
                     "title_name": "The Heart",
@@ -536,11 +565,11 @@ class Match():
             print(f"Title candidates for {player} are : {close_title_names}")
             
             #LOGGING
-            log_file.write(f"\n{'='*80}\n")
-            log_file.write(f"PLAYER: {player}\n")
-            log_file.write(f"{'='*80}\n")
-            log_file.write(f"{'Title':<30} {'Stat':<30} {'Z-Score':<15} {'Stat Count':<15}\n")
-            log_file.write(f"{'-'*90}\n")
+            title_log_file.write(f"\n{'='*80}\n")
+            title_log_file.write(f"PLAYER: {player}\n")
+            title_log_file.write(f"{'='*80}\n")
+            title_log_file.write(f"{'Title':<30} {'Stat':<30} {'Z-Score':<15} {'Stat Count':<15}\n")
+            title_log_file.write(f"{'-'*90}\n")
             
             for title_data in z_score_list:
                 title_name = title_data["title"]["title"]
@@ -558,7 +587,7 @@ class Match():
                     reasons.append("[STAT TOO LOW]")
                 
                 reason_str = " ".join(reasons)
-                log_file.write(f"{title_name:<30} {stat_name:<30} {z_score:<15.4f} {stat_count:<15} {reason_str}\n")
+                title_log_file.write(f"{title_name:<30} {stat_name:<30} {z_score:<15.4f} {stat_count:<15} {reason_str}\n")
 
             if len(close_titles) > 1:
                 min_z = min(title['z_score'] for title in close_titles) # for shifting weights
@@ -570,8 +599,8 @@ class Match():
             # Mark title as assigned
             
             assigned_titles.add(chosen_title["title"]["title"])
-            log_file.write(f"Title pool : {close_titles}")
-            log_file.write(f"\n>>> ASSIGNED TITLE: {chosen_title['title']['title']}\n\n")
+            title_log_file.write(f"Title pool : {close_titles}")
+            title_log_file.write(f"\n>>> ASSIGNED TITLE: {chosen_title['title']['title']}\n\n")
             #LOGGING
 
             self.title_manager[player] = {
@@ -581,7 +610,8 @@ class Match():
             }
 
         #LOGGING
-        log_file.close()
+        title_log_file.close()
+        stats_log_file.close()
         #LOGGING
 
         # for player, data in player_best_z_scores.items():
@@ -760,7 +790,14 @@ class Titles(commands.Cog):
 
     @commands.command(hidden=True)
     @commands.is_owner()
-    async def force_send_premier_results(self,ctx, location = "here"):
+    async def force_send_premier_results(self, ctx, location="here", mention="at"):
+        """
+        Force send premier match results.
+        
+        Args:
+            location: "here" (DM) or "server" (public channel)
+            mention: "at" (mention @DAG role) or "noat" (just say "DAG")
+        """
         match_data = get_last_premier_match_stats()
         match = create_match_object_from_last_premier(match_data=match_data, main_player_id='64792ac3-0873-55f5-9348-725082445eef')
         rounds_won = match.get_main_team_score()
@@ -803,14 +840,20 @@ class Titles(commands.Cog):
                 inline=False
             )
         embed.set_image(url="attachment://map_image.jpeg")
-        guild_yktp = self.bot.get_guild(YKTP_GUILD_ID)
-        if guild_yktp is None:
-            guild_yktp = await self.bot.fetch_guild(YKTP_GUILD_ID)  
-        role = guild_yktp.get_role(DAG_ROLE_ID)
-        if role is None:
-            return await ctx.send("Could not find the role in the target server.")
-        role_mention = role.mention
-        message = self.get_response_from_match_score(our_score=rounds_won, enemy_score=rounds_lost, team_name=role_mention) + "\n"
+        
+        # Determine team name based on mention parameter
+        if mention == "noat":
+            team_name = "**DAG**"
+        else:
+            guild_yktp = self.bot.get_guild(YKTP_GUILD_ID)
+            if guild_yktp is None:
+                guild_yktp = await self.bot.fetch_guild(YKTP_GUILD_ID)  
+            role = guild_yktp.get_role(DAG_ROLE_ID)
+            if role is None:
+                return await ctx.send("Could not find the role in the target server.")
+            team_name = role.mention
+        
+        message = self.get_response_from_match_score(our_score=rounds_won, enemy_score=rounds_lost, team_name=team_name) + "\n"
         if location == "server":
             channel = self.bot.get_channel(MARBLE_CHANNEL_ID)
             if channel is None:

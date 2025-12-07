@@ -19,7 +19,7 @@
     "quadra_kills": {
         "title": "The King",
         "award": "Quadra Kills",
-        "weight": 1
+        "weight": 1.4
     },
     "aces": {
         "title": "The Ace",
