@@ -684,7 +684,12 @@ class Activity(commands.Cog):
             # Calculate the date range from last Sunday to today
             today = datetime.date.today()
             days_since_sunday = (today.weekday() + 1) % 7  # Monday=0, Sunday=6 -> days_since_sunday
-            last_sunday = today - datetime.timedelta(days=days_since_sunday)
+            
+            # If today is Sunday, go back to the previous Sunday (7 days ago)
+            if days_since_sunday == 0:
+                last_sunday = today - datetime.timedelta(days=7)
+            else:
+                last_sunday = today - datetime.timedelta(days=days_since_sunday)
             
             # Get all dates from last Sunday to today (inclusive)
             date_range = []
