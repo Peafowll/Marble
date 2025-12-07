@@ -1,6 +1,7 @@
 ## [0.7.5] - 7-12-2025
 ### Fixed
   - Fixed surrender ecuation and minimum requirements for some tiles.
+  - Improved title logic.
 
 ## [0.7.4] - 7-12-2025
 ### Fixed

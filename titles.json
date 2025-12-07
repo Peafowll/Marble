@@ -111,7 +111,7 @@
         "title" : "The Checkmate",
         "award" : "1v1 Clutches",
         "weight" : 1,
-        "minimum" : 1
+        "minimum" : 2
     },
     "pistol_kills": {
         "title": "The Desperado",

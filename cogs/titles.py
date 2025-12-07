@@ -503,15 +503,33 @@ class Match():
 
         for player, z_score_list in players_by_best_z:
             z_score_list.sort(key=lambda x: x['z_score'], reverse=True)
-            max_z = z_score_list[0]['z_score']
-
-            close_titles = [title for title in z_score_list if max_z - title['z_score'] <= threshold]
-
-            # Filter for minimums
-            close_titles = [title for title in close_titles if title["stat_nr"] >= title["title"].get("minimum", 0)]
             
-            # Filter out already-assigned titles
-            close_titles = [title for title in close_titles if title["title"]["title"] not in assigned_titles]
+            # Filter for minimums, already-assigned titles, and minimum z-score
+            valid_titles = [
+                title for title in z_score_list 
+                if title["stat_nr"] >= title["title"].get("minimum", 0)
+                and title["title"]["title"] not in assigned_titles
+                and title["z_score"] >= 1.1
+            ]
+            
+            # If no valid titles at all, assign "The Heart"
+            if not valid_titles:
+                total_rounds = self.main_team_rounds_won + self.main_team_rounds_lost
+                log_file.write(f"\n{'='*80}\n")
+                log_file.write(f"PLAYER: {player}\n")
+                log_file.write(f"{'='*80}\n")
+                log_file.write(f"\n>>> WARNING: No unique titles available - assigning 'The Heart'\n\n")
+                
+                self.title_manager[player] = {
+                    "title_name": "The Heart",
+                    "award_text": "Rounds spent as the cheerleader of the team",
+                    "stat_count": total_rounds
+                }
+                continue
+            
+            #find titles close to the best valid title
+            max_z = valid_titles[0]['z_score']
+            close_titles = [title for title in valid_titles if max_z - title['z_score'] <= threshold]
     
             close_title_names = [title["title"]["title"] for title in close_titles]
 
@@ -529,20 +547,18 @@ class Match():
                 stat_name = title_data["title"]["award"]
                 z_score = title_data['z_score']
                 stat_count = title_data["stat_nr"]
-                already_used = " [TAKEN]" if title_name in assigned_titles else ""
-                log_file.write(f"{title_name:<30} {stat_name:<30} {z_score:<15.4f} {stat_count:<15}{already_used}\n")
-
-            # Handle case where all titles are taken - assign "The Heart"
-            if not close_titles:
-                total_rounds = self.main_team_rounds_won + self.main_team_rounds_lost
-                log_file.write(f"\n>>> WARNING: No unique titles available - assigning 'The Heart'\n\n")
                 
-                self.title_manager[player] = {
-                    "title_name": "The Heart",
-                    "award_text": "Rounds spent as the cheerleader of the team",
-                    "stat_count": total_rounds
-                }
-                continue
+                # build exclusion reasons for logger
+                reasons = []
+                if title_name in assigned_titles:
+                    reasons.append("[TAKEN]")
+                if title_data["stat_nr"] < title_data["title"].get("minimum", 0):
+                    reasons.append(f"[DIDN'T MEET MINIMUM: {title_data['title'].get('minimum', 0)}]")
+                if z_score < 1.1:
+                    reasons.append("[STAT TOO LOW]")
+                
+                reason_str = " ".join(reasons)
+                log_file.write(f"{title_name:<30} {stat_name:<30} {z_score:<15.4f} {stat_count:<15} {reason_str}\n")
 
             if len(close_titles) > 1:
                 min_z = min(title['z_score'] for title in close_titles) # for shifting weights
@@ -552,8 +568,9 @@ class Match():
                 chosen_title = close_titles[0]
             
             # Mark title as assigned
-            assigned_titles.add(chosen_title["title"]["title"])
             
+            assigned_titles.add(chosen_title["title"]["title"])
+            log_file.write(f"Title pool : {close_titles}")
             log_file.write(f"\n>>> ASSIGNED TITLE: {chosen_title['title']['title']}\n\n")
             #LOGGING
 
