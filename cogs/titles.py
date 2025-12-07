@@ -655,10 +655,12 @@ class Titles(commands.Cog):
     def get_response_from_match_score(self,our_score, enemy_score, team_name="**DAG**"):
         score_diff = our_score - enemy_score
         is_overtime = our_score >= 13 or enemy_score >= 13
+        total_rounds = our_score + enemy_score
+        is_surrender = total_rounds < 13  # Surrender only if match ended before round 13
 
         responses = []
         # Surrender
-        if our_score<=13 and enemy_score<=13:
+        if is_surrender:
             responses = [
                 f"Got them quivering, {team_name}! They were so intimidated by you, they didn't even let the match end naturally. Your awards are below.",
                 f"Woah, {team_name}, way to do it to them! A forfeit means you dominated. Match report below.",

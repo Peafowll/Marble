@@ -1,3 +1,7 @@
+## [0.7.5] - 7-12-2025
+### Fixed
+  - Fixed surrender ecuation and minimum requirements for some tiles.
+
 ## [0.7.4] - 7-12-2025
 ### Fixed
   - Fixed some internal processing of weekly activity.
