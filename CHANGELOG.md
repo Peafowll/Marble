@@ -1,3 +1,7 @@
+## [0.7.4] - 7-12-2025
+### Fixed
+  - Fixed some internal processing of weekly activity.
+
 ## [0.7.3] - 3-12-2025
 ### Added
   - Added an admin command for unregistering people from the `!blame` pool.
