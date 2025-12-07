@@ -2,7 +2,8 @@
     "hs_percentage": {
         "title": "The Headhunter",
         "award": "Headshot Percentage",
-        "weight": 1
+        "weight": 1,
+        "minimum" : 20
     },
     "double_kills": {
         "title": "The Jack",
@@ -44,33 +45,38 @@
     },
     "unique_weapon_kills": {
         "title": "The Renegade",
-        "award": "Unique Weapon Kills",
-        "weight": 1
+        "award": "Kills with Different Weapons",
+        "weight": 1,
+        "minimum" : 4
     },
     "enemy_top_frag_killed": {
         "title": "The Answer",
         "award": "Kills on Enemy Top Fragger",
-        "weight": 1.2
+        "weight": 1.2,
+        "minimum" : 3
     },
     "enemy_bottom_frag_killed": {
         "title": "The Question",
         "award": "Kills on Enemy Bottom Fragger",
-        "weight": 1.3
+        "weight": 1.3,
+        "minimum" : 3
     },
     "assists": {
         "title": "The Magic",
         "award": "Assists",
-        "weight": 1
+        "weight": 1,
+        "minimum" : 5
     },
     "ability_kills": {
         "title": "The Caster",
         "award": "Ability Kills",
-        "weight": 0.9
+        "weight": 1,
+        "minimum" : 2
     },
     "plants": {
         "title": "The Demolitionist",
         "award": "Spikes Planted",
-        "weight" : 0.7
+        "weight" : 0.9
     },
     "defuses": {
         "title": "The Savior",
@@ -90,12 +96,14 @@
     "long_range_kills": {
         "title": "The Laser",
         "award": "Long Range Kills",
-        "weight": 1
+        "weight": 1,
+        "minimum" : 3
     },
     "short_range_kills": {
         "title": "The CQB",
         "award": "Close Range Kills",
-        "weight": 1
+        "weight": 1,
+        "minimum" : 3
     },
     "total_time_alive": {
         "title": "The Persistent",
@@ -116,32 +124,38 @@
     "pistol_kills": {
         "title": "The Desperado",
         "award": "Pistol Kills",
-        "weight": 1.1
+        "weight": 1.1,
+        "minimum" : 3
     },
     "shotgun_kills": {
         "title": "The Overkill",
         "award": "Shotgun Kills",
-        "weight": 1
+        "weight": 1,
+        "minimum" : 3
     },
     "sniper_kills": {
         "title": "The Sniper",
         "award": "Sniper Kills",
-        "weight": 1.1
+        "weight": 1.1,
+        "minimum" : 3
     },
     "lmg_kills": {
         "title": "The Bulletstorm",
         "award": "LMG Kills",
-        "weight": 1.2
+        "weight": 1.2,
+        "minimum" : 2
     },
     "smg_kills": {
         "title": "The Surefire",
         "award": "SMG Kills",
-        "weight": 1
+        "weight": 1,
+        "minimum" : 3
     },
     "rifle_kills": {
         "title": "The Fundementals",
         "award": "Rifle Kills",
-        "weight": 1
+        "weight": 1,
+        "minimum" : 5
     },
     "knife_kills": {
         "title": "The Sociopath",
