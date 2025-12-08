@@ -479,7 +479,6 @@ class Activity(commands.Cog):
             # Lock file I/O separately to minimize lock duration
             async with self.file_lock:
                 await self.save_presences(presences_override=snapshot)
-            logger.info(f"Auto-save completed at {datetime.datetime.now()}")
         except Exception as e:
             logger.error(f"Auto-save failed at {datetime.datetime.now()} : {e}")
 
@@ -553,7 +552,7 @@ class Activity(commands.Cog):
 
 
         
-        if right_now.weekday() == 7:
+        if right_now.weekday() == 0:
             last_seven_days = [(datetime.date.today() - datetime.timedelta(days=i)).isoformat() for i in range(7)]
             weekly_seconds = {}
             for day in last_seven_days:
