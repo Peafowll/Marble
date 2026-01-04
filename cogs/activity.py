@@ -10,7 +10,7 @@ import copy
 import asyncio
 
 #TODO : better display for weekly hours (TO BE TESTED)
-
+#TODO : Fix location of activity weekly post
 
 # Logger and constants
 logger = logging.getLogger('discord.activity')
