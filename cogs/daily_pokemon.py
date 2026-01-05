@@ -3,9 +3,34 @@ import requests
 import discord
 import random
 from discord.ext import commands
+from discord import Color, Embed
+import datetime
 import json
 
 logger = logging.getLogger('discord.daily_pokemon')
+
+
+EMOJI_TYPE_DICT = {
+    "bug" : "🪲",
+    "dark" : "🕶️",
+    "dragon" : "🐉",
+    "electric" : "⚡",
+    "fairy" : "✨",
+    "fighting" : "🥊",
+    "fire" : "🔥",
+    "flying" : "🪽",
+    "ghost" : "👻",
+    "grass" : "🌱",
+    "ground" : "⛰️",
+    "ice" : "🧊",
+    "normal" : "⚪",
+    "poison" : "☠️",
+    "psychic" : "🔮",
+    "rock" : "🪨",
+    "steel" : "🔩",
+    "water" : "💧",
+}
+
 
 def get_random_pokemon():
 
@@ -23,6 +48,15 @@ def get_random_pokemon():
 
 
 # TODO : parse regioanl forms like alola
+# TODO : add pokedex entry
+# TODO : add pokedex number
+# TODO : add height/weight
+# TODO : add evolution line
+# TODO : make daily
+# TODO : make ratings
+# TODO : make json for no repeats
+# TODO : add emoji bars for more stats
+
 
 def parse_random_pokemon(data):
     
@@ -51,7 +85,7 @@ def parse_random_pokemon(data):
         "abilities" : [name for name in [ability_entry['ability']['name'] for ability_entry in data['abilities']]],
         "types" : types,
         "stats" : stats,
-        "image" : data['sprites']['other']['official-artwork']['front_default']
+        "image_link" : data['sprites']['other']['official-artwork']['front_default']
     }
     
     print(json.dumps(parsed_data, indent=4))
@@ -59,6 +93,52 @@ def parse_random_pokemon(data):
     return parsed_data
     
 
+def create_embed(parsed_data):
+
+
+    name = parsed_data["form_name"].title().replace("-", " ")
+
+    type_one = parsed_data["types"][0]
+
+    typing = EMOJI_TYPE_DICT[type_one] + " " + type_one.upper()
+
+    if len(parsed_data["types"])>1:
+        type_two = parsed_data["types"][1]
+        typing = typing + " / " + EMOJI_TYPE_DICT[type_two] + " " + type_two.upper()
+
+    embed = discord.Embed(
+        title = name,
+        color = discord.Color.red(),
+        timestamp = datetime.datetime.now(),
+        description = (
+            f"*Typing* : {typing} "
+        ),
+        
+    )
+    embed.set_author(name="DAILY POKEMON!")
+
+    embed.set_image(url=parsed_data["image_link"])
+    
+    abilities = ["- "+ ability.title().replace("-"," ") for ability in parsed_data["abilities"]]
+
+    abilities_str = "\n".join(abilities)
+
+    embed.add_field(name="Abilities : ",
+                    value=abilities_str,
+                    inline=False)
+
+    stats_str = ""
+
+    for stat in parsed_data["stats"]:
+        stat_name = stat.title().replace("-"," ")
+        stat_value = parsed_data["stats"][stat]
+        stats_str += f"**{stat_name}** : {stat_value}\n"
+
+    embed.add_field(name="Stats : ",
+                    value=stats_str,
+                    inline=True)
+    
+    return embed
 
 class DailyPokemon(commands.Cog):
     def __init__(self, bot: commands.Bot):
@@ -67,7 +147,7 @@ class DailyPokemon(commands.Cog):
     @commands.command(hidden=True)
     @commands.is_owner()
     async def random_mon(self, ctx):
-        await ctx.send(parse_random_pokemon(get_random_pokemon()))
+        await ctx.send(embed=create_embed(parse_random_pokemon(get_random_pokemon())))
 
 
 async def setup(bot: commands.Bot):
