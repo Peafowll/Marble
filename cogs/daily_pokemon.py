@@ -62,13 +62,10 @@ def query_pokemon_by_id(mon_id: int):
 
 # TODO : parse regioanl forms like alola
 # TODO : add pokedex entry
-# TODO : add pokedex number
-# TODO : add height/weight
 # TODO : add evolution line
 # TODO : make daily
 # TODO : make ratings
 # TODO : make json for no repeats
-# TODO : add emoji bars for more stats
 # TODO : add ability descriptions
 
 
@@ -92,14 +89,22 @@ def parse_pokemon_data(data):
         "speed": data['stats'][5]['base_stat']
     }
 
-
+    kilogram_weight = data['weight'] / 10
+    if kilogram_weight.is_integer():
+        kilogram_weight = int(kilogram_weight)
+    meter_height = data['height'] / 10
+    if meter_height.is_integer():
+        meter_height = int(meter_height)
 
     parsed_data = {
         "form_name" : data['forms'][0]['name'],
         "abilities" : [name for name in [ability_entry['ability']['name'] for ability_entry in data['abilities']]],
         "types" : types,
         "stats" : stats,
-        "image_link" : data['sprites']['other']['official-artwork']['front_default']
+        "image_link" : data['sprites']['other']['official-artwork']['front_default'],
+        "pokedex_number" : data['id'],
+        "weight" : kilogram_weight,
+        "height" : meter_height
     }
     
     print(json.dumps(parsed_data, indent=4))
@@ -152,7 +157,10 @@ def create_embed(parsed_data):
         color = discord.Color.red(),
         timestamp = datetime.datetime.now(),
         description = (
-            f"*Typing* : {typing} "
+            f"*#{parsed_data['pokedex_number']:03d}*\n"
+            f"**Typing** : {typing} \n"
+            f"**Height** : {parsed_data["height"]} m\n"
+            f"**Weight** : {parsed_data["weight"]} kg\n"
         ),
         
     )
