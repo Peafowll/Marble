@@ -60,6 +60,17 @@ def query_pokemon_by_id(mon_id: int):
 
     return data
 
+def get_pokemon_species_data(species_url: str):
+    response = requests.get(species_url)
+
+    if response.status_code != 200:
+        logger.error(f"Failed to fetch Pokémon species data: {response.status_code}")
+        return None
+    
+    data = response.json()
+
+    return data
+
 # TODO : parse regioanl forms like alola
 # TODO : add pokedex entry
 # TODO : add evolution line
@@ -78,8 +89,6 @@ def parse_pokemon_data(data):
     if type2:
         types.append(type2)
 
-
-
     stats = {
         "hp": data['stats'][0]['base_stat'],
         "attack": data['stats'][1]['base_stat'],
@@ -96,6 +105,12 @@ def parse_pokemon_data(data):
     if meter_height.is_integer():
         meter_height = int(meter_height)
 
+    species_url = data['species']['url']
+
+    species_data = get_pokemon_species_data(species_url)
+
+    pokedex_entries_english = [entry["flavor_text"] for entry in species_data['flavor_text_entries'] if entry['language']['name'] == 'en']
+
     parsed_data = {
         "form_name" : data['forms'][0]['name'],
         "abilities" : [name for name in [ability_entry['ability']['name'] for ability_entry in data['abilities']]],
@@ -104,7 +119,8 @@ def parse_pokemon_data(data):
         "image_link" : data['sprites']['other']['official-artwork']['front_default'],
         "pokedex_number" : data['id'],
         "weight" : kilogram_weight,
-        "height" : meter_height
+        "height" : meter_height,
+        "entries" : pokedex_entries_english
     }
     
     print(json.dumps(parsed_data, indent=4))
@@ -119,21 +135,35 @@ def generate_stat_bar(stat_value):
     BLUE_SQUARE = "🟦"
     PURPLE_SQUARE = "🟪"
     BLACK_SQUARE = "⬛"
+    HYPER_SQUARE = "🔲"
 
-    if stat_value <= 29:
+    # if stat_value < 30:
+    #     square = RED_SQURE
+    # elif stat_value < 60:
+    #     square = ORANGE_SQUARE
+    # elif stat_value < 90:
+    #     square = YELLOW_SQUARE
+    # elif stat_value < 120:
+    #     square = GREEN_SQUARE
+    # elif stat_value < 150:
+    #     square = BLUE_SQUARE
+    # else:
+    #     square = PURPLE_SQUARE    
+
+
+    if stat_value <= 40:
         square = RED_SQURE
-    elif stat_value <= 59:
-        square = ORANGE_SQUARE
-    elif stat_value <= 89:
+    elif stat_value <= 80:
         square = YELLOW_SQUARE
-    elif stat_value <= 119:
+    elif stat_value <= 120:
         square = GREEN_SQUARE
-    elif stat_value <= 149:
+    elif stat_value <= 160:
         square = BLUE_SQUARE
     else:
-        square = PURPLE_SQUARE    
-
+        square = PURPLE_SQUARE
+    
     blocks = math.ceil(stat_value / 20)
+
     max_blocks = 10
     if blocks > max_blocks:
         blocks = max_blocks
@@ -194,6 +224,12 @@ def create_embed(parsed_data):
 
     embed.add_field(name="Stats : ",
                     value="```"+stats_str+"```",
+                    inline=False)
+    
+    entry = random.choice(parsed_data["entries"]).replace("\n"," ")
+
+    embed.add_field(name="Pokedex Entry : ",
+                    value=entry,
                     inline=False)
     
     return embed
