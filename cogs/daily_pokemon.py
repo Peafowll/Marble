@@ -71,14 +71,39 @@ def get_pokemon_species_data(species_url: str):
 
     return data
 
+def get_evolution_chain_data(evolution_chain_url: str):
+    response = requests.get(evolution_chain_url)
+
+    if response.status_code != 200:
+        logger.error(f"Failed to fetch Pokémon evolution chain data: {response.status_code}")
+        return None
+    
+    data = response.json()
+
+    return data
+
 # TODO : parse regioanl forms like alola
-# TODO : add pokedex entry
 # TODO : add evolution line
 # TODO : make daily
 # TODO : make ratings
 # TODO : make json for no repeats
 # TODO : add ability descriptions
 
+def get_evo_stages(chain_data):
+    chain = chain_data['chain']
+    
+    stage_1 = [chain['species']['name'].title()]
+    
+    stage_2 = []
+    stage_3 = []
+    
+    for evo in chain['evolves_to']:
+        stage_2.append(evo['species']['name'].title())
+        
+        for sub_evo in evo['evolves_to']:
+            stage_3.append(sub_evo['species']['name'].title())
+            
+    return stage_1, stage_2, stage_3
 
 def parse_pokemon_data(data):
     
@@ -111,6 +136,15 @@ def parse_pokemon_data(data):
 
     pokedex_entries_english = [entry["flavor_text"] for entry in species_data['flavor_text_entries'] if entry['language']['name'] == 'en']
 
+    evolves_from = species_data['evolves_from_species']['name'] if species_data['evolves_from_species'] else None
+
+    evolution_chain_url = species_data['evolution_chain']['url']
+
+    evolution_chain_data = get_evolution_chain_data(evolution_chain_url)
+
+    evo_stages = get_evo_stages(evolution_chain_data)
+    
+
     parsed_data = {
         "form_name" : data['forms'][0]['name'],
         "abilities" : [name for name in [ability_entry['ability']['name'] for ability_entry in data['abilities']]],
@@ -120,10 +154,11 @@ def parse_pokemon_data(data):
         "pokedex_number" : data['id'],
         "weight" : kilogram_weight,
         "height" : meter_height,
-        "entries" : pokedex_entries_english
+        "entries" : pokedex_entries_english,
+        "evolution_stages" : evo_stages
     }
     
-    print(json.dumps(parsed_data, indent=4))
+    #print(json.dumps(parsed_data, indent=4))
 
     return parsed_data
     
@@ -150,7 +185,6 @@ def generate_stat_bar(stat_value):
     # else:
     #     square = PURPLE_SQUARE    
 
-
     if stat_value <= 40:
         square = RED_SQURE
     elif stat_value <= 80:
@@ -168,6 +202,35 @@ def generate_stat_bar(stat_value):
     if blocks > max_blocks:
         blocks = max_blocks
     return square * (blocks) + BLACK_SQUARE * (max_blocks - blocks)
+
+def build_evolution_line(evo_stages, current_name):
+    stage_1, stage_2, stage_3 = evo_stages
+    
+    separator = " | "
+    header_width = 7 
+    
+    evolution_str = "```\n"
+
+    def format_name(name):
+        return f"> {name}" if name.lower() == current_name.lower() else f"  {name}"
+
+    for i, name in enumerate(stage_1):
+        label = "Stage 1" if i == 0 else ""
+        evolution_str += f"{label:<{header_width}}{separator}{format_name(name)}\n"
+
+    if stage_2:
+        # evolution_str += "-" * 25 + "\n"  # Optional separator line
+        for i, name in enumerate(stage_2):
+            label = "Stage 2" if i == 0 else ""
+            evolution_str += f"{label:<{header_width}}{separator}{format_name(name)}\n"
+
+    if stage_3:
+        # evolution_str += "-" * 25 + "\n"  # Optional separator line
+        for i, name in enumerate(stage_3):
+            label = "Stage 3" if i == 0 else ""
+            evolution_str += f"{label:<{header_width}}{separator}{format_name(name)}\n"
+
+    return evolution_str + "```"
 
 def create_embed(parsed_data):
 
@@ -205,6 +268,13 @@ def create_embed(parsed_data):
     embed.add_field(name="Abilities : ",
                     value=abilities_str,
                     inline=False)
+    
+    
+    evolution_str = build_evolution_line(parsed_data["evolution_stages"], name)
+
+    embed.add_field(name="Evolution : ",
+                    value = evolution_str,
+                    inline=False)
 
     stats_str = ""
 
@@ -231,6 +301,8 @@ def create_embed(parsed_data):
     embed.add_field(name="Pokedex Entry : ",
                     value=entry,
                     inline=False)
+    
+    
     
     return embed
 
