@@ -82,8 +82,25 @@ def get_evolution_chain_data(evolution_chain_url: str):
 
     return data
 
+def get_ability_data(ability_url: str):
+    response = requests.get(ability_url)
+
+    if response.status_code != 200:
+        logger.error(f"Failed to fetch Pokémon ability data: {response.status_code}")
+        return None
+    
+    data = response.json()
+
+    return data
+
+def get_abillity_description(ability_data):
+    entries = ability_data['effect_entries']
+    for entry in entries:
+        if entry['language']['name'] == 'en':
+            return entry['short_effect']
+    return "No description available."
+
 # TODO : parse regioanl forms like alola
-# TODO : add evolution line
 # TODO : make daily
 # TODO : make ratings
 # TODO : make json for no repeats
@@ -136,18 +153,20 @@ def parse_pokemon_data(data):
 
     pokedex_entries_english = [entry["flavor_text"] for entry in species_data['flavor_text_entries'] if entry['language']['name'] == 'en']
 
-    evolves_from = species_data['evolves_from_species']['name'] if species_data['evolves_from_species'] else None
-
     evolution_chain_url = species_data['evolution_chain']['url']
 
     evolution_chain_data = get_evolution_chain_data(evolution_chain_url)
 
     evo_stages = get_evo_stages(evolution_chain_data)
-    
+
+    abilities = {
+        ability_entry['ability']['name'].title().replace("-", " ") : get_abillity_description(get_ability_data(ability_entry['ability']['url']))
+        for ability_entry in data['abilities']
+    }
 
     parsed_data = {
         "form_name" : data['forms'][0]['name'],
-        "abilities" : [name for name in [ability_entry['ability']['name'] for ability_entry in data['abilities']]],
+        "abilities" : abilities,
         "types" : types,
         "stats" : stats,
         "image_link" : data['sprites']['other']['official-artwork']['front_default'],
@@ -260,13 +279,9 @@ def create_embed(parsed_data):
     embed.set_author(name="DAILY POKEMON!")
 
     embed.set_image(url=parsed_data["image_link"])
-    
-    abilities = ["- "+ ability.title().replace("-"," ") for ability in parsed_data["abilities"]]
-
-    abilities_str = "\n".join(abilities)
 
     embed.add_field(name="Abilities : ",
-                    value=abilities_str,
+                    value='\n'.join([f"- **{ability}**\n  {desc}" for ability, desc in parsed_data["abilities"].items()]),
                     inline=False)
     
     
