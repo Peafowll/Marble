@@ -50,8 +50,8 @@ class DailyRatingView(discord.ui.View):
         pokemon_name = interaction.message.embeds[0].title
         rating = select.values[0]
         user_id = interaction.user.id
-        
-        save_rating(user_id, pokemon_name, rating)
+        username = interaction.user.name
+        save_rating(user_id,username, pokemon_name, rating)
 
         await interaction.response.send_message(
             f"✅ You rated **{pokemon_name}** a **{rating}/10**!",
@@ -59,7 +59,7 @@ class DailyRatingView(discord.ui.View):
         )
 
 
-def save_rating(user_id: int, pokemon_name: str, rating: str):
+def save_rating(user_id: int,username : str, pokemon_name: str, rating: str):
     """
     Global helper function to bridge the View and the Manager.
     Instantiates the manager to save the data to JSON.
@@ -68,7 +68,7 @@ def save_rating(user_id: int, pokemon_name: str, rating: str):
     
     try:
         rating_int = int(rating)
-        manager.save_rating(user_id, pokemon_name, rating_int)
+        manager.save_rating(user_id,username, pokemon_name, rating_int)
     except ValueError:
         logger.error(f"Failed to convert rating '{rating}' to integer for User {user_id}")
 
@@ -149,11 +149,11 @@ class PokemonRatingManager:
         with open(self.filepath, 'w') as f:
             json.dump(data, f, indent=4) 
 
-    def save_rating(self, user_id: int, pokemon_name: str, rating: int) -> None:
+    def save_rating(self, user_id: int, username : str, pokemon_name: str, rating: int) -> None:
         """Saves or updates a user's rating for a specific Pokémon."""
         history = self._load_db()
         today = datetime.datetime.now().strftime('%Y-%m-%d')
-        user_key = str(user_id)
+        user_key = str(username) + "_" + str(user_id)
 
         if today not in history:
             history[today] = {}
@@ -257,9 +257,7 @@ def get_abillity_description(ability_data):
             return entry['short_effect']
     return "No description available."
 
-# TODO : make daily
-# TODO : make json for no repeats
-# TODO : add sub and unsub
+# TODO : add mass sub
 
 def get_evo_stages(chain_data):
 
@@ -493,7 +491,7 @@ class DailyPokemon(commands.Cog):
             self.daily_pokemon.start()
 
 
-    @tasks.loop(time=datetime.time(hour=22, minute=7, tzinfo=ZoneInfo("Europe/Bucharest")))
+    @tasks.loop(time=datetime.time(hour=22, minute=11, tzinfo=ZoneInfo("Europe/Bucharest")))
     async def daily_pokemon(self):
         data = get_random_pokemon() 
         if not data: 
@@ -610,7 +608,39 @@ class DailyPokemon(commands.Cog):
         else:
             await ctx.send(f"```json\n{formatted_history}\n```")
 
-    
+    @commands.command(hidden=True)
+    @commands.is_owner()
+    async def set_mass_subscribers(self, ctx):
+        """Set mass subscribers from a predefined list."""
+        starting_users = [
+            # (370638781998694410, "arrow_san"),
+            # (785545332788035614, "143.dariaa"),
+            # (457123490080751626, "vladimus2005"),
+            # (246956083934003211, "painite01"),
+            # (440831015456473089, "yoyoo0722"),
+            # (608761289442852895, "itz_wolfseer"),
+            # (322758058679861258, "frogthephrog"),
+            # (371975159923343362, "el_donte")
+            (264416824777637898, "peafowl")
+        ]
+        for user_id, user_name in starting_users:
+            if not self.sub_manager.is_subscribed(user_id):
+                self.sub_manager.add_subscriber(user_id, user_name)
+            user = await self.bot.fetch_user(user_id)
+            await user.send(
+                    "**🎉 You have been** ***(pre)*** **subscribed to Daily Pokémon messages!**\n\n"
+                    "You will receive a daily message with a random Pokémon and the option to rate it.\n\n"
+                    "**How to Rate:**\n"
+                    "• Use the dropdown menu to select your score.\n"
+                    "• ⚠️ **Careful:** Clicking an option submits the rating **instantly**.\n"
+                    "• Rate based on design, stats, interesting abilities, or just personal vibe!\n\n"
+                    "If you want to opt-out, use the `!unsub_pokemon` command."
+                )
+            
+        await ctx.send("✅ Test users have been subscribed to daily Pokémon messages.")
+        await ctx.send("The file looks like this now:")
+        await self.list_pokemon_subs(ctx)
+
 async def setup(bot: commands.Bot):
     try:
         await bot.add_cog(DailyPokemon(bot))

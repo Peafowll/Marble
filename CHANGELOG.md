@@ -1,3 +1,12 @@
+## [0.8.0] - 12-01-2026
+### Added
+  - **DAILY POKEMON!**
+    - Receive and rate daily Pokemon!
+    - Some of you have already been subscribed, you may unsubscribe at any time.
+    - If you aren't subscribed and want to partake, use `!sub_pokemon`!
+### Fixed
+  - Multiple smaller fixes around other commands.
+
 ## [0.7.5] - 7-12-2025
 ### Fixed
   - Fixed surrender math and minimum requirements for some tiles.
