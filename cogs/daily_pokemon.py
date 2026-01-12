@@ -8,6 +8,7 @@ import datetime
 import json
 import math
 import os
+from typing import Dict, List, Union
 logger = logging.getLogger('discord.daily_pokemon')
 
 
@@ -58,6 +59,63 @@ class DailyRatingView(discord.ui.View):
             f"✅ You rated **{pokemon_name}** a **{rating}/10**!",
             ephemeral=True
         )
+
+
+class PokemonSubscriberManager:
+    def __init__(self, filepath: str = 'data/dailyPokemonSubscribers.json'):
+        """
+        Initialize the manager with a file path. 
+        Creates the directory if it doesn't exist.
+        """
+        self.filepath = filepath
+        os.makedirs(os.path.dirname(self.filepath), exist_ok=True)
+
+    def _load_db(self) -> Dict[str, str]:
+        """Internal helper to load data from disk safely."""
+        try:
+            with open(self.filepath, 'r') as f:
+                return json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError):
+            return {}
+
+    def _save_db(self, data: Dict[str, str]) -> None:
+        """Internal helper to save data to disk."""
+        with open(self.filepath, 'w') as f:
+            # indent=4 makes the file readable if you open it manually
+            json.dump(data, f, indent=4) 
+
+    def add_subscriber(self, user_id: int, name: str) -> None:
+        """Adds or updates a subscriber."""
+        subscribers = self._load_db()
+        subscribers[str(user_id)] = name
+        self._save_db(subscribers)
+        print(f"Subscribed: {name} ({user_id})")
+
+    def remove_subscriber(self, user_id: int) -> bool:
+        """
+        Removes a subscriber. 
+        Returns True if successful, False if user wasn't subscribed.
+        """
+        subscribers = self._load_db()
+        if str(user_id) in subscribers:
+            del subscribers[str(user_id)]
+            self._save_db(subscribers)
+            return True
+        return False
+
+    def get_subscribers(self) -> Dict[str, str]:
+        """Returns the full dictionary of subscribers."""
+        return self._load_db()
+
+    def get_subscriber_ids(self) -> List[int]:
+        """Returns a list of integer IDs for easy iteration."""
+        subscribers = self._load_db()
+        return [int(uid) for uid in subscribers.keys()]
+
+    def is_subscribed(self, user_id: int) -> bool:
+        """Check if a specific ID is already in the list."""
+        subscribers = self._load_db()
+        return str(user_id) in subscribers      
 
 def get_random_pokemon():
 
@@ -144,6 +202,7 @@ def get_abillity_description(ability_data):
 # TODO : make daily
 # TODO : make ratings
 # TODO : make json for no repeats
+# TODO : make sub list
 
 def get_evo_stages(chain_data):
 
@@ -366,6 +425,7 @@ class DailyPokemon(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
         self.bot.add_view(DailyRatingView())
+        self.sub_manager = PokemonSubscriberManager()
 
     @commands.command(hidden=True)
     @commands.is_owner()
