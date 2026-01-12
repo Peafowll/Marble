@@ -135,7 +135,6 @@ def calculate_int_scores(match_json,match_log_json=None, target_player=None):
             kill_participation = round(participant["challenges"]["killParticipation"]*100,2)
             
             kill_participation_baseline = 47
-            print(f"kill participation ={kill_participation}")
             if team_position in ["UTILITY","JUNGLE"]:
                 kill_participation_harshness = 3.4
             else:

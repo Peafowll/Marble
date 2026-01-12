@@ -35,7 +35,11 @@ EMOJI_TYPE_DICT = {
 
 def get_random_pokemon():
 
-    id = random.randint(1, 1025)
+    with open('data/unusedPokemonIDs.json', 'r') as f:
+        unused_ids = json.load(f)
+
+    id = random.choice(unused_ids)
+    
     url = f"https://pokeapi.co/api/v2/pokemon/{id}"
     response = requests.get(url)
 
@@ -104,7 +108,6 @@ def get_abillity_description(ability_data):
 # TODO : make daily
 # TODO : make ratings
 # TODO : make json for no repeats
-# TODO : add ability descriptions
 
 def get_evo_stages(chain_data):
     chain = chain_data['chain']
@@ -238,13 +241,11 @@ def build_evolution_line(evo_stages, current_name):
         evolution_str += f"{label:<{header_width}}{separator}{format_name(name)}\n"
 
     if stage_2:
-        # evolution_str += "-" * 25 + "\n"  # Optional separator line
         for i, name in enumerate(stage_2):
             label = "Stage 2" if i == 0 else ""
             evolution_str += f"{label:<{header_width}}{separator}{format_name(name)}\n"
 
     if stage_3:
-        # evolution_str += "-" * 25 + "\n"  # Optional separator line
         for i, name in enumerate(stage_3):
             label = "Stage 3" if i == 0 else ""
             evolution_str += f"{label:<{header_width}}{separator}{format_name(name)}\n"
