@@ -175,12 +175,23 @@ class PokemonRatingManager:
 def get_random_pokemon():
 
     data_location = 'data/unusedPokemonIDs.json'
-    
+    valid_ids_location = 'valid_pokemon_ids.json'
+
     try:
         with open(data_location, 'r') as f:
             unused_ids = json.load(f)
-    except:
-        return None
+    except (FileNotFoundError, json.JSONDecodeError):
+        logger.info(f"{data_location} not found or invalid. Initializing from {valid_ids_location}...")
+        try:
+            with open(valid_ids_location, 'r') as f:
+                unused_ids = json.load(f)
+            os.makedirs(os.path.dirname(data_location), exist_ok=True)
+            with open(data_location, 'w') as f:
+                json.dump(unused_ids, f, indent=4)
+            logger.info(f"Successfully initialized {data_location} with {len(unused_ids)} Pokémon IDs.")
+        except (FileNotFoundError, json.JSONDecodeError) as e:
+            logger.error(f"Failed to load {valid_ids_location}: {e}")
+            return None
 
     if not unused_ids:
         logger.warning("No more Pokemon left in the list!")
@@ -334,8 +345,7 @@ def parse_pokemon_data(data):
         "entries" : pokedex_entries_english,
         "evolution_stages" : evo_stages
     }
-    
-    #print(json.dumps(parsed_data, indent=4))
+
 
     return parsed_data
     
@@ -346,19 +356,6 @@ def generate_stat_bar(stat_value):
     BLUE_SQUARE = "🟦"
     PURPLE_SQUARE = "🟪"
     BLACK_SQUARE = "⬛"
-
-    # if stat_value < 30:
-    #     square = RED_SQURE
-    # elif stat_value < 60:
-    #     square = ORANGE_SQUARE
-    # elif stat_value < 90:
-    #     square = YELLOW_SQUARE
-    # elif stat_value < 120:
-    #     square = GREEN_SQUARE
-    # elif stat_value < 150:
-    #     square = BLUE_SQUARE
-    # else:
-    #     square = PURPLE_SQUARE    
 
     if stat_value <= 40:
         square = RED_SQURE
@@ -491,7 +488,7 @@ class DailyPokemon(commands.Cog):
             self.daily_pokemon.start()
 
 
-    @tasks.loop(time=datetime.time(hour=22, minute=11, tzinfo=ZoneInfo("Europe/Bucharest")))
+    @tasks.loop(time=datetime.time(hour=22, minute=59, tzinfo=ZoneInfo("Europe/Bucharest")))
     async def daily_pokemon(self):
         data = get_random_pokemon() 
         if not data: 
@@ -613,14 +610,15 @@ class DailyPokemon(commands.Cog):
     async def set_mass_subscribers(self, ctx):
         """Set mass subscribers from a predefined list."""
         starting_users = [
-            # (370638781998694410, "arrow_san"),
-            # (785545332788035614, "143.dariaa"),
-            # (457123490080751626, "vladimus2005"),
-            # (246956083934003211, "painite01"),
-            # (440831015456473089, "yoyoo0722"),
-            # (608761289442852895, "itz_wolfseer"),
-            # (322758058679861258, "frogthephrog"),
-            # (371975159923343362, "el_donte")
+            (370638781998694410, "arrow_san"),
+            (785545332788035614, "143.dariaa"),
+            (457123490080751626, "vladimus2005"),
+            (246956083934003211, "painite01"),
+            (440831015456473089, "yoyoo0722"),
+            (608761289442852895, "itz_wolfseer"),
+            (322758058679861258, "frogthephrog"),
+            (371975159923343362, "el_donte"),
+            (1224715729056694366, "tepeel"), 
             (264416824777637898, "peafowl")
         ]
         for user_id, user_name in starting_users:
