@@ -37,7 +37,6 @@ EMOJI_TYPE_DICT = {
 
 class DailyRatingView(discord.ui.View):
     def __init__(self):
-        # timeout=None means it persists even if the bot restarts
         super().__init__(timeout=None) 
 
     @discord.ui.select(
@@ -46,7 +45,6 @@ class DailyRatingView(discord.ui.View):
         options=[discord.SelectOption(label=str(i), value=str(i)) for i in range(1, 11)]
     )
     async def select_callback(self, interaction: discord.Interaction, select: discord.ui.Select):
-        # Grab the Pokemon name from the Embed Title
         pokemon_name = interaction.message.embeds[0].title
         rating = select.values[0]
         user_id = interaction.user.id
@@ -81,7 +79,6 @@ class PokemonSubscriberManager:
     def _save_db(self, data: Dict[str, str]) -> None:
         """Internal helper to save data to disk."""
         with open(self.filepath, 'w') as f:
-            # indent=4 makes the file readable if you open it manually
             json.dump(data, f, indent=4) 
 
     def add_subscriber(self, user_id: int, name: str) -> None:
@@ -116,6 +113,51 @@ class PokemonSubscriberManager:
         """Check if a specific ID is already in the list."""
         subscribers = self._load_db()
         return str(user_id) in subscribers      
+
+class PokemonRatingManager:
+    def __init__(self, filepath: str = 'data/dailyPokemonRatings.json'):
+        """
+        Initialize the manager with a file path. 
+        Creates the directory if it doesn't exist.
+        """
+        self.filepath = filepath
+        os.makedirs(os.path.dirname(self.filepath), exist_ok=True)
+
+    def _load_db(self) -> Dict[str, Dict[str, int]]:
+        """Internal helper to load data from disk safely."""
+        try:
+            with open(self.filepath, 'r') as f:
+                return json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError):
+            return {}
+
+    def _save_db(self, data: Dict[str, Dict[str, int]]) -> None:
+        """Internal helper to save data to disk."""
+        with open(self.filepath, 'w') as f:
+            json.dump(data, f, indent=4) 
+
+    def save_rating(self, user_id: int, pokemon_name: str, rating: int) -> None:
+        """Saves or updates a user's rating for a specific Pokémon."""
+        history = self._load_db()
+        today = datetime.datetime.now().strftime('%Y-%m-%d')
+        user_key = str(user_id)
+
+        if today not in history:
+            history[today] = {}
+
+        entry = history[today]
+
+        entry["pokemon_name"] = pokemon_name
+
+        entry["ratings"] = entry.get("ratings", {})
+
+        entry["ratings"][user_key] = rating
+
+        history[today] = entry
+
+        self._save_db(history)
+        print(f"Saved rating: User {user_id} rated {pokemon_name} a {rating}/10, date = {datetime.datetime.now().strftime('%Y-%m-%d')}")
+    
 
 def get_random_pokemon():
 
@@ -202,7 +244,6 @@ def get_abillity_description(ability_data):
 # TODO : make daily
 # TODO : make ratings
 # TODO : make json for no repeats
-# TODO : make sub list
 
 def get_evo_stages(chain_data):
 
