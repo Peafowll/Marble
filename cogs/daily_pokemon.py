@@ -268,7 +268,7 @@ def get_abillity_description(ability_data):
             return entry['short_effect']
     return "No description available."
 
-# TODO : add mass sub
+# tODO : ADD POKEMON LEADERBOARD
 
 def get_evo_stages(chain_data):
 
