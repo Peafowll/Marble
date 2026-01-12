@@ -7,7 +7,7 @@ from discord import Color, Embed
 import datetime
 import json
 import math
-
+import os
 logger = logging.getLogger('discord.daily_pokemon')
 
 
@@ -33,13 +33,50 @@ EMOJI_TYPE_DICT = {
 }
 
 
+
+class DailyRatingView(discord.ui.View):
+    def __init__(self):
+        # timeout=None means it persists even if the bot restarts
+        super().__init__(timeout=None) 
+
+    @discord.ui.select(
+        placeholder="Rate this Pokémon (1-10)",
+        custom_id="daily_pokemon:rating_select", # Unique ID required for persistence
+        options=[discord.SelectOption(label=str(i), value=str(i)) for i in range(1, 11)]
+    )
+    async def select_callback(self, interaction: discord.Interaction, select: discord.ui.Select):
+        # Grab the Pokemon name from the Embed Title
+        pokemon_name = interaction.message.embeds[0].title
+        rating = select.values[0]
+        user_id = interaction.user.id
+        
+        # --- SAVE LOGIC ---
+        # save_rating(user_id, pokemon_name, rating)
+        # ------------------
+
+        await interaction.response.send_message(
+            f"✅ You rated **{pokemon_name}** a **{rating}/10**!",
+            ephemeral=True
+        )
+
 def get_random_pokemon():
 
-    with open('data/unusedPokemonIDs.json', 'r') as f:
-        unused_ids = json.load(f)
+    data_location = 'data/unusedPokemonIDs.json'
+
+    os.makedirs(os.path.dirname(data_location), exist_ok=True)
+
+    try:
+        with open(data_location, 'r') as f:
+            unused_ids = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        with open("valid_pokemon_ids.json", 'r') as f:
+            valid_ids = json.load(f)
+        unused_ids =  valid_ids.copy()
+        with open(data_location, 'w') as f:
+            json.dump(unused_ids, f)
 
     id = random.choice(unused_ids)
-    
+
     url = f"https://pokeapi.co/api/v2/pokemon/{id}"
     response = requests.get(url)
 
@@ -104,24 +141,27 @@ def get_abillity_description(ability_data):
             return entry['short_effect']
     return "No description available."
 
-# TODO : parse regioanl forms like alola
 # TODO : make daily
 # TODO : make ratings
 # TODO : make json for no repeats
 
 def get_evo_stages(chain_data):
+
+    def clean(n): 
+        return n.title().replace("-", " ")
+    
     chain = chain_data['chain']
     
-    stage_1 = [chain['species']['name'].title()]
+    stage_1 = [clean(chain['species']['name'])]
     
     stage_2 = []
     stage_3 = []
     
     for evo in chain['evolves_to']:
-        stage_2.append(evo['species']['name'].title())
+        stage_2.append(clean(evo['species']['name']))
         
         for sub_evo in evo['evolves_to']:
-            stage_3.append(sub_evo['species']['name'].title())
+            stage_3.append(clean(sub_evo['species']['name']))
             
     return stage_1, stage_2, stage_3
 
@@ -169,6 +209,7 @@ def parse_pokemon_data(data):
 
     parsed_data = {
         "form_name" : data['forms'][0]['name'],
+        "species_name" : species_data['name'],
         "abilities" : abilities,
         "types" : types,
         "stats" : stats,
@@ -187,12 +228,10 @@ def parse_pokemon_data(data):
 def generate_stat_bar(stat_value):
     RED_SQURE = "🟥"
     GREEN_SQUARE = "🟩"
-    ORANGE_SQUARE = "🟧"
     YELLOW_SQUARE = "🟨"
     BLUE_SQUARE = "🟦"
     PURPLE_SQUARE = "🟪"
     BLACK_SQUARE = "⬛"
-    HYPER_SQUARE = "🔲"
 
     # if stat_value < 30:
     #     square = RED_SQURE
@@ -254,8 +293,9 @@ def build_evolution_line(evo_stages, current_name):
 
 def create_embed(parsed_data):
 
-
-    name = parsed_data["form_name"].title().replace("-", " ")
+    display_name = parsed_data["form_name"].title().replace("-", " ")
+    
+    species_name = parsed_data["species_name"].title().replace("-", " ")
 
     type_one = parsed_data["types"][0]
 
@@ -266,7 +306,7 @@ def create_embed(parsed_data):
         typing = typing + " / " + EMOJI_TYPE_DICT[type_two] + " " + type_two.upper()
 
     embed = discord.Embed(
-        title = name,
+        title = display_name,
         color = discord.Color.red(),
         timestamp = datetime.datetime.now(),
         description = (
@@ -286,7 +326,7 @@ def create_embed(parsed_data):
                     inline=False)
     
     
-    evolution_str = build_evolution_line(parsed_data["evolution_stages"], name)
+    evolution_str = build_evolution_line(parsed_data["evolution_stages"], species_name)
 
     embed.add_field(name="Evolution : ",
                     value = evolution_str,
@@ -325,11 +365,24 @@ def create_embed(parsed_data):
 class DailyPokemon(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
+        self.bot.add_view(DailyRatingView())
 
     @commands.command(hidden=True)
     @commands.is_owner()
     async def random_mon(self, ctx):
-        await ctx.send(embed=create_embed(parse_pokemon_data(get_random_pokemon())))
+
+        data = get_random_pokemon()
+        if not data:
+            await ctx.send("Failed to fetch Pokémon data.")
+            return
+        
+        parsed_data = parse_pokemon_data(data)
+
+        embed = create_embed(parsed_data)
+
+        view = DailyRatingView()
+
+        await ctx.send(embed=embed, view=view   )
 
     @commands.command(hidden=True)
     @commands.is_owner()
