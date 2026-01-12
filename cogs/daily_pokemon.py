@@ -2,13 +2,15 @@ import logging
 import requests
 import discord
 import random
-from discord.ext import commands
+from discord.ext import commands, tasks
 from discord import Color, Embed
 import datetime
 import json
 import math
 import os
 from typing import Dict, List, Union
+import aiohttp
+from zoneinfo import ZoneInfo
 logger = logging.getLogger('discord.daily_pokemon')
 
 
@@ -41,7 +43,7 @@ class DailyRatingView(discord.ui.View):
 
     @discord.ui.select(
         placeholder="Rate this Pokémon (1-10)",
-        custom_id="daily_pokemon:rating_select", # Unique ID required for persistence
+        custom_id="daily_pokemon:rating_select", 
         options=[discord.SelectOption(label=str(i), value=str(i)) for i in range(1, 11)]
     )
     async def select_callback(self, interaction: discord.Interaction, select: discord.ui.Select):
@@ -49,15 +51,26 @@ class DailyRatingView(discord.ui.View):
         rating = select.values[0]
         user_id = interaction.user.id
         
-        # --- SAVE LOGIC ---
-        # save_rating(user_id, pokemon_name, rating)
-        # ------------------
+        save_rating(user_id, pokemon_name, rating)
 
         await interaction.response.send_message(
             f"✅ You rated **{pokemon_name}** a **{rating}/10**!",
             ephemeral=True
         )
 
+
+def save_rating(user_id: int, pokemon_name: str, rating: str):
+    """
+    Global helper function to bridge the View and the Manager.
+    Instantiates the manager to save the data to JSON.
+    """
+    manager = PokemonRatingManager()
+    
+    try:
+        rating_int = int(rating)
+        manager.save_rating(user_id, pokemon_name, rating_int)
+    except ValueError:
+        logger.error(f"Failed to convert rating '{rating}' to integer for User {user_id}")
 
 class PokemonSubscriberManager:
     def __init__(self, filepath: str = 'data/dailyPokemonSubscribers.json'):
@@ -162,22 +175,25 @@ class PokemonRatingManager:
 def get_random_pokemon():
 
     data_location = 'data/unusedPokemonIDs.json'
-
-    os.makedirs(os.path.dirname(data_location), exist_ok=True)
-
+    
     try:
         with open(data_location, 'r') as f:
             unused_ids = json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
-        with open("valid_pokemon_ids.json", 'r') as f:
-            valid_ids = json.load(f)
-        unused_ids =  valid_ids.copy()
-        with open(data_location, 'w') as f:
-            json.dump(unused_ids, f)
+    except:
+        return None
 
-    id = random.choice(unused_ids)
+    if not unused_ids:
+        logger.warning("No more Pokemon left in the list!")
+        return None
 
-    url = f"https://pokeapi.co/api/v2/pokemon/{id}"
+    mon_id = random.choice(unused_ids)
+    unused_ids.remove(mon_id)
+
+
+    with open(data_location, 'w') as f:
+        json.dump(unused_ids, f)
+
+    url = f"https://pokeapi.co/api/v2/pokemon/{mon_id}"
     response = requests.get(url)
 
     if response.status_code != 200:
@@ -242,8 +258,8 @@ def get_abillity_description(ability_data):
     return "No description available."
 
 # TODO : make daily
-# TODO : make ratings
 # TODO : make json for no repeats
+# TODO : add sub and unsub
 
 def get_evo_stages(chain_data):
 
@@ -468,6 +484,55 @@ class DailyPokemon(commands.Cog):
         self.bot.add_view(DailyRatingView())
         self.sub_manager = PokemonSubscriberManager()
 
+    @commands.Cog.listener()
+    async def on_ready(self):
+        """
+        Called when the bot is ready.
+        """
+        if not self.daily_pokemon.is_running():
+            self.daily_pokemon.start()
+
+
+    @tasks.loop(time=datetime.time(hour=22, minute=7, tzinfo=ZoneInfo("Europe/Bucharest")))
+    async def daily_pokemon(self):
+        data = get_random_pokemon() 
+        if not data: 
+            return
+        parsed_data = parse_pokemon_data(data)
+        embed = create_embed(parsed_data)
+        view = DailyRatingView()
+
+        subscriber_ids = self.sub_manager.get_subscriber_ids()
+
+        for user_id in subscriber_ids:
+            try:
+                user = self.bot.get_user(user_id)
+                
+                # if not in cache 
+                if not user:
+                    try:
+                        user = await self.bot.fetch_user(user_id)
+                    except discord.NotFound:
+                        logger.warning(f"User {user_id} no longer exists. Removing from DB.")
+                        self.sub_manager.remove_subscriber(user_id)
+                        continue
+                    except discord.HTTPException:
+                        logger.warning(f"Failed to fetch user {user_id} due to network/API error.")
+                        continue
+
+                if user:
+                    await user.send(embed=embed, view=view)
+                    logger.info(f"Sent daily Pokemon to {user.name} ({user.id})")
+
+            except discord.Forbidden:
+                logger.warning(f"Cannot send message to user ID {user_id} (Forbidden - DMs closed).")
+            except Exception as e:
+                logger.error(f"Error sending daily Pokémon to user ID {user_id}: {e}", exc_info=True)
+
+    @daily_pokemon.before_loop
+    async def before_daily_pokemon(self):
+        await self.bot.wait_until_ready()
+
     @commands.command(hidden=True)
     @commands.is_owner()
     async def random_mon(self, ctx):
@@ -490,6 +555,62 @@ class DailyPokemon(commands.Cog):
     async def specific_mon(self, ctx, mon_id: int):
         await ctx.send(embed=create_embed(parse_pokemon_data(query_pokemon_by_id(mon_id))))
 
+
+    @commands.command()
+    async def sub_pokemon(self, ctx):
+        """Subscribe to daily Pokémon messages."""
+        user_id = ctx.author.id
+        user_name = ctx.author.name
+
+        if self.sub_manager.is_subscribed(user_id):
+            await ctx.send("❌ You are already subscribed to daily Pokémon messages!")
+            return
+
+        self.sub_manager.add_subscriber(user_id, user_name)
+        await ctx.send("✅ You have been subscribed to daily Pokémon messages!")
+
+    @commands.command()
+    async def unsub_pokemon(self, ctx):
+        """Unsubscribe from daily Pokémon messages."""
+        user_id = ctx.author.id
+
+        if not self.sub_manager.is_subscribed(user_id):
+            await ctx.send("❌ You are not subscribed to daily Pokémon messages!")
+            return
+
+        self.sub_manager.remove_subscriber(user_id)
+        await ctx.send("✅ You have been unsubscribed from daily Pokémon messages!")
+
+    @commands.command(hidden=True)
+    @commands.is_owner()
+    async def list_pokemon_subs(self, ctx):
+        """List all users subscribed to daily Pokémon messages."""
+        subscribers = self.sub_manager.get_subscribers()
+        if not subscribers:
+            await ctx.send("No users are currently subscribed to daily Pokémon messages.")
+            return
+
+        sub_list = "\n".join([f"- {name} (ID: {uid})" for uid, name in subscribers.items()])
+        embed = discord.Embed(
+            title="Daily Pokémon Subscribers",
+            description=sub_list,
+            color=Color.blue()
+        )
+        await ctx.send(embed=embed)
+
+    @commands.command(hidden=True)
+    @commands.is_owner()
+    async def show_pokemon_ratings_history(self, ctx):
+        """Show the Pokémon ratings history (for debugging)."""
+        rating_manager = PokemonRatingManager()
+        history = rating_manager._load_db()  # Accessing the internal method for demonstration
+        formatted_history = json.dumps(history, indent=4)
+        if len(formatted_history) > 2000:
+            await ctx.send("The ratings history is too long to display.")
+        else:
+            await ctx.send(f"```json\n{formatted_history}\n```")
+
+    
 async def setup(bot: commands.Bot):
     try:
         await bot.add_cog(DailyPokemon(bot))
