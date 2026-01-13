@@ -35,7 +35,8 @@ EMOJI_TYPE_DICT = {
     "water" : "💧",
 }
 
-
+def _boldify(text: str) -> str:
+    return f"**{text}**"
 
 class DailyRatingView(discord.ui.View):
     def __init__(self):
@@ -410,11 +411,11 @@ def create_embed(parsed_data):
 
     type_one = parsed_data["types"][0]
 
-    typing = EMOJI_TYPE_DICT[type_one] + " " + type_one.upper()
+    typing = EMOJI_TYPE_DICT[type_one] + " " + _boldify(type_one.upper())
 
     if len(parsed_data["types"])>1:
         type_two = parsed_data["types"][1]
-        typing = typing + " / " + EMOJI_TYPE_DICT[type_two] + " " + type_two.upper()
+        typing = typing + " / " + EMOJI_TYPE_DICT[type_two] + " " + _boldify(type_two.upper())
 
     embed = discord.Embed(
         title = display_name,
@@ -432,7 +433,7 @@ def create_embed(parsed_data):
 
     embed.set_image(url=parsed_data["image_link"])
 
-    embed.add_field(name="Abilities : ",
+    embed.add_field(name="Possible Abilities : ",
                     value='\n'.join([f"- **{ability}**\n  {desc}" for ability, desc in parsed_data["abilities"].items()]),
                     inline=False)
     

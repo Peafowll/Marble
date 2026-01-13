@@ -1,3 +1,8 @@
+## [0.8.1] - 13-01-2026
+### Fixed
+  - Fixed the wording in the Daily Pokemon message to be "Possbile Abilities" instead of just "Abilities"
+  - Made the typing stand out more by making the type names bold.
+
 ## [0.8.0] - 12-01-2026
 ### Added
   - **DAILY POKEMON!**
