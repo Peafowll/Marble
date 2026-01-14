@@ -156,21 +156,41 @@ class PokemonRatingManager:
         today = datetime.datetime.now().strftime('%Y-%m-%d')
         user_key = str(username) + "_" + str(user_id)
 
-        if today not in history:
-            history[today] = {}
+        if pokemon_name not in history:
+            history[pokemon_name] = {}
 
-        entry = history[today]
+        history_entry = history[pokemon_name]
+        if not history_entry.get("date"):
+            history_entry["date"] = today
 
-        entry["pokemon_name"] = pokemon_name
+        history_entry["ratings"] = history_entry.get("ratings", {})
 
-        entry["ratings"] = entry.get("ratings", {})
-
-        entry["ratings"][user_key] = rating
-
-        history[today] = entry
+        history_entry["ratings"][user_key] = rating
 
         self._save_db(history)
-        print(f"Saved rating: User {user_id} rated {pokemon_name} a {rating}/10, date = {datetime.datetime.now().strftime('%Y-%m-%d')}")
+        logger.info(f"Saved rating: User {user_id} rated {pokemon_name} a {rating}/10, date = {datetime.datetime.now().strftime('%Y-%m-%d')}")
+
+    def migrate_to_pokemon_keys(self) -> None:
+        """
+        One-time migration function
+        """
+        old_data = self._load_db()
+        new_data = {}
+
+        for date_key, entry in old_data.items():
+            if "pokemon_name" in entry:
+                p_name = entry["pokemon_name"]
+                ratings = entry.get("ratings", {})
+                
+                new_data[p_name] = {
+                    "date": date_key,
+                    "ratings": ratings
+                }
+            else:
+                new_data[date_key] = entry
+
+        self._save_db(new_data)
+        print("Migration complete. Database is now ordered by Pokémon name.")
     
 
 def get_random_pokemon():
@@ -269,7 +289,7 @@ def get_abillity_description(ability_data):
             return entry['short_effect']
     return "No description available."
 
-# TODO : add mass sub
+# tODO : ADD POKEMON LEADERBOARD
 
 def get_evo_stages(chain_data):
 
@@ -639,6 +659,15 @@ class DailyPokemon(commands.Cog):
         await ctx.send("✅ Test users have been subscribed to daily Pokémon messages.")
         await ctx.send("The file looks like this now:")
         await self.list_pokemon_subs(ctx)
+
+    @commands.command(hidden=True)
+    @commands.is_owner()
+    async def migrate_ratings_db(self, ctx):
+        """Trigger the one-time migration of the ratings database."""
+        rating_manager = PokemonRatingManager()
+        rating_manager.migrate_to_pokemon_keys()
+        await ctx.send("✅ Ratings database migration complete.")
+        
 
 async def setup(bot: commands.Bot):
     try:
