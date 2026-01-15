@@ -1,3 +1,7 @@
+## [0.8.2] - 15-01-2026
+### Fixed
+  - Added Mr. Tepel to the DAG Emoji list.
+
 ## [0.8.1] - 13-01-2026
 ### Fixed
   - Fixed the wording in the Daily Pokemon message to be "Possbile Abilities" instead of just "Abilities"

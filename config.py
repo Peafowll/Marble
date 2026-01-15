@@ -53,7 +53,8 @@ DAG_EMOJIS = {
     "Peafowl": "🦚",
     "vladimus2005": "🪩",
     "Dani": "🎯",
-    "yoyo15": "🤙"
+    "yoyo15": "🤙",
+    "i quit gambling" : "🎰"
 }
 
 # Valorant Weapon Categories
