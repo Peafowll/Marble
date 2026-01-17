@@ -11,8 +11,6 @@ from helpers import get_loses_data_list, get_match_int_scores_list
 load_dotenv()
 riot_token = os.getenv("RIOT_KEY")
 
-# TODO : reformat the !mass_register command by hand anEd by using a register function called my both !register and !mass_register
-
 # TODO : caching
 
 # TODO : str command explenations
