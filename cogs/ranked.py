@@ -12,6 +12,11 @@ logger = logging.getLogger('discord.ranked')
 load_dotenv()
 riot_token = os.getenv("RIOT_KEY")
 
+# TODO : add blue and red emojis for recent wins and losses
+# TODO : add hot and cold streak emojis
+# TODO : highlight player who issues the command
+# TODO : add up and down for recent lp changes
+
 RANKED_EMOJIS = {
     "IRON": "⚫",        
     "BRONZE": "🟤",      
@@ -24,6 +29,13 @@ RANKED_EMOJIS = {
     "GRANDMASTER": "🔴", 
     "CHALLENGER": "👑",  
     "UNRANKED": "❔"
+}
+
+HELPER_EMOJIS = {
+    "DEFEAT": "🔴",
+    "VICTORY": "🔵",
+    "HOT_STREAK": "🔥",
+    "COLD_STREAK": "❄️"
 }
 
 def rank_to_lp(rank, tier, lp):
@@ -179,7 +191,7 @@ class Ranked(commands.Cog):
         ranked_data = self.parse_ranked_data(ranked_raw, gamemode="RANKED_SOLO_5x5")
         if isinstance(ranked_data, str):
             return {
-                "ranked_data": ranked_data,  # This passes the "No data" string to your embed
+                "ranked_data": ranked_data, 
                 "recent_performance": {
                     "performance_stats": None,
                     "games_analyzed": 0
@@ -253,11 +265,19 @@ class Ranked(commands.Cog):
             else:
                 rank_str = f"**{ranked_data['tier'].title()} {ranked_data['rank']}** *{ranked_data['lp']} LP*"
 
-            field_value = f"{rank_emoji} **{rank_str}**\n"
-            field_value += f"{ranked_data['games']} Games | {ranked_data['wins']}W/{ranked_data['losses']}L | WR : **{ranked_data['winrate']}%**\n"
+            field_value = f"{rank_emoji} {rank_str}\n"
+            winrate = ranked_data['winrate']
+            field_value += f"**{int(winrate)}% Winrate** ({ranked_data["wins"]}W / {ranked_data["losses"]}L)\n"
+
+            #field_value += f"{ranked_data['games']} Games | {ranked_data['wins']}W/{ranked_data['losses']}L | WR : **{int(winrate)}%**\n"
 
             if performance_stats:
-                field_value += f"Avg K/D/A (last {player['games_analyzed']} games): {performance_stats['avg_kills']}/{performance_stats['avg_deaths']}/{performance_stats['avg_assists']} | Avg KDA: {performance_stats['avg_kda']}\n"
+                avg_kills = performance_stats.get("avg_kills", 0)
+                avg_deaths = performance_stats.get("avg_deaths", 0)
+                avg_assists = performance_stats.get("avg_assists", 0)
+                avg_kda = performance_stats.get("avg_kda", 0)
+                #field_value += f"Avg K/D/A (last {player['games_analyzed']} games): {int(avg_kills)} / {int(avg_deaths)} / {int(avg_assists)} | Avg KDA: {performance_stats['avg_kda']}\n"
+                field_value += f"*{performance_stats["avg_kda"]}* KDA ({int(avg_kills)} / {int(avg_deaths)} / {int(avg_assists)}), last {player['games_analyzed']} games.\n"
             else:
                 field_value += "No recent performance data available.\n"
 
@@ -269,8 +289,6 @@ class Ranked(commands.Cog):
 
         return embed
 
-
-        return embed
 
     @commands.command()
     async def test_ranked(self, ctx):
