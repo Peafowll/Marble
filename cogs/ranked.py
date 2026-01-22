@@ -276,8 +276,8 @@ class Ranked(commands.Cog):
                 avg_deaths = performance_stats.get("avg_deaths", 0)
                 avg_assists = performance_stats.get("avg_assists", 0)
                 avg_kda = performance_stats.get("avg_kda", 0)
-                #field_value += f"Avg K/D/A (last {player['games_analyzed']} games): {int(avg_kills)} / {int(avg_deaths)} / {int(avg_assists)} | Avg KDA: {performance_stats['avg_kda']}\n"
-                field_value += f"*{performance_stats["avg_kda"]}* KDA ({int(avg_kills)} / {int(avg_deaths)} / {int(avg_assists)}), last {player['games_analyzed']} games.\n"
+
+                field_value += f"*{performance_stats["avg_kda"]}* KDA ({int(avg_kills)} / {int(avg_deaths)} / {int(avg_assists)})\n"
             else:
                 field_value += "No recent performance data available.\n"
 
