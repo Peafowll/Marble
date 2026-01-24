@@ -38,6 +38,15 @@ HELPER_EMOJIS = {
     "COLD_STREAK": "❄️"
 }
 
+RANK_EMOJI_IDS = {
+    "iron_iv": 1463907963969212510,
+    "iron_iii": 1463907963969212510,
+    "iron_iv": 1463907963969212510,
+    "iron_iv": 1463907963969212510,
+
+}
+
+
 def rank_to_lp(rank, tier, lp):
     """Convert rank and tier to total LP for comparison."""
     tier_values = {
@@ -68,6 +77,103 @@ def rank_to_lp(rank, tier, lp):
     total_lp = (tier_value * 400) + (rank_value * 100) + lp
     return total_lp
 
+
+import discord
+
+def get_rank_emoji(rank: str, division: str = None) -> str:
+    """
+    Returns the custom Discord emoji string for a given rank and division
+    based on the provided ID list.
+    
+    Args:
+        rank (str): The rank name (e.g., 'Gold', 'Diamond', 'Master').
+        division (str/int, optional): The division (e.g., 'I', 1, 'IV', 4). 
+                                      Not required for Master+.
+    
+    Returns:
+        str: The formatted emoji string <:name:ID> or an error message if not found.
+    """
+    
+    rank_key = rank.lower().strip()
+    
+    if rank_key == "platinum":
+        rank_key = "plat"
+
+    emojis = {
+
+        "iron_i": "1463907947296985110",
+        "iron_ii": "1463907948722913281",
+        "iron_iii": "1463907950165758116",
+        "iron_iv": "1463907951554334897",
+        
+
+        "bronze_i": "1463907913876770908",
+        "bronze_ii": "1463907921858531531",
+        "bronze_iii": "1463907923897090151",
+        "bronze_iv": "1463907924916043776",
+        
+
+        "silver_i": "1463907959716184125",
+        "silver_ii": "1463907961310154804",
+        "silver_iii": "1463907962572505293",
+        "silver_iv": "1463907963969212510",
+        
+
+        "gold_i": "1463907940309143674",
+        "gold_ii": "1463907941425090651",
+        "gold_iii": "1463907942838308906",
+        "gold_iv": "1463907944386138133",
+        
+
+        "plat_i": "1463907954591010826",
+        "plat_ii": "1463907955983257725",
+        "plat_iii": "1463907957333950710",
+        "plat_iv": "1463907958604959920",
+        
+
+        "emerald_i": "1463907932700803134",
+        "emerald_ii": "1463907935557259284",
+        "emerald_iii": "1463907937868185804",
+        "emerald_iv": "1463907938988064818",
+        
+
+        "diamond_i": "1463907927424241695",
+        "diamond_ii": "1463907928904962253",
+        "diamond_iii": "1463907930125373460",
+        "diamond_iv": "1463907931488784475",
+        
+
+        "master": "1463907953051439199",
+        "grandmaster": "1463907946210529291",
+        "challenger": "1463907925956366387"
+    }
+
+    apex_tiers = ["master", "grandmaster", "challenger"]
+    
+    if rank_key in apex_tiers:
+        final_key = rank_key
+    else:
+        div_map = {
+            "1": "_i", "i": "_i",
+            "2": "_ii", "ii": "_ii",
+            "3": "_iii", "iii": "_iii",
+            "4": "_iv", "iv": "_iv"
+        }
+        
+        div_str = str(division).lower().strip() if division else ""
+        suffix = div_map.get(div_str)
+        
+        if not suffix:
+            return "Invalid division provided."
+            
+        final_key = f"{rank_key}{suffix}"
+
+    if final_key in emojis:
+        emoji_id = emojis[final_key]
+        return f"<:{final_key}:{emoji_id}>"
+    else:
+        return "Rank not found."
+
 class RiotAPIClient:
     """
     Riot API manager.
@@ -95,6 +201,11 @@ class RiotAPIClient:
                             return None
                         
                         return await response.json()
+
+    async def get_emoji_for_rank(self, rank):
+        """Get the emoji corresponding to a given rank."""
+        app_emojis = await self.fetch_application_emojis()
+        target_emoji = discord.utils.get(app_emojis, name=rank)
 
     async def get_puuid(self, name, tag):
         cache_key = f"{name.lower()}#{tag.lower()}"
