@@ -59,7 +59,7 @@ DAG_EMOJIS = {
 
 # Valorant Weapon Categories
 WEAPON_CATEGORIES = {
-    "pistols": ["Classic", "Frenzy", "Sheriff", "Ghost"],
+    "pistols": ["Classic", "Frenzy", "Sheriff", "Ghost","Bandit"],
     "smgs": ["Stinger", "Spectre"],
     "shotguns": ["Shorty", "Judge", "Bucky"],
     "snipers": ["Marshall", "Outlaw", "Operator"],

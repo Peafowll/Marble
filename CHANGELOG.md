@@ -1,3 +1,7 @@
+## [0.8.3] - 25-01-2026
+### Fixed
+  - Added Bandit support for VALORANT titles function.
+
 ## [0.8.2] - 15-01-2026
 ### Fixed
   - Added Mr. Tepel to the DAG Emoji list.
