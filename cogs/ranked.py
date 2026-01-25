@@ -37,16 +37,7 @@ HELPER_EMOJIS = {
     "HOT_STREAK": "🔥",
     "COLD_STREAK": "❄️"
 }
-
-RANK_EMOJI_IDS = {
-    "iron_iv": 1463907963969212510,
-    "iron_iii": 1463907963969212510,
-    "iron_iv": 1463907963969212510,
-    "iron_iv": 1463907963969212510,
-
-}
-
-
+    
 def rank_to_lp(rank, tier, lp):
     """Convert rank and tier to total LP for comparison."""
     tier_values = {
@@ -369,12 +360,12 @@ class Ranked(commands.Cog):
             ranked_data = player["ranked_data"]
             performance_stats = player["performance_stats"]
 
-            rank_emoji = RANKED_EMOJIS.get(ranked_data['tier'].upper(), RANKED_EMOJIS["UNRANKED"])
+            rank_emoji = get_rank_emoji(ranked_data['tier'], ranked_data['rank'])
             
             if ranked_data['tier'] == "UNRANKED":
                 rank_str = "Unranked"
             else:
-                rank_str = f"**{ranked_data['tier'].title()} {ranked_data['rank']}** *{ranked_data['lp']} LP*"
+                rank_str = f"*{ranked_data['lp']} LP*"
 
             field_value = f"{rank_emoji} {rank_str}\n"
             winrate = ranked_data['winrate']
