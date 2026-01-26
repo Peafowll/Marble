@@ -389,14 +389,20 @@ class Ranked(commands.Cog):
                 avg_assists = performance_stats.get("avg_assists", 0)
                 avg_kda = performance_stats.get("avg_kda", 0)
 
-                field_value += f"{get_kda_emoji(performance_stats["avg_kda"])} *{performance_stats["avg_kda"]}* KDA ({int(avg_kills)}/{int(avg_deaths)}/{int(avg_assists)})\n"
+                field_value += f" {get_kda_emoji(performance_stats["avg_kda"])}  *{performance_stats["avg_kda"]}* KDA ({int(avg_kills)}/{int(avg_deaths)}/{int(avg_assists)})\n"
             else:
                 field_value += "No recent performance data available.\n"
-            
+
+
+            if summoner_name == player["riot_name"]:
+                name = f"**➡ __{player['riot_name']}__**"
+            else:
+                name = f"{player['riot_name']}"
+
             embed.add_field(
-                name=f"{player['riot_name']}#{player['riot_tag']}",
+                name=f"{player['riot_name']}",
                 value=field_value,
-                inline=False
+                inline=True
             )
 
         return embed
