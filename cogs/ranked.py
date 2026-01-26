@@ -37,7 +37,9 @@ HELPER_EMOJIS = {
     "HOT_STREAK": "🔥",
     "COLD_STREAK": "❄️"
 }
-    
+
+
+
 def rank_to_lp(rank, tier, lp):
     """Convert rank and tier to total LP for comparison."""
     tier_values = {
@@ -68,8 +70,18 @@ def rank_to_lp(rank, tier, lp):
     total_lp = (tier_value * 400) + (rank_value * 100) + lp
     return total_lp
 
-
-import discord
+def get_kda_emoji(kda: float) -> str:
+    if kda>=5.0:
+        return "✦"
+    if kda>=4.0:
+        return "✧"
+    if kda>=3.0:
+        return "◈"
+    if kda>=2.0:
+        return "◇"
+    if kda>=1.0:
+        return "⬩"
+    return "•"
 
 def get_rank_emoji(rank: str, division: str = None) -> str:
     """
@@ -369,9 +381,7 @@ class Ranked(commands.Cog):
 
             field_value = f"{rank_emoji} {rank_str}\n"
             winrate = ranked_data['winrate']
-            field_value += f"**{int(winrate)}% Winrate** ({ranked_data["wins"]}W / {ranked_data["losses"]}L)\n"
-
-            #field_value += f"{ranked_data['games']} Games | {ranked_data['wins']}W/{ranked_data['losses']}L | WR : **{int(winrate)}%**\n"
+            field_value += f"**{int(winrate)}% WR** ({ranked_data["wins"]}W / {ranked_data["losses"]}L)\n"
 
             if performance_stats:
                 avg_kills = performance_stats.get("avg_kills", 0)
@@ -379,10 +389,10 @@ class Ranked(commands.Cog):
                 avg_assists = performance_stats.get("avg_assists", 0)
                 avg_kda = performance_stats.get("avg_kda", 0)
 
-                field_value += f"*{performance_stats["avg_kda"]}* KDA ({int(avg_kills)} / {int(avg_deaths)} / {int(avg_assists)})\n"
+                field_value += f"{get_kda_emoji(performance_stats["avg_kda"])} *{performance_stats["avg_kda"]}* KDA ({int(avg_kills)}/{int(avg_deaths)}/{int(avg_assists)})\n"
             else:
                 field_value += "No recent performance data available.\n"
-
+            
             embed.add_field(
                 name=f"{player['riot_name']}#{player['riot_tag']}",
                 value=field_value,
