@@ -7,15 +7,15 @@ import os
 import json
 import aiohttp
 import asyncio
+from datetime import datetime, timezone, timedelta
 logger = logging.getLogger('discord.ranked')
 
 load_dotenv()
 riot_token = os.getenv("RIOT_KEY")
 
-# TODO : add blue and red emojis for recent wins and losses
-# TODO : add hot and cold streak emojis
-# TODO : highlight player who issues the command
 # TODO : add up and down for recent lp changes
+# TODO : add caching
+# TODO : add last cached time
 
 RANKED_EMOJIS = {
     "IRON": "⚫",        
@@ -37,8 +37,6 @@ HELPER_EMOJIS = {
     "HOT_STREAK": "🔥",
     "COLD_STREAK": "❄️"
 }
-
-
 
 def rank_to_lp(rank, tier, lp):
     """Convert rank and tier to total LP for comparison."""
@@ -252,6 +250,10 @@ class Ranked(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.api_client = RiotAPIClient(os.getenv("RIOT_KEY"))
+        self.report_cache = {
+            "data": None,
+            "timestamp": discord.utils.utcnow() - timedelta(minutes=10)
+        }
         logger.info("Ranked cog initialized")
 
     def parse_ranked_data(self, data, gamemode = None):
@@ -337,6 +339,7 @@ class Ranked(commands.Cog):
         }
 
     async def create_ranked_embed(self, author_summoner_name, author_tag):
+        print("creating ranked embed")
         embed = discord.Embed(
             title=f"🏆 Ranked Report",
             color=discord.Color.gold()
@@ -345,39 +348,49 @@ class Ranked(commands.Cog):
         with open('data/players.json', 'r') as f:
             players_data = json.load(f)
 
-        report_players_data = []    
-        for player in players_data:
-            summoner_name = players_data[player]['riot_name']
-            tag = players_data[player]['riot_tag']
+        report_players_data = []
 
-            data = await self.compile_ranked_data(summoner_name, tag)
-            if data is None:
-                continue
 
-            #print(f"proccesing {summoner_name}#{tag}")
-            #print("data:", json.dumps(data,indent=4))
-            ranked_data = data["ranked_data"]
-            performance_stats = data["recent_performance"]["performance_stats"]
-            games_analyzed = data["recent_performance"]["games_analyzed"]
-            if isinstance(ranked_data, str):
-                continue
-            
-            total_lp = rank_to_lp(
-                ranked_data['tier'],
-                ranked_data['rank'],
-                ranked_data['lp']
-            )
-            current_player_data = {
-                "discord_id": player,
-                "riot_name": summoner_name,
-                "riot_tag": tag,
-                "ranked_data": ranked_data,
-                "performance_stats": performance_stats,
-                "games_analyzed": games_analyzed,
-                "total_lp": total_lp
-            }
+        if (discord.utils.utcnow() - self.report_cache["timestamp"]).total_seconds() < 300:
+            logger.info("Using cached ranked report data")
+            report_players_data = self.report_cache["data"]
+        else:
+            for player in players_data:
+                summoner_name = players_data[player]['riot_name']
+                tag = players_data[player]['riot_tag']
 
-            report_players_data.append(current_player_data)
+                data = await self.compile_ranked_data(summoner_name, tag)
+                if data is None:
+                    continue
+
+                #print(f"proccesing {summoner_name}#{tag}")
+                #print("data:", json.dumps(data,indent=4))
+
+                ranked_data = data["ranked_data"]
+                performance_stats = data["recent_performance"]["performance_stats"]
+                games_analyzed = data["recent_performance"]["games_analyzed"]
+                if isinstance(ranked_data, str):
+                    continue
+                
+                total_lp = rank_to_lp(
+                    ranked_data['tier'],
+                    ranked_data['rank'],
+                    ranked_data['lp']
+                )
+                current_player_data = {
+                    "discord_id": player,
+                    "riot_name": summoner_name,
+                    "riot_tag": tag,
+                    "ranked_data": ranked_data,
+                    "performance_stats": performance_stats,
+                    "games_analyzed": games_analyzed,
+                    "total_lp": total_lp
+                }
+
+                report_players_data.append(current_player_data)
+
+                self.report_cache["data"] = report_players_data
+                self.report_cache["timestamp"] = discord.utils.utcnow()
 
 
                 
@@ -414,14 +427,15 @@ class Ranked(commands.Cog):
             cold_streak_emoji = HELPER_EMOJIS["COLD_STREAK"]
             recent_match_emojis = ""
 
-            for result in player["performance_stats"]["recent_matches"]:
-                if len(recent_match_emojis)>5:
-                    continue
-                else:
-                    if result == "w":
-                        recent_match_emojis += win_emoji
+            if performance_stats and performance_stats["recent_matches"]:
+                for result in player["performance_stats"]["recent_matches"]:
+                    if len(recent_match_emojis)>5:
+                        continue
                     else:
-                        recent_match_emojis += loss_emoji
+                        if result == "w":
+                            recent_match_emojis += win_emoji
+                        else:
+                            recent_match_emojis += loss_emoji
             streak = check_streak(player["performance_stats"]["recent_matches"])
             if streak == "hotstreak":
                 recent_match_emojis += hot_streak_emoji
@@ -430,7 +444,7 @@ class Ranked(commands.Cog):
 
             
             field_value += f"Past 5 Matches : {recent_match_emojis}\n"
-            print(f"checking {summoner_name} against r={player['riot_name']}")
+            print(f"checking {author_summoner_name} against r={player['riot_name']}")
             if author_summoner_name == player["riot_name"]:
                 name = f"**➡ __{player['riot_name']}__**"
             else:
@@ -441,7 +455,9 @@ class Ranked(commands.Cog):
                 value=field_value,
                 inline=False
             )
-
+        
+        cache_unix = int(self.report_cache["timestamp"].timestamp())    
+        embed.description=f"Last updated: <t:{cache_unix}:R>"
         return embed
 
 
