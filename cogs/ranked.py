@@ -177,6 +177,19 @@ def get_rank_emoji(rank: str, division: str = None) -> str:
     else:
         return "Rank not found."
 
+def check_streak(recent_matches):
+    """Check for hot or cold streaks in recent matches."""
+    if len(recent_matches) < 3:
+        return None
+
+    last_results = recent_matches[:3]
+    if all(result == "w" for result in last_results):
+        return "hotstreak"
+    elif all(result == "l" for result in last_results):
+        return "coldstreak"
+    return None
+
+
 class RiotAPIClient:
     """
     Riot API manager.
@@ -275,14 +288,15 @@ class Ranked(commands.Cog):
 
         kills, deaths, assists, kda_accum = 0, 0, 0, 0
         valid = 0
-
+        recent_matches = []
         for match in matches_data:
             if not match: continue
-            part = next((p for p in match['info']['participants'] if p['puuid'] == puuid), None)
-            if part:
-                k, d, a = part['kills'], part['deaths'], part['assists']
+            participant = next((p for p in match['info']['participants'] if p['puuid'] == puuid), None)
+            if participant:
+                k, d, a = participant['kills'], participant['deaths'], participant['assists']
                 kills += k; deaths += d; assists += a
                 kda_accum += (k + a) / d if d > 0 else (k + a)
+                recent_matches.append("w") if participant['win'] else recent_matches.append("l")
                 valid += 1
 
         if valid == 0: return None
@@ -292,7 +306,8 @@ class Ranked(commands.Cog):
             "avg_kills": round(kills/valid, 1),
             "avg_deaths": round(deaths/valid, 1),
             "avg_assists": round(assists/valid, 1),
-            "avg_kda": round(kda_accum/valid, 2)
+            "avg_kda": round(kda_accum/valid, 2),
+            "recent_matches": recent_matches
         }
 
     async def compile_ranked_data(self, summoner_name, tag):
@@ -393,16 +408,35 @@ class Ranked(commands.Cog):
             else:
                 field_value += "No recent performance data available.\n"
 
+            win_emoji = HELPER_EMOJIS["VICTORY"]
+            loss_emoji = HELPER_EMOJIS["DEFEAT"]
+            hot_streak_emoji = HELPER_EMOJIS["HOT_STREAK"]
+            cold_streak_emoji = HELPER_EMOJIS["COLD_STREAK"]
+            recent_match_emojis = ""
 
+            for result in player["performance_stats"]["recent_matches"]:
+                if len(recent_match_emojis)>5:
+                    continue
+                else:
+                    if result == "w":
+                        recent_match_emojis += win_emoji
+                    else:
+                        recent_match_emojis += loss_emoji
+            streak = check_streak(player["performance_stats"]["recent_matches"])
+            if streak == "hotstreak":
+                recent_match_emojis += hot_streak_emoji
+            elif streak == "coldstreak":
+                recent_match_emojis += cold_streak_emoji
+            field_value += f"{recent_match_emojis}\n"
             if summoner_name == player["riot_name"]:
                 name = f"**➡ __{player['riot_name']}__**"
             else:
                 name = f"{player['riot_name']}"
 
             embed.add_field(
-                name=f"{player['riot_name']}",
+                name=name,
                 value=field_value,
-                inline=True
+                inline=False
             )
 
         return embed
