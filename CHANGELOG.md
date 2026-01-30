@@ -1,3 +1,10 @@
+  
+## [0.9.0] - 30-01-2026
+### Added
+  - **RANKED REPORT!**
+    - Use `!ranked_report` to see how everyone's Solo/Duo Ranked is going!
+    - Featuring custom made emojis!
+    
 ## [0.8.3] - 25-01-2026
 ### Fixed
   - Added Bandit support for VALORANT titles function.
