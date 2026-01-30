@@ -286,7 +286,7 @@ class Ranked(commands.Cog):
         tasks = [self.api_client.get_match_details(mid) for mid in match_ids]
         matches_data = await asyncio.gather(*tasks)
 
-        kills, deaths, assists, kda_accum = 0, 0, 0, 0
+        kills, deaths, assists = 0, 0, 0
         valid = 0
         recent_matches = []
         for match in matches_data:
@@ -295,18 +295,17 @@ class Ranked(commands.Cog):
             if participant:
                 k, d, a = participant['kills'], participant['deaths'], participant['assists']
                 kills += k; deaths += d; assists += a
-                kda_accum += (k + a) / d if d > 0 else (k + a)
                 recent_matches.append("w") if participant['win'] else recent_matches.append("l")
                 valid += 1
 
         if valid == 0: return None
-
+        kda = (kills + assists) / deaths if deaths > 0 else (kills + assists)
         return {
             "match_count" : valid,
             "avg_kills": round(kills/valid, 1),
             "avg_deaths": round(deaths/valid, 1),
             "avg_assists": round(assists/valid, 1),
-            "avg_kda": round(kda_accum/valid, 2),
+            "avg_kda": round(kda,1),
             "recent_matches": recent_matches
         }
 
@@ -326,7 +325,7 @@ class Ranked(commands.Cog):
                     "games_analyzed": 0
                 }
             }
-        count = 10 if ranked_data["games"]>=10 else ranked_data["games"]
+        count = 5 if ranked_data["games"]>=5 else ranked_data["games"]
         performance_stats = await self.get_performance_stats(puuid=puuid, count=count)
 
         return {
@@ -337,7 +336,7 @@ class Ranked(commands.Cog):
             }
         }
 
-    async def create_ranked_embed(self, summoner_name, tag):
+    async def create_ranked_embed(self, author_summoner_name, author_tag):
         embed = discord.Embed(
             title=f"🏆 Ranked Report",
             color=discord.Color.gold()
@@ -355,8 +354,8 @@ class Ranked(commands.Cog):
             if data is None:
                 continue
 
-            print(f"proccesing {summoner_name}#{tag}")
-            print("data:", json.dumps(data,indent=4))
+            #print(f"proccesing {summoner_name}#{tag}")
+            #print("data:", json.dumps(data,indent=4))
             ranked_data = data["ranked_data"]
             performance_stats = data["recent_performance"]["performance_stats"]
             games_analyzed = data["recent_performance"]["games_analyzed"]
@@ -403,8 +402,9 @@ class Ranked(commands.Cog):
                 avg_deaths = performance_stats.get("avg_deaths", 0)
                 avg_assists = performance_stats.get("avg_assists", 0)
                 avg_kda = performance_stats.get("avg_kda", 0)
-
-                field_value += f" {get_kda_emoji(performance_stats["avg_kda"])}  *{performance_stats["avg_kda"]}* KDA ({int(avg_kills)}/{int(avg_deaths)}/{int(avg_assists)})\n"
+                
+                kda_emoji = get_kda_emoji(avg_kda)
+                field_value += f" {kda_emoji}  **{performance_stats["avg_kda"]}** Recent KDA ({int(avg_kills)}/{int(avg_deaths)}/{int(avg_assists)})\n"
             else:
                 field_value += "No recent performance data available.\n"
 
@@ -427,8 +427,11 @@ class Ranked(commands.Cog):
                 recent_match_emojis += hot_streak_emoji
             elif streak == "coldstreak":
                 recent_match_emojis += cold_streak_emoji
-            field_value += f"{recent_match_emojis}\n"
-            if summoner_name == player["riot_name"]:
+
+            
+            field_value += f"Past 5 Matches : {recent_match_emojis}\n"
+            print(f"checking {summoner_name} against r={player['riot_name']}")
+            if author_summoner_name == player["riot_name"]:
                 name = f"**➡ __{player['riot_name']}__**"
             else:
                 name = f"{player['riot_name']}"
@@ -452,6 +455,27 @@ class Ranked(commands.Cog):
         if data is None:
             await ctx.send("❌ Could not retrieve data.")
             return
+
+        await ctx.send(embed=await self.create_ranked_embed(summoner_name, tag))
+
+    @commands.command()
+    async def ranked_report(self, ctx):
+        await ctx.send(f"🔍 Generating ranked report...")
+        discord_name = str(ctx.author)
+
+        print("called by:", discord_name)
+
+        with open('data/players.json', 'r') as f:
+            players_data = json.load(f)
+
+        if discord_name not in players_data:
+            await ctx.send("❌ Your Discord name is not linked to a Riot account.")
+            return
+        
+        summoner_name = players_data[discord_name]['riot_name']
+        tag = players_data[discord_name]['riot_tag']
+
+        print(f"{discord_name} is linked to {summoner_name}#{tag}")
 
         await ctx.send(embed=await self.create_ranked_embed(summoner_name, tag))
 
