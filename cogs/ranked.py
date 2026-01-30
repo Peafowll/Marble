@@ -475,6 +475,7 @@ class Ranked(commands.Cog):
         await ctx.send(embed=await self.create_ranked_embed(summoner_name, tag))
 
     @commands.command()
+    @commands.cooldown(1, 3, commands.BucketType.default)
     async def ranked_report(self, ctx):
         await ctx.send(f"🔍 Generating ranked report...")
         discord_name = str(ctx.author)
@@ -494,6 +495,13 @@ class Ranked(commands.Cog):
         print(f"{discord_name} is linked to {summoner_name}#{tag}")
 
         await ctx.send(embed=await self.create_ranked_embed(summoner_name, tag))
+
+    @ranked_report.error
+    async def ranked_report_error(self, ctx, error):
+        if isinstance(error, commands.CommandOnCooldown):
+            await ctx.send(f"⏳ This command is on a global cooldown. Try again in {error.retry_after:.1f}s.")
+        else:
+            raise error
 
     @commands.Cog.listener()
     async def on_ready(self):
