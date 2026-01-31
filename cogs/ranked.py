@@ -465,7 +465,7 @@ class Ranked(commands.Cog):
     async def test_ranked(self, ctx):
         summoner_name = "Peafowl"
         tag = "EUNE"
-        await ctx.send(f"🔍 Fetching data for {summoner_name}#{tag}...")
+        await ctx.typing()
 
         data = await self.compile_ranked_data(summoner_name, tag)
         if data is None:
