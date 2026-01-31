@@ -701,7 +701,7 @@ class Titles(commands.Cog):
 
     def get_response_from_match_score(self,our_score, enemy_score, team_name="**DAG**"):
         score_diff = our_score - enemy_score
-        is_overtime = our_score >= 13 or enemy_score >= 13
+        is_overtime = our_score > 13 or enemy_score > 13
         total_rounds = our_score + enemy_score
         is_surrender = total_rounds < 13  # Surrender only if match ended before round 13
 

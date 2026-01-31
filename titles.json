@@ -166,7 +166,7 @@
         "title": "The Round Mound of Rebound",
         "award": "Kill Increase in Second Half",
         "weight" : 0.9,
-        "minimum" : 10
+        "minimum" : 25
     },
     "ninja_defuses": {
         "title": "The Sneaky Bastard",

@@ -1,4 +1,7 @@
-  
+## [0.9.0] - 31-01-2026
+### Fixed
+  - Fixed overtime issues with titles.  
+
 ## [0.9.0] - 30-01-2026
 ### Added
   - **RANKED REPORT!**
