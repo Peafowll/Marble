@@ -1,3 +1,7 @@
+## [0.9.1] - 14-02-2205
+### Added
+  - `!best_pokemon` now shows the highest rated mons!!
+
 ## [0.9.0] - 31-01-2026
 ### Fixed
   - Fixed overtime issues with titles.  
