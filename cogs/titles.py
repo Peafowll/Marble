@@ -28,7 +28,6 @@ from config import (
 
 logger = logging.getLogger('discord.titles')
 
-#TODO : CALL FOR @DAG ROLE (IMPLEMENTED BUT UNTESTED)
 #TODO : ADD TANGERINE AND LEMON
 #TODO : ADD AUTO-MESSAGE FOR PREMIER
 

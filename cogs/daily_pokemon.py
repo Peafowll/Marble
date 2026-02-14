@@ -494,6 +494,28 @@ def create_embed(parsed_data):
     
     return embed
 
+def get_all_average_ratings(filepath : str = "data/dailyPokemonRatings.json" ):
+
+    with open(filepath,'r') as file:
+        data = json.load(file)
+    
+    dict = {}
+
+    for pokemon in data:
+        mon_details = data[pokemon]
+        ratings = mon_details["ratings"]
+        score = sum(ratings[rating] for rating in ratings)/len(ratings)
+        score = round(score,1)
+        if score == int(score):
+            score = int(score)
+        dict[pokemon] = score
+    
+    return dict
+
+def get_bulbupedia_link(name, link : str = "https://bulbapedia.bulbagarden.net/wiki/"):
+    name = name.split(" ")[0]
+    return link + name
+
 class DailyPokemon(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
@@ -667,7 +689,22 @@ class DailyPokemon(commands.Cog):
         rating_manager = PokemonRatingManager()
         rating_manager.migrate_to_pokemon_keys()
         await ctx.send("✅ Ratings database migration complete.")
-        
+    
+    @commands.command()
+    async def best_mons(self,ctx, count = 5):
+        """Shows the most well-rated Pokemon."""
+        dicionary = get_all_average_ratings()
+        print(dicionary)
+        ordered_list_by_ratings = [pokemon for pokemon in dicionary]
+        ordered_list_by_ratings.sort(key = lambda p : dicionary[p],reverse=True)
+        top = ordered_list_by_ratings[:count]
+        message = ""
+        placement = 1
+        for pokemon in top:
+            message += f"** {placement} ** - {pokemon} ({dicionary[pokemon]}/10) \n"
+            message += f"{get_bulbupedia_link(pokemon)}\n"
+            placement+=1
+        await ctx.send(message)
 
 async def setup(bot: commands.Bot):
     try:
