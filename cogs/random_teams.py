@@ -7,6 +7,7 @@ import json
 import asyncio
 import time, datetime
 import logging
+import re
 
 logger = logging.getLogger('discord.random_teams')
 alises = {
@@ -36,7 +37,8 @@ class RandomTeams(commands.Cog):
     @commands.command(aliases=["randomteams"])
     async def random_teams(self,ctx, playercount = None, team_count = 2):
         voice_channel = ctx.author.voice.channel if ctx.author.voice else None
-
+        channel = ctx.channel
+        author_id = ctx.author.id
         if not voice_channel:
             await ctx.send("You need to be in a voice channel to use this!")
             return
@@ -56,6 +58,29 @@ class RandomTeams(commands.Cog):
         - `d` to generate teams.
         """
 
+        def check(m):
+            return m.channel.id == channel.id and m.author.id == author_id
+        def check_response(m):
+            if m == "d":
+                return "d"
+            else:
+                split_m = m.split(" ")
+                if m[0] not in ["a","r","t"]:
+                    return None
+                if m[0] == "t":
+                    if type(m[1])!=int:
+                        return None
+                    return ("t", m[1])
+                return ("a",m[1])
+        response_input = ""
+        while response_input!= "d":
+            try:
+                response_input = await self.wait_for('message', check=check, timeout=60.0)
+
+
+            except asyncio.Timeout:
+                await ctx.send("Response time limit reached. Operation canceled.")
+                continue
 
         # print(f"random teams called, members in vc: {vc_member_names}")
         # if not playercount:
