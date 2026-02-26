@@ -60,27 +60,43 @@ class RandomTeams(commands.Cog):
 
         def check(m):
             return m.channel.id == channel.id and m.author.id == author_id
+        
         def check_response(m):
             if m == "d":
-                return "d"
-            else:
-                split_m = m.split(" ")
-                if m[0] not in ["a","r","t"]:
+                return ("d",None)
+
+            split_m = m.split(" ")
+
+            if len(split_m) < 2:
+                return None
+            
+            command = split_m[0]
+            value = split_m[1]
+
+            if command not in ["a","r","t"]:
+                return None
+            
+            if command == "t":
+                if not value.isdigit():
                     return None
-                if m[0] == "t":
-                    if type(m[1])!=int:
-                        return None
-                    return ("t", m[1])
-                return ("a",m[1])
+                return ("t",int(value))
+            
+            return (command, value)
+            
+
+            
+
+
+
         response_input = ""
         while response_input!= "d":
             try:
-                response_input = await self.wait_for('message', check=check, timeout=60.0)
+                response_input = await self.wait_for('message', check=check, timeout=60.0).contents
 
 
             except asyncio.Timeout:
                 await ctx.send("Response time limit reached. Operation canceled.")
-                continue
+                return
 
         # print(f"random teams called, members in vc: {vc_member_names}")
         # if not playercount:
