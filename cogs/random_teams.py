@@ -62,6 +62,17 @@ class RandomTeams(commands.Cog):
             return m.channel.id == channel.id and m.author.id == author_id
         
         def check_response(m):
+            """
+            Checks a random_teams type message.
+            
+            Takes the commands a/d/r/t.
+
+            If an invalid command is issued, returns None.
+
+            If d is issued, returns ("d", None).
+
+            If a/r/t are issued, returns (*letter*, *value*)
+            """
             if m == "d":
                 return ("d",None)
 
@@ -88,10 +99,14 @@ class RandomTeams(commands.Cog):
 
 
 
-        response_input = ""
-        while response_input!= "d":
+        called_command = ""
+        while called_command!= "d":
             try:
-                response_input = await self.wait_for('message', check=check, timeout=60.0).contents
+                response_input = await self.wait_for('message', check=check, timeout=60.0).content
+                called_command, called_value = check_response(response_input)
+
+                if called_command == "d":
+                    break
 
 
             except asyncio.Timeout:
