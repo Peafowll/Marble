@@ -1,215 +1,210 @@
 ====================================================================================================
-MATCH STATS LOG - Sunset - 2025-12-07
-Score: 8 - 13
+MATCH STATS LOG - Haven - 2026-03-01
+Score: 12 - 14
 ====================================================================================================
-
-
-====================================================================================================
-PLAYER: yoyo15 (Phoenix)
-====================================================================================================
-K/D/A: 16/18/9
-Score: 5513
-
-Stat Name                                Value               
-------------------------------------------------------------
-1v1_clutches                             1                   
-ability_kills                            0                   
-aces                                     0                   
-assists                                  9                   
-damage_dealt                             3611                
-deaths                                   18                  
-defuses                                  0                   
-double_kills                             3                   
-enemy_bottom_frag_killed                 2                   
-enemy_top_frag_killed                    0                   
-first_bloods                             5                   
-hexakills                                0                   
-hs_percentage                            15                  
-knife_kills                              0                   
-last_bloods                              1                   
-lmg_kills                                0                   
-long_range_kills                         2                   
-ninja_defuses                            0                   
-outnumbered_clutches                     0                   
-phantom_kills                            0                   
-pistol_kills                             2                   
-plants                                   0                   
-quadra_kills                             1                   
-rebound_percentage                       -76.92307692307693  
-rifle_kills                              12                  
-short_range_kills                        2                   
-shotgun_kills                            0                   
-smg_kills                                0                   
-sniper_kills                             1                   
-triple_kills                             0                   
-unique_weapon_kills                      5                   
-
-
-====================================================================================================
-PLAYER: Dani (Chamber)
-====================================================================================================
-K/D/A: 18/15/4
-Score: 4944
-
-Stat Name                                Value               
-------------------------------------------------------------
-1v1_clutches                             0                   
-ability_kills                            0                   
-aces                                     0                   
-assists                                  4                   
-damage_dealt                             3391                
-deaths                                   15                  
-defuses                                  0                   
-double_kills                             6                   
-enemy_bottom_frag_killed                 2                   
-enemy_top_frag_killed                    5                   
-first_bloods                             6                   
-hexakills                                0                   
-hs_percentage                            18                  
-knife_kills                              0                   
-last_bloods                              4                   
-lmg_kills                                0                   
-long_range_kills                         1                   
-ninja_defuses                            0                   
-outnumbered_clutches                     0                   
-phantom_kills                            5                   
-pistol_kills                             0                   
-plants                                   1                   
-quadra_kills                             0                   
-rebound_percentage                       -50.0               
-rifle_kills                              9                   
-short_range_kills                        1                   
-shotgun_kills                            1                   
-smg_kills                                2                   
-sniper_kills                             1                   
-triple_kills                             0                   
-unique_weapon_kills                      7                   
 
 
 ====================================================================================================
 PLAYER: Peafowl (Omen)
 ====================================================================================================
-K/D/A: 17/16/8
-Score: 4712
+K/D/A: 33/18/8
+Score: 9267
 
-Stat Name                                Value               
-------------------------------------------------------------
-1v1_clutches                             0                   
-ability_kills                            0                   
-aces                                     0                   
-assists                                  8                   
-damage_dealt                             3234                
-deaths                                   16                  
-defuses                                  0                   
-double_kills                             2                   
-enemy_bottom_frag_killed                 5                   
-enemy_top_frag_killed                    3                   
-first_bloods                             0                   
-hexakills                                0                   
-hs_percentage                            22                  
-knife_kills                              0                   
-last_bloods                              3                   
-lmg_kills                                0                   
-long_range_kills                         2                   
-ninja_defuses                            0                   
-outnumbered_clutches                     0                   
-phantom_kills                            7                   
-pistol_kills                             6                   
-plants                                   0                   
-quadra_kills                             0                   
-rebound_percentage                       -58.333333333333336 
-rifle_kills                              9                   
-short_range_kills                        2                   
-shotgun_kills                            0                   
-smg_kills                                2                   
-sniper_kills                             0                   
-triple_kills                             1                   
-unique_weapon_kills                      7                   
+Stat Name                                Value           Z-Score        
+----------------------------------------------------------------------
+1v1_clutches                             1                       1.7889
+ability_kills                            0                       0.0000
+aces                                     0                       0.0000
+assists                                  8                       0.2739
+damage_dealt                             6018                    1.3663
+deaths                                   18                      0.7649
+defuses                                  1                       0.1912
+double_kills                             9                       1.3652
+enemy_bottom_frag_killed                 6                       1.1049
+enemy_top_frag_killed                    5                       0.4991
+first_bloods                             2                       0.1144
+hexakills                                0                       0.0000
+hs_percentage                            27                      1.1450
+knife_kills                              0                       0.0000
+last_bloods                              7                       1.6471
+lmg_kills                                0                       0.0000
+long_range_kills                         1                       0.0000
+ninja_defuses                            0                       0.0000
+outnumbered_clutches                     0                       0.0000
+phantom_kills                            14                      0.0000
+pistol_kills                             3                       0.5880
+plants                                   1                      -0.2151
+quadra_kills                             0                      -0.6261
+rebound_percentage                       -26.31578947368421        -0.6791
+rifle_kills                              26                      1.1945
+short_range_kills                        9                       1.6036
+shotgun_kills                            0                       0.0000
+smg_kills                                4                       1.0062
+sniper_kills                             0                       0.0000
+triple_kills                             2                       0.4025
+unique_weapon_kills                      7                       1.2915
 
 
 ====================================================================================================
-PLAYER: Painite (Sova)
+PLAYER: i quit gambling (Phoenix)
 ====================================================================================================
-K/D/A: 14/17/4
-Score: 4034
+K/D/A: 29/20/4
+Score: 8139
 
-Stat Name                                Value               
-------------------------------------------------------------
-1v1_clutches                             0                   
-ability_kills                            0                   
-aces                                     0                   
-assists                                  4                   
-damage_dealt                             2319                
-deaths                                   17                  
-defuses                                  1                   
-double_kills                             1                   
-enemy_bottom_frag_killed                 4                   
-enemy_top_frag_killed                    3                   
-first_bloods                             1                   
-hexakills                                0                   
-hs_percentage                            11                  
-knife_kills                              0                   
-last_bloods                              0                   
-lmg_kills                                0                   
-long_range_kills                         0                   
-ninja_defuses                            0                   
-outnumbered_clutches                     0                   
-phantom_kills                            0                   
-pistol_kills                             2                   
-plants                                   3                   
-quadra_kills                             0                   
-rebound_percentage                       -25.0               
-rifle_kills                              5                   
-short_range_kills                        1                   
-shotgun_kills                            0                   
-smg_kills                                7                   
-sniper_kills                             0                   
-triple_kills                             1                   
-unique_weapon_kills                      4                   
+Stat Name                                Value           Z-Score        
+----------------------------------------------------------------------
+1v1_clutches                             0                      -0.4472
+ability_kills                            0                       0.0000
+aces                                     0                       0.0000
+assists                                  4                      -1.5519
+damage_dealt                             5096                    0.7645
+deaths                                   20                     -0.1912
+defuses                                  0                      -0.7649
+double_kills                             3                       0.0440
+enemy_bottom_frag_killed                 7                       1.6071
+enemy_top_frag_killed                    7                       1.7468
+first_bloods                             5                       1.8300
+hexakills                                0                       0.0000
+hs_percentage                            26                      1.0257
+knife_kills                              0                       0.0000
+last_bloods                              3                       0.2148
+lmg_kills                                0                       0.0000
+long_range_kills                         4                       1.7321
+ninja_defuses                            0                       0.0000
+outnumbered_clutches                     0                       0.0000
+phantom_kills                            0                       0.0000
+pistol_kills                             4                       1.1759
+plants                                   0                      -0.5737
+quadra_kills                             1                       2.5044
+rebound_percentage                       -6.666666666666667        -0.1281
+rifle_kills                              24                      0.9886
+short_range_kills                        4                       0.2673
+shotgun_kills                            0                       0.0000
+smg_kills                                1                      -0.6708
+sniper_kills                             0                       0.0000
+triple_kills                             4                       1.4087
+unique_weapon_kills                      6                       0.8303
 
 
 ====================================================================================================
 PLAYER: vladimus2005 (Fade)
 ====================================================================================================
-K/D/A: 10/16/2
-Score: 2864
+K/D/A: 13/20/10
+Score: 4060
 
-Stat Name                                Value               
-------------------------------------------------------------
-1v1_clutches                             0                   
-ability_kills                            0                   
-aces                                     0                   
-assists                                  2                   
-damage_dealt                             1712                
-deaths                                   16                  
-defuses                                  1                   
-double_kills                             0                   
-enemy_bottom_frag_killed                 3                   
-enemy_top_frag_killed                    1                   
-first_bloods                             0                   
-hexakills                                0                   
-hs_percentage                            15                  
-knife_kills                              0                   
-last_bloods                              1                   
-lmg_kills                                0                   
-long_range_kills                         0                   
-ninja_defuses                            0                   
-outnumbered_clutches                     0                   
-phantom_kills                            0                   
-pistol_kills                             1                   
-plants                                   6                   
-quadra_kills                             1                   
-rebound_percentage                       0.0                 
-rifle_kills                              7                   
-short_range_kills                        0                   
-shotgun_kills                            0                   
-smg_kills                                2                   
-sniper_kills                             0                   
-triple_kills                             0                   
-unique_weapon_kills                      3                   
+Stat Name                                Value           Z-Score        
+----------------------------------------------------------------------
+1v1_clutches                             0                      -0.4472
+ability_kills                            0                       0.0000
+aces                                     0                       0.0000
+assists                                  10                      1.1867
+damage_dealt                             2775                   -0.7503
+deaths                                   20                     -0.1912
+defuses                                  2                       1.1474
+double_kills                             1                      -0.3963
+enemy_bottom_frag_killed                 1                      -1.4063
+enemy_top_frag_killed                    2                      -1.3725
+first_bloods                             1                      -0.4575
+hexakills                                0                       0.0000
+hs_percentage                            11                     -0.7633
+knife_kills                              0                       0.0000
+last_bloods                              1                      -0.5013
+lmg_kills                                0                       0.0000
+long_range_kills                         0                      -0.5774
+ninja_defuses                            0                       0.0000
+outnumbered_clutches                     0                       0.0000
+phantom_kills                            0                       0.0000
+pistol_kills                             3                       0.5880
+plants                                   6                       1.5777
+quadra_kills                             0                      -0.6261
+rebound_percentage                       -37.5                  -0.9927
+rifle_kills                              8                      -0.6591
+short_range_kills                        0                      -0.8018
+shotgun_kills                            0                       0.0000
+smg_kills                                2                      -0.1118
+sniper_kills                             0                       0.0000
+triple_kills                             0                      -0.6037
+unique_weapon_kills                      3                      -0.5535
 
 
 ====================================================================================================
-Z-SCORE CALCULATIONS
+PLAYER: Dani (Chamber)
 ====================================================================================================
+K/D/A: 12/18/7
+Score: 4029
+
+Stat Name                                Value           Z-Score        
+----------------------------------------------------------------------
+1v1_clutches                             0                      -0.4472
+ability_kills                            0                       0.0000
+aces                                     0                       0.0000
+assists                                  7                      -0.1826
+damage_dealt                             3064                   -0.5617
+deaths                                   18                      0.7649
+defuses                                  1                       0.1912
+double_kills                             1                      -0.3963
+enemy_bottom_frag_killed                 3                      -0.4018
+enemy_top_frag_killed                    4                      -0.1248
+first_bloods                             1                      -0.4575
+hexakills                                0                       0.0000
+hs_percentage                            10                     -0.8826
+knife_kills                              0                       0.0000
+last_bloods                              1                      -0.5013
+lmg_kills                                0                       0.0000
+long_range_kills                         0                      -0.5774
+ninja_defuses                            0                       0.0000
+outnumbered_clutches                     0                       0.0000
+phantom_kills                            0                       0.0000
+pistol_kills                             0                      -1.1759
+plants                                   1                      -0.2151
+quadra_kills                             0                      -0.6261
+rebound_percentage                       40.0                    1.1803
+rifle_kills                              7                      -0.7620
+short_range_kills                        0                      -0.8018
+shotgun_kills                            0                       0.0000
+smg_kills                                0                      -1.2298
+sniper_kills                             0                       0.0000
+triple_kills                             0                      -0.6037
+unique_weapon_kills                      3                      -0.5535
+
+
+====================================================================================================
+PLAYER: Painite (Sova)
+====================================================================================================
+K/D/A: 11/22/8
+Score: 3656
+
+Stat Name                                Value           Z-Score        
+----------------------------------------------------------------------
+1v1_clutches                             0                      -0.4472
+ability_kills                            0                       0.0000
+aces                                     0                       0.0000
+assists                                  8                       0.2739
+damage_dealt                             2670                   -0.8188
+deaths                                   22                     -1.1474
+defuses                                  0                      -0.7649
+double_kills                             0                      -0.6165
+enemy_bottom_frag_killed                 2                      -0.9040
+enemy_top_frag_killed                    3                      -0.7486
+first_bloods                             0                      -1.0294
+hexakills                                0                       0.0000
+hs_percentage                            13                     -0.5248
+knife_kills                              0                       0.0000
+last_bloods                              0                      -0.8593
+lmg_kills                                0                       0.0000
+long_range_kills                         0                      -0.5774
+ninja_defuses                            0                       0.0000
+outnumbered_clutches                     0                       0.0000
+phantom_kills                            0                       0.0000
+pistol_kills                             0                      -1.1759
+plants                                   0                      -0.5737
+quadra_kills                             0                      -0.6261
+rebound_percentage                       20.0                    0.6196
+rifle_kills                              7                      -0.7620
+short_range_kills                        2                      -0.2673
+shotgun_kills                            0                       0.0000
+smg_kills                                4                       1.0062
+sniper_kills                             0                       0.0000
+triple_kills                             0                      -0.6037
+unique_weapon_kills                      2                      -1.0148
 

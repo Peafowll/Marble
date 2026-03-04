@@ -32,11 +32,6 @@ def get_current_vc_members(voice_channel):
 
 
 def check_response(m, vc_member_names):
-    #FIXME : 2026-03-03 02:21:14 ERROR    discord Error in command random_teams: Command raised an exception: TypeError: unhashable type: 'list'
-            # NoneType: None
-            # 2026-03-03 02:21:14,176 - discord - ERROR - Error in command random_teams: Command raised an exception: TypeError: unhashable type: 'list'
-            # NoneType: None
-    # when "r peafowl" is called.
     """
     Checks a random_teams type message.
     
@@ -68,7 +63,7 @@ def check_response(m, vc_member_names):
         return ("t",int(value))
     
     if command == "r":
-        if value not in {vc_member_names}:
+        if value not in vc_member_names:
             return None
     
     return (command, value)
@@ -133,69 +128,6 @@ class RandomTeams(commands.Cog):
             except asyncio.TimeoutError:
                 await ctx.send("Response time limit reached. Operation canceled.")
                 return
-
-
-
-        # print(f"random teams called, members in vc: {vc_member_names}")
-        # if not playercount:
-        #     playercount = len(vc_member_names)
-        
-        # count_per_team = playercount / team_count
-
-        # count_per_team = int(count_per_team)
-        # #TODO : always enter edit mode
-        # if count_per_team == int(count_per_team):
-
-        #     teams = []
-        #     random.shuffle(vc_member_names)
-        #     for i in range(team_count):
-        #         teams.append([])
-        #         for j in range(count_per_team):
-        #             selected_member_name = vc_member_names.pop()
-        #             teams[i].append(selected_member_name)
-        # else:
-        #     channel = ctx.channel
-        #     author_id = ctx.author.id
-        #     message = "You are not an even number of people in your current voice chat."
-        #     message += "Please respond as follows to remedy :\n"
-        #     message += "'+name1+name2+etc' for anyone to add to the list of participants.\n"
-        #     message += "'-name1-name2-etc' for anyone to remove from the list.\n"
-        #     message += "'ignore' to make the teams anyway, but receive them unbalanced.\n"
-        #     message += "You may respond with '+name1+name2-name3-name4', jsut keep them in that order and without spaces." 
-        #     await ctx.send(message)
-        #     def check(m):
-        #         return m.channel.id == channel.id and m.author.id == author_id
-                        
-        #     wait_task = asyncio.create_task(self.bot.wait_for("message", check=check, timeout=30.0))
-            
-        #     try:
-        #         reply = await wait_task
-        #         reply_text = reply.content
-        #         answer = reply_text.lower()
-        #         if answer == "ignore":
-        #             print("ignore")
-        #             #send
-
-        #         else:
-        #             split_string = answer.split('+')
-        #             negative_unsplit_string = split_string[-1:]
-        #             negative_string = negative_unsplit_string.split('-')
-        #             positive_string = split_string[:-1]
-        #             teams = []
-        #             print(f"Positive string = {positive_string}")
-        #             print(f"Negative string = {negative_string}")
-        #             for member in positive_string:
-        #                 vc_member_names.append(member)
-        #             for member in negative_string:
-        #                 if member in vc_member_names:
-        #                     vc_member_names.remove(member)
-
-        #             print(f"New teams after changes : {vc_member_names}")
-                
-
-
-        #     except asyncio.TimeoutError:
-        #         await ctx.send(f"You didnt mention who was extra in time.")
 
         # print(teams)
         
