@@ -30,6 +30,7 @@ logger = logging.getLogger('discord.titles')
 
 #TODO : ADD TANGERINE AND LEMON
 #TODO : ADD AUTO-MESSAGE FOR PREMIER
+#TODO : add new titles
 
 load_dotenv()
 hv_token = os.getenv("HD_KEY")

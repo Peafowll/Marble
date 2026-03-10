@@ -145,7 +145,16 @@ class RandomTeams(commands.Cog):
         random.shuffle(vc_member_names)
         teams = generate_teams(vc_member_names, team_count)
 
-        #print(teams)
+        message = ""
+        for i, team in enumerate(teams):
+            message+=f"## Team {i+1}\n"
+            for player in team:
+                message+=f"- {player}\n"
+
+        await ctx.send(message)
+        
+        #TODO : add warning message for uneven teams
+        #TODO : add aliases support
         
 async def setup(bot):
     try:
