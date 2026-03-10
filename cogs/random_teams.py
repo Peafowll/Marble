@@ -67,6 +67,19 @@ def check_response(m, vc_member_names):
             return None
     
     return (command, value)
+
+def generate_teams(players : list, teams_count : int):
+    """
+    Takes a list of players and a number of teams and returns a list of lists representing randomly generated teams.
+    """
+    random.shuffle(players)
+    teams = []
+    for index in range(teams_count):
+        team = players[index::teams_count]
+        teams.append(team)
+
+    return teams
+
 class RandomTeams(commands.Cog):
     def __init__(self,bot):
         self.bot = bot
@@ -129,7 +142,10 @@ class RandomTeams(commands.Cog):
                 await ctx.send("Response time limit reached. Operation canceled.")
                 return
 
-        # print(teams)
+        random.shuffle(vc_member_names)
+        teams = generate_teams(vc_member_names, team_count)
+
+        #print(teams)
         
 async def setup(bot):
     try:
