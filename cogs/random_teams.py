@@ -23,8 +23,7 @@ alises = {
     "el_donte" : ["cristi","tachanka","dante","criti"],
     "painte01" : ["fabi","painite"]
 }
-
-
+#TODO : autofill names on command
 def get_current_vc_members(voice_channel):
     vc_members = voice_channel.members
     vc_member_names = [member.name for member in vc_members]
@@ -115,7 +114,7 @@ class RandomTeams(commands.Cog):
             try:
                 if first_pass == False:
                     message = ""
-                    message += "Current Player Pool :\n"
+                    message += f"Current Player Pool ({len(vc_member_names)} Players):\n"
                     for member in vc_member_names:
                         message+=f"- **{member}**\n"
                     message += f"Generating **{team_count}** teams."

@@ -16,7 +16,7 @@ logging.basicConfig(
     ]
 )
 logger = logging.getLogger('discord')
-
+# TODO : 
 load_dotenv()
 token = os.getenv("BOT_TOKEN")
 intents = discord.Intents.default()
