@@ -1,8 +1,6 @@
 ## [1.0.0] - 
 ### Added
   - Use `!random_teams` to generate random teams for customs!
-  - 5 new titles for Premier.
-
 
 ## [0.9.1] - 14-02-2205
 ### Added

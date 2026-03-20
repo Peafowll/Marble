@@ -59,6 +59,8 @@ def check_response(m, vc_member_names):
     if command == "t":
         if not value.isdigit():
             return None
+        if value<1:
+            return None
         return ("t",int(value))
     
     if command in ["a","r"]:
@@ -147,9 +149,7 @@ class RandomTeams(commands.Cog):
                     continue
 
                 called_command, called_value = response_result
-                if not called_command:
-                    await ctx.send("Invalid command or argument.")
-                elif called_command == "d":
+                if called_command == "d":
                     break
                 elif called_command == "a":
                     vc_member_names.append(called_value)
