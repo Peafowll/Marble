@@ -1,3 +1,7 @@
+## [1.0.0] - 
+### Added
+  - Use `!random_teams` to generate random teams for customs!
+
 ## [0.9.1] - 14-02-2205
 ### Added
   - `!best_pokemon` now shows the highest rated mons!!

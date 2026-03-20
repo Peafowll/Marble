@@ -172,5 +172,35 @@
         "title": "The Sneaky Bastard",
         "award": "Defuses with Enemies Alive",
         "weight": 1.5
+    },
+    "high_average_bullets_per_kill":{
+        "title" : "The Generous",
+        "award" : "Average Bullets Per Kill",
+        "weight" : 1,
+        "implemented" : false
+    },
+    "low_average_bullets_per_kill":{
+        "title" : "The Assasin",
+        "award" : "Average Bullets Per Kill",
+        "weight" : 1.1,
+        "implemented" : false
+    },
+    "trade_kills":{
+        "title" : "The Merchant",
+        "award" : "Trade Kills",
+        "weight" : 1,
+        "implemented" : false
+    },
+    "traded_deaths":{
+        "title" : "The Merchandise",
+        "award" : "Traded Deaths",
+        "weight" : 1,
+        "implemented" : false
+    },
+    "kast":{
+        "title" : "The Valuable",
+        "award" : "% KAST",
+        "weight" : 1,
+        "implemented" : false
     }
 }
