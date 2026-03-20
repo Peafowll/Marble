@@ -11,17 +11,17 @@ import re
 
 logger = logging.getLogger('discord.random_teams')
 alises = {
-    "peafowl": ["paun","tudor","peafowl"],
+    "peafowl": ["paun","tudor"],
     "yoyoo0722": ["yoyo","ioncii","ionci","ionchi","ionchii"],
-    "vladimus2005": ["vladimus"],
-    "arrow_san" : ["dani","arrow"],
-    "itz_wolfseer" : ["raisa","wolfseer"],
-    "frogthephrog": ["frog","phrog","matei"],
+    "vladimus2005": ["vladimus","robovladimus","mus"],
+    "arrow_san" : ["dani","arrow","frate"],
+    "itz_wolfseer" : ["raisa","wolfseer","seer"],
+    "frogthephrog": ["frog","phrog","matei","broasca"],
     "boria.": ["boria"],
-    "tavi71" : ["tavone","tavi","octavian"],
-    "tepel": ["vlad","kingmordecai","mordecai","iquitgambling","blackjewvu"],
+    "tavi71" : ["tavone","tavi","octavian","tavone2","tavone3"],
+    "tepel": ["vlad","kingmordecai","mordecai","iquitgambling","blackjewvu","kingmordecai","tepeel"],
     "el_donte" : ["cristi","tachanka","dante","criti"],
-    "painte01" : ["fabi","painite"]
+    "painte01" : ["fabi","painite","nite"]
 }
 #TODO : autofill names on command
 def get_current_vc_members(voice_channel):
@@ -78,6 +78,15 @@ def generate_teams(players : list, teams_count : int):
         teams.append(team)
 
     return teams
+
+def find_by_alias(player_name : str):
+    for person in alises:
+        if person == player_name:
+            return person
+        if player_name in alises[person]:
+            return person
+        
+
 
 class RandomTeams(commands.Cog):
     def __init__(self,bot):
@@ -155,8 +164,7 @@ class RandomTeams(commands.Cog):
                 message+=f"- {player}\n"
 
         await ctx.send(message)
-        
-        #TODO : add warning message for uneven teams
+
         #TODO : add aliases support
         
 async def setup(bot):
