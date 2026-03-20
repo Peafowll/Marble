@@ -107,6 +107,8 @@ class RandomTeams(commands.Cog):
         message += "- **r** *name* to remove a player.\n"
         message += "- **t** *number* to set the amount of teams to generate.\n"
         message += "- **d** to generate teams."
+        if len(vc_member_names)%team_count!=0:
+                        message += f"\n**WARNING!** There are {len(vc_member_names)} players and {team_count} teams, so the teams will be uneven!"
         await ctx.send(message)
         called_command = ""
         first_pass = True
@@ -118,6 +120,8 @@ class RandomTeams(commands.Cog):
                     for member in vc_member_names:
                         message+=f"- **{member}**\n"
                     message += f"Generating **{team_count}** teams."
+                    if len(vc_member_names)%team_count!=0:
+                        message += f"\n**WARNING!** There are {len(vc_member_names)} players and {team_count} teams, so the teams will be uneven!"
                     await ctx.send(message)
 
                 first_pass = False
