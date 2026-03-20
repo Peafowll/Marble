@@ -23,7 +23,7 @@ alises = {
     "el_donte" : ["cristi","tachanka","dante","criti"],
     "painte01" : ["fabi","painite","nite"]
 }
-#TODO : autofill names on command
+
 def get_current_vc_members(voice_channel):
     vc_members = voice_channel.members
     vc_member_names = [member.name for member in vc_members]
@@ -61,9 +61,15 @@ def check_response(m, vc_member_names):
             return None
         return ("t",int(value))
     
-    if command == "r":
-        if value not in vc_member_names:
-            return None
+    if command in ["a","r"]:
+
+        real_name = find_by_alias(value)
+
+        if command == "r":
+            if real_name not in vc_member_names:
+                return None
+            
+        return (command, real_name)
     
     return (command, value)
 
@@ -86,7 +92,7 @@ def find_by_alias(player_name : str):
         if player_name in alises[person]:
             return person
         
-
+    return player_name
 
 class RandomTeams(commands.Cog):
     def __init__(self,bot):
@@ -135,7 +141,12 @@ class RandomTeams(commands.Cog):
 
                 first_pass = False
                 response_input = (await self.bot.wait_for('message', check=check, timeout=60.0)).content
-                called_command, called_value = check_response(response_input, vc_member_names)
+                response_result = check_response(response_input, vc_member_names)
+                if response_result is None:
+                    await ctx.send("Invalid command or argument.")
+                    continue
+
+                called_command, called_value = response_result
                 if not called_command:
                     await ctx.send("Invalid command or argument.")
                 elif called_command == "d":
@@ -164,8 +175,6 @@ class RandomTeams(commands.Cog):
                 message+=f"- {player}\n"
 
         await ctx.send(message)
-
-        #TODO : add aliases support
         
 async def setup(bot):
     try:
