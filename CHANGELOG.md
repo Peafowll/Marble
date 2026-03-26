@@ -1,4 +1,6 @@
-## [1.0.0] - 
+## [1.0.1] - 26-03-2025
+  - README.md updated.
+## [1.0.0] - 20-03-2025
 ### Added
   - Use `!random_teams` to generate random teams for customs!
 

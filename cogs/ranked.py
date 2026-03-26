@@ -14,8 +14,6 @@ load_dotenv()
 riot_token = os.getenv("RIOT_KEY")
 
 # TODO : add up and down for recent lp changes
-# TODO : add caching
-# TODO : add last cached time
 
 RANKED_EMOJIS = {
     "IRON": "⚫",        
