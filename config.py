@@ -74,3 +74,5 @@ TITLE_ASSIGNMENT_THRESHOLD = 0.3  # Max range of z-scores between titles
 # Kill Distance Ranges (in meters)
 SHORT_RANGE_THRESHOLD = 7.5
 LONG_RANGE_THRESHOLD = 34.0
+
+FABI_DISCORD_ID = 246956083934003211

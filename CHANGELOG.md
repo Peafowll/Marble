@@ -1,10 +1,16 @@
-## [1.0.1] - 26-03-2025
+## [1.0.2] - 04-04-2026
+### Added
+  - Bouncy!!!
+  - Love u Painite
+  
+## [1.0.1] - 26-03-2026
   - README.md updated.
-## [1.0.0] - 20-03-2025
+
+## [1.0.0] - 20-03-2026
 ### Added
   - Use `!random_teams` to generate random teams for customs!
 
-## [0.9.1] - 14-02-2205
+## [0.9.1] - 14-02-2206
 ### Added
   - `!best_pokemon` now shows the highest rated mons!!
 
